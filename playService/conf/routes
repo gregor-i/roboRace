@@ -1,0 +1,1 @@
+GET  /  controller.GameController.state()
