@@ -1,0 +1,1 @@
+case class Game(gameMap: GameMap, eventLog: Seq[EventLog])
