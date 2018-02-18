@@ -1,19 +1,45 @@
-import gameLogic.{GameRunning, GameState}
-import gameLogic.command.{RegisterForGame, StartGame}
-import gameLogic.eventLog.{GameStarted, PlayerRegisteredForGame}
+import gameLogic.action.MoveForward
+import gameLogic.{GameRunning, GameScenario, GameState, Position, Robot, Up}
+import gameLogic.command.{DefineNextAction, RegisterForGame, StartGame}
+import gameLogic.eventLog.CommandAccepted
 import gameLogic.processor.Processor
-import org.scalatest.{FunSpec, FunSuite, Matchers}
+import org.scalatest.{FunSuite, Matchers}
 
 class GameSpec extends FunSuite with Matchers {
-  test("start the game") {
-    val protcolledState = Processor(GameState.initalState)(Seq(
-      RegisterForGame(playerName = "player 1"),
-      RegisterForGame(playerName = "player 2"),
-      StartGame(null)
-    ))
 
-    protcolledState.state shouldBe GameRunning(0, null)
-    protcolledState.events shouldBe Seq(PlayerRegisteredForGame("player 1"), PlayerRegisteredForGame("player 2"), GameStarted)
+  private val startGameActions = Seq(
+    RegisterForGame(playerName = "player 1"),
+    RegisterForGame(playerName = "player 2"),
+    StartGame(GameScenario.default)
+  )
+
+  private val cycle0State = GameRunning(cycle = 0,
+    players = Seq("player 1", "player 2"),
+    robotActions = Map.empty,
+    scenario = GameScenario.default,
+    robots = Map("player 1" -> Robot(Position(1, 8), Up), "player 2" -> Robot(Position(5, 8), Up)))
+
+  private val bothMoveForewardActions = Seq(
+    DefineNextAction("player 2", MoveForward),
+    DefineNextAction("player 1", MoveForward)
+  )
+
+  private val cycle1State = GameRunning(cycle = 1,
+    players = Seq("player 1", "player 2"),
+    robotActions = Map.empty,
+    scenario = GameScenario.default,
+    robots = Map("player 1" -> Robot(Position(1, 7), Up), "player 2" -> Robot(Position(5, 7), Up)))
+
+  test("start the game") {
+    val protocoledState = Processor(GameState.initalState)(startGameActions)
+    protocoledState.state shouldBe cycle0State
+    protocoledState.events shouldBe startGameActions.map(CommandAccepted)
+  }
+
+  test("players define their actions") {
+    val protocoledState = Processor(cycle0State)(bothMoveForewardActions)
+    protocoledState.state shouldBe cycle1State
+    protocoledState.events shouldBe bothMoveForewardActions.map(CommandAccepted) ++ ???
   }
 
 }
