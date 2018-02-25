@@ -4,9 +4,13 @@ version := "0.1"
 
 scalaVersion := "2.12.4"
 
+cancelable in ThisBuild := true
+
 lazy val playService = project.in(file("playService"))
   .enablePlugins(PlayScala)
-  .settings(libraryDependencies += guice)
+  .settings(libraryDependencies += guice,
+    libraryDependencies += "com.dripower" %% "play-circe" % "2609.0"
+  )
   .dependsOn(gameLogic)
 
 lazy val consoleGame = project.in(file("consoleGame"))

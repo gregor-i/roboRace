@@ -3,7 +3,8 @@ package gameLogic
 case class GameScenario(width: Int, height: Int,
                         beaconPosition: Position,
                         targetPosition: Position,
-                        initialRobots: Map[Int, Robot])
+                        initialRobots: Map[Int, Robot],
+                        walls: Seq[Wall])
 
 object GameScenario {
   private def robot(x: Int, y: Int, direction: Direction): Robot = Robot(Position(x, y), direction)
@@ -20,6 +21,9 @@ object GameScenario {
       3 -> robot(4, 8, Up),
       4 -> robot(0, 8, Up),
       5 -> robot(6, 8, Up)
-    )
+    ),
+    walls = Seq()
   )
 }
+
+case class Wall(position: Position, direction: WallDirection)

@@ -17,6 +17,7 @@ object Cycle extends GameUpdate {
         afterPlayerActions <- playerActions.foldLeft[Logged[GameRunning, EventLog]](Logged.pure(game))((state, action) => state.flatMap(action.apply))
         nextCycle <- afterPlayerActions.copy(cycle = g.cycle + 1, robotActions = Map.empty).log(PlayerActionsExecuted(game.cycle + 1))
       } yield nextCycle
+
     case _ => Logged.pure(gameState)
   }
 
@@ -32,7 +33,7 @@ case class ApplyAction(player: String, action: Action) {
         case MoveForward => robot.copy(position = robot.position.move(robot.direction)).log(RobotPositionTransition(player, robot.position, robot.position.move(robot.direction)))
         case MoveBackward => robot.copy(position = robot.position.move(robot.direction.back)).log(RobotPositionTransition(player, robot.position, robot.position.move(robot.direction.back)))
       }
-      // todo: push other robots. trigger field like fall into pit or from board.
+      // todo: push other robots. trigger fields like fall into pit or from board.
     } yield gameState.copy(robots = gameState.robots.updated(player, nextRobotState))
   }
 }

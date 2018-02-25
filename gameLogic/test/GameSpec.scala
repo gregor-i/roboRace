@@ -20,8 +20,8 @@ class GameSpec extends FunSuite with Matchers {
     robots = Map("player 1" -> Robot(Position(1, 8), Up), "player 2" -> Robot(Position(5, 8), Up)))
 
   private val bothMoveForewardActions = Seq(
-    DefineNextAction("player 2", MoveForward),
-    DefineNextAction("player 1", MoveForward)
+    DefineNextAction("player 2", 0, MoveForward),
+    DefineNextAction("player 1", 0, MoveForward)
   )
 
   private val cycle1State = GameRunning(cycle = 1,
@@ -39,7 +39,8 @@ class GameSpec extends FunSuite with Matchers {
   test("players define their actions") {
     val protocoledState = Processor(cycle0State)(bothMoveForewardActions)
     protocoledState.state shouldBe cycle1State
-    protocoledState.events shouldBe bothMoveForewardActions.map(CommandAccepted) ++ ???
+    for (command <- bothMoveForewardActions)
+      protocoledState.events should contain(CommandAccepted(command))
   }
 
 }

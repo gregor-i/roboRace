@@ -11,18 +11,18 @@ sealed trait Command extends GameUpdate {
 case class RegisterForGame(playerName: String) extends Command {
   def apply(gameState: GameState): LoggedGameState = gameState match {
     case GameNotStarted(playersNames) if playersNames.contains(playerName) =>
-      gameState.log(PlayerAlreadyRegistered)
+      gameState.log(CommandRejected(this, PlayerAlreadyRegistered))
     case g@GameNotStarted(playersNames) =>
       g.copy(playersNames = playersNames :+ playerName).log(CommandAccepted(this))
     case g: GameRunning =>
-      g.log(GameAlreadyRunning)
+      g.log(CommandRejected(this, GameAlreadyRunning))
   }
 }
 
 case class StartGame(scenario: GameScenario) extends Command {
   def apply(gameState: GameState): LoggedGameState = gameState match {
-    case g: GameRunning => g.log(GameAlreadyRunning)
-    case GameNotStarted(playersNames) if playersNames.isEmpty => gameState.log(NoPlayersRegistered)
+    case g: GameRunning => g.log(CommandRejected(this, GameAlreadyRunning))
+    case GameNotStarted(playersNames) if playersNames.isEmpty => gameState.log(CommandRejected(this, NoPlayersRegistered))
     case GameNotStarted(playersNames) => GameRunning(
       cycle = 0,
       players = playersNames,
@@ -33,9 +33,10 @@ case class StartGame(scenario: GameScenario) extends Command {
   }
 }
 
-case class DefineNextAction(player: String, action: Action) extends Command {
+case class DefineNextAction(player: String, cycle: Int, action: Action) extends Command {
   def apply(gameState: GameState): LoggedGameState = gameState match {
-    case g: GameNotStarted => g.log(GameNotRunning)
+    case g: GameNotStarted => g.log(CommandRejected(this, GameNotRunning))
+    case g: GameRunning if g.cycle != cycle => g.log(CommandRejected(this, WrongCycle))
     case g: GameRunning => g.copy(robotActions = g.robotActions + (player -> action)).log(CommandAccepted(this))
   }
 }

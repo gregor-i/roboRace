@@ -2,7 +2,7 @@ import gameLogic.action._
 import gameLogic.command.{DefineNextAction, RegisterForGame, StartGame}
 import gameLogic.eventLog.EventLog
 import gameLogic.processor.Processor
-import gameLogic.{GameScenario, GameState}
+import gameLogic.{GameRunning, GameScenario, GameState}
 
 object ConsoleGame {
 
@@ -42,9 +42,10 @@ object ConsoleGame {
     gameState = initializedState.state
 
     while (true) {
+      val cycle = gameState.asInstanceOf[GameRunning].cycle
       val action1 = inputAction("input Operation player 1: (TurnLeft, TurnRight, MoveForward, MoveBackward)")
       val action2 = inputAction("input Operation player 2: (TurnLeft, TurnRight, MoveForward, MoveBackward)")
-      val nextState = Processor(gameState)(Seq(DefineNextAction(player1, action1), DefineNextAction(player2, action2)))
+      val nextState = Processor(gameState)(Seq(DefineNextAction(player1, cycle, action1), DefineNextAction(player2, cycle, action2)))
 
       outputEvents(nextState.events)
       gameState = nextState.state

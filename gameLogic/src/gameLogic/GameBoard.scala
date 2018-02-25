@@ -14,15 +14,18 @@ sealed trait Direction{
   def right: Direction
   def back = left.left
 }
+
+sealed trait WallDirection
+
 case object Up extends Direction{
   def left = Left
   def right = Right
 }
-case object Down extends Direction {
+case object Down extends Direction with WallDirection {
   def left = Right
   def right = Left
 }
-case object Right extends Direction{
+case object Right extends Direction with WallDirection {
   def left = Up
   def right = Down
 }
