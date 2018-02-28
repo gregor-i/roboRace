@@ -2,7 +2,7 @@ package actor
 
 import actor.GameStateActor._
 import akka.actor.{Actor, ActorRef}
-import gameLogic.GameState
+import gameLogic.{GameNotDefined, GameState}
 import gameLogic.command.Command
 import gameLogic.processor.Processor
 import play.api.Logger
@@ -12,8 +12,8 @@ object GameStateActor{
   case class GetState()
 }
 
-class GameStateActor(initialState: GameState) extends Actor {
-  private var state: GameState = initialState
+class GameStateActor extends Actor {
+  private var state: GameState = GameNotDefined
 
   private var subscribers: Set[ActorRef] = Set.empty
 

@@ -2,49 +2,60 @@ package controller
 
 import javax.inject.{Inject, Singleton}
 
-import actor.GameStateActor
-import actor.GameStateActor.GetState
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
-import akka.pattern.ask
 import akka.stream.Materializer
 import akka.util.Timeout
-import gameLogic.GameState
 import gameLogic.command.Command
 import gameLogic.eventLog.EventLog
+import gameLogic.processor.Processor
 import io.circe.generic.auto._
-import io.circe.parser._
 import io.circe.syntax._
-import play.api.Logger
 import play.api.libs.circe.Circe
 import play.api.libs.streams.ActorFlow
 import play.api.mvc.{InjectedController, WebSocket}
+import repo.GameRepository
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
-
 @Singleton
-class GameController @Inject()(implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext) extends InjectedController with Circe {
-  val gameStateActor: ActorRef = system.actorOf(Props(classOf[GameStateActor], GameState.cycle0))
+class GameController @Inject()(repo: GameRepository)
+                              (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
+  extends InjectedController with Circe {
 
   implicit val timeout: Timeout = Timeout(5.seconds)
 
-  def state() = Action.async {
-    (gameStateActor ? GetState()).mapTo[GameState].map(state => Ok(state.asJson))
+  private val id = "default"
+
+  private var subscriptions: Map[String, Seq[ActorRef]] = Map.empty.withDefaultValue(Seq.empty)
+
+  def state() = Action{
+    Ok(repo.get("default").asJson)
   }
 
-  def view() = Action {
-    Ok(views.html.RoboRally())
+  def sendCommand() = Action(circe.tolerantJson[Command]) { request =>
+    repo.get(id) match{
+      case Some(gameState) =>
+        val logged = Processor(gameState)(Seq(request.body))
+        repo.save(id, logged.state)
+        subscriptions(id).foreach(_ ! logged.events)
+        Ok(logged.state.asJson)
+      case None => NotFound
+    }
   }
 
   def events() = WebSocket.accept[String, String] { request =>
-    ActorFlow.actorRef(out => Props(new EventStreamActor(out, gameStateActor)))
+    ActorFlow.actorRef { out =>
+      Props(classOf[EventStreamActor],
+        out,
+        (self: ActorRef) => subscriptions += (id -> (self +: subscriptions(id))): Unit
+      )
+    }
   }
 }
 
-
-class EventStreamActor(out: ActorRef, gameStateActor: ActorRef) extends Actor {
-  gameStateActor ! GameStateActor.Subscribe(self)
+class EventStreamActor(out: ActorRef, initialize: ActorRef => Unit) extends Actor {
+  initialize(self)
 
   private def sendToClients(event: EventLog): Unit = out ! event.asJson.noSpaces
 
@@ -54,14 +65,5 @@ class EventStreamActor(out: ActorRef, gameStateActor: ActorRef) extends Actor {
 
     case event: EventLog =>
       sendToClients(event)
-
-    case commandAsString: String =>
-      parse(commandAsString).toOption.flatMap(_.as[Command].toOption) match {
-        case Some(command) =>
-          Logger.info(command.toString)
-          gameStateActor ! command
-        case None =>
-          Logger.warn(s"'$commandAsString' could not be parsed as command")
-      }
   }
 }

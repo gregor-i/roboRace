@@ -1,7 +1,8 @@
 var state;
+var player = document.body.getAttribute("player");
 
 function loadGameState() {
-    return fetch("/game")
+    return fetch("/api/game/default")
         .then(x => x.json())
         .then(defineGlobalState)
         .then(() => console.log("loaded state from server"))
@@ -11,14 +12,17 @@ function loadGameState() {
 loadGameState().then(draw)
 
 
-var exampleSocket = new WebSocket("ws://" + (document.location.host) + "/events");
+var exampleSocket = new WebSocket("ws://" + (document.location.host) + "/events/default");
 
 function placePiece(b, x, y, piece) {
     b.cell([y, x]).place(piece.clone())
 }
 
-function sendWs(command) {
-    exampleSocket.send(JSON.stringify(command))
+function sendCommand(command) {
+    fetch("/api/game/default", {
+        method: "POST",
+        body: JSON.stringify(command)
+    }).then(resp => console.log("sendCommand", command))
 }
 
 exampleSocket.onmessage = function(event) {
@@ -93,10 +97,10 @@ function drawActionButtons() {
     state.GameRunning.players.forEach((player, index) => {
         innerHtml += "<tr>" +
         "<td>" + player + "</td>"+
-        "<td><button onclick='sendWs(" + action(player, state.GameRunning.cycle, 'MoveForward') + ")'>MoveForward</button></td>"+
-        "<td><button onclick='sendWs(" + action(player, state.GameRunning.cycle, 'MoveBackward') + ")'>MoveBackward</button></td>"+
-        "<td><button onclick='sendWs(" + action(player, state.GameRunning.cycle, 'TurnRight') + ")'>TurnRight</button></td>"+
-        "<td><button onclick='sendWs(" + action(player, state.GameRunning.cycle, 'TurnLeft') + ")'>TurnLeft</button></td>"+
+        "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'MoveForward') + ")'>MoveForward</button></td>"+
+        "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'MoveBackward') + ")'>MoveBackward</button></td>"+
+        "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'TurnRight') + ")'>TurnRight</button></td>"+
+        "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'TurnLeft') + ")'>TurnLeft</button></td>"+
         "</tr>"
     })
     document.getElementById('controls').innerHTML = innerHtml;

@@ -13,10 +13,6 @@ lazy val playService = project.in(file("playService"))
   )
   .dependsOn(gameLogic)
 
-lazy val consoleGame = project.in(file("consoleGame"))
-  .settings(folderSettings)
-  .dependsOn(gameLogic)
-
 lazy val gameLogic = project.in(file("gameLogic"))
   .settings(folderSettings, scalaTest)
 

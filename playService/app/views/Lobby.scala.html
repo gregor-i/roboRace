@@ -1,0 +1,124 @@
+@import gameLogic._
+
+@(games: Seq[(String, GameState)])
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <script type="text/javascript">
+        function sendCommand(command) {
+            fetch("/api/game/default", {
+                method: "POST",
+                body: JSON.stringify(command)
+            }).then(resp => console.log("sendCommand", command))
+        }
+
+        function defineGame(id){
+            sendCommand({"DefineScenario":{
+  "scenario" : {
+    "width" : 7,
+    "height" : 9,
+    "beaconPosition" : {
+      "x" : 3,
+      "y" : 8
+    },
+    "targetPosition" : {
+      "x" : 3,
+      "y" : 1
+    },
+    "initialRobots" : {
+      "4" : {
+        "position" : {
+          "x" : 0,
+          "y" : 8
+        },
+        "direction" : {
+          "Up" : {
+
+          }
+        }
+      },
+      "5" : {
+        "position" : {
+          "x" : 6,
+          "y" : 8
+        },
+        "direction" : {
+          "Up" : {
+
+          }
+        }
+      },
+      "1" : {
+        "position" : {
+          "x" : 5,
+          "y" : 8
+        },
+        "direction" : {
+          "Up" : {
+
+          }
+        }
+      },
+      "0" : {
+        "position" : {
+          "x" : 1,
+          "y" : 8
+        },
+        "direction" : {
+          "Up" : {
+
+          }
+        }
+      },
+      "2" : {
+        "position" : {
+          "x" : 2,
+          "y" : 8
+        },
+        "direction" : {
+          "Up" : {
+
+          }
+        }
+      },
+      "3" : {
+        "position" : {
+          "x" : 4,
+          "y" : 8
+        },
+        "direction" : {
+          "Up" : {
+
+          }
+        }
+      }
+    },
+    "walls" : [
+    ]
+  }
+}})
+        }
+    </script>
+</head>
+<body>
+<hr>
+Game List:
+<ul>
+    @for((id, game) <- games) {
+    <li>@id @game.getClass.getSimpleName
+        @game match {
+            case GameNotDefined => {<button onclick="defineGame('@id')">Define Scenario</button>}
+            case GameNotStarted(_, _) => {<button disabled>Join Game</button>}
+            case _ => {}
+        }
+        <button disabled>Delete Game</button>
+    </li>
+    }
+</ul>
+<hr>
+<button disabled>New Game</button>
+</body>
+</html>

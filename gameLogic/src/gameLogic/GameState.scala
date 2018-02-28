@@ -4,9 +4,22 @@ import gameLogic.action.Action
 import gameLogic.command.{RegisterForGame, StartGame}
 import gameLogic.processor.Processor
 
-sealed trait GameState
+sealed trait GameState {
+  def fold[A](ifNotDefined: GameNotDefined.type => A)
+             (ifNotStarted: GameNotStarted => A)
+             (ifRunning: GameRunning => A)
+             (ifFinished: GameFinished => A): A = this match {
+    case g: GameNotDefined.type => ifNotDefined(g)
+    case g: GameNotStarted => ifNotStarted(g)
+    case g: GameRunning => ifRunning(g)
+    case g: GameFinished => ifFinished(g)
+  }
+}
 
-case class GameNotStarted(playersNames: Seq[String]) extends GameState
+case object GameNotDefined extends GameState
+
+case class GameNotStarted(scenario: GameScenario,
+                          playerNames: Seq[String]) extends GameState
 
 case class GameRunning(cycle: Int,
                        players: Seq[String],
@@ -14,13 +27,16 @@ case class GameRunning(cycle: Int,
                        robots: Map[String, Robot],
                        robotActions: Map[String, Action]) extends GameState
 
+case class GameFinished() extends GameState
+
+
 object GameState {
-  val initalState = GameNotStarted(Nil)
+  val initalState = GameNotDefined
 
   val cycle0 = Processor(initalState)(Seq(
     RegisterForGame(playerName = "player 1"),
     RegisterForGame(playerName = "player 2"),
-    StartGame(GameScenario.default)
+    StartGame
   )).state
 
   val ingame = GameRunning(

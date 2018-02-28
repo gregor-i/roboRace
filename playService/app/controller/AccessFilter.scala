@@ -13,7 +13,7 @@ class AccessFilter @Inject()()(implicit val mat: Materializer, ex: ExecutionCont
 
   override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] = {
     f(rh).map { resp =>
-      Logger.info(s"${rh.method} to ${rh.path} returned ${resp.asJava.status()}")
+      Logger.warn(s"${rh.method} to ${rh.path} returned ${resp.header.status}")
       resp
     }
   }
