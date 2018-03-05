@@ -1,11 +1,11 @@
 #API
 GET         /api/game/default                   controller.GameController.state()
 POST        /api/game/default                   controller.GameController.sendCommand()
-GET         /api/events/default                 controller.GameController.events()
+GET         /api/events/default                 controller.GameController.sse()
 
 #Frontend
 GET         /                               controller.FrontendController.index()
 GET         /game/default                   controller.FrontendController.lobby()
 GET         /game/default/player/:player    controller.FrontendController.game(player: String)
 GET         /roboRally.js                   controllers.Assets.at(file = "roboRally.js")
-GET         /jsboard.js                     controllers.Assets.at(file = "jsboard.js")
+GET         /roboRally.css                  controllers.Assets.at(file = "roboRally.css")

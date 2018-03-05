@@ -1,7 +1,13 @@
 var state;
-//var player = document.body.getAttribute("player");
+var player;
 
 function start(){
+    player = document.body.getAttribute("player");
+    loadGameState().then(draw)
+}
+
+function animation(json){
+
 }
 
 function loadGameState() {
@@ -12,14 +18,8 @@ function loadGameState() {
         .catch(error => console.log(error))
 }
 
-loadGameState().then(draw)
-
-
-var exampleSocket = new WebSocket("ws://" + (document.location.host) + "/api/events/default");
-
-function placePiece(b, x, y, piece) {
-    b.cell([y, x]).place(piece.clone())
-}
+var source = new EventSource("/api/events/default");
+source.onmessage = eventHandler
 
 function sendCommand(command) {
     fetch("/api/game/default", {
@@ -28,9 +28,14 @@ function sendCommand(command) {
     }).then(resp => console.log("sendCommand", command))
 }
 
-exampleSocket.onmessage = function(event) {
-    console.log("event from server", JSON.parse(event.data));
-    loadGameState().then(draw);
+function eventHandler(event) {
+    var json = JSON.parse(event.data);
+    console.log("event from server", json);
+    document.getElementById('eventLog').innerHTML += ("<li>"+ JSON.stringify(json) +"</li>")
+//    if(json.PlayerActionsExecuted)
+//        loadGameState().then(draw);
+    if(json.RobotPositionTransition)
+        animation(json)
 }
 
 function defineGlobalState(s) {
@@ -43,43 +48,17 @@ function draw() {
 }
 
 function drawState() {
-    document.getElementById('game').innerHTML = '';
-
     var scenario = state.GameRunning.scenario
-    var b = jsboard.board({
-        attach: "game",
-        size: scenario.height + "x" + scenario.width
-    });
-    b.cell("each").style({
-        width: "75px",
-        height: "75px"
-    });
-
-    var pieceBeacon = jsboard.piece({
-        text: "B",
-        fontSize: "45px",
-        textAlign: "center"
-    });
-    var pieceTarget = jsboard.piece({
-        text: "T",
-        fontSize: "45px",
-        textAlign: "center"
-    });
-
-    placePiece(b, scenario.beaconPosition.x, scenario.beaconPosition.y, pieceBeacon);
-    placePiece(b, scenario.targetPosition.x, scenario.targetPosition.y, pieceTarget);
 
     state.GameRunning.players.forEach((player, index) => {
         var robot = state.GameRunning.robots[player]
-        var playerPiece = jsboard.piece({
-            text: '' + (index + 1),
-            fontSize: "45px",
-            textAlign: "center",
-            title: JSON.stringify(robot)
-        });
-        placePiece(b, robot.position.x, robot.position.y, playerPiece)
+        var element = document.getElementById("robot_"+player);
+        if(!element)
+            document.getElementById("game").innerHTML += "<robot id='robot_"+player+"'></robot>"
+        element = document.getElementById("robot_"+player);
+        element.className = ''
+        element.classList.add('direction_'+Object.keys(robot.direction))
     })
-
 }
 
 function drawActionButtons() {

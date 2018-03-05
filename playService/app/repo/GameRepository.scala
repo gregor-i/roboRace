@@ -9,6 +9,7 @@ import io.circe.parser._
 import io.circe.syntax._
 
 import scala.io.Source
+import scala.util.Try
 
 
 @Singleton
@@ -21,7 +22,13 @@ class GameRepository {
     save("default", GameNotDefined)
 
   private def file = new java.io.File("gameRepo.json")
-  private def read(): Map[String, GameState] =  parse(Source.fromFile(file).mkString).flatMap(_.as[Map[String, GameState]]).getOrElse(Map.empty)
+  private def read(): Map[String, GameState] =
+    Try {
+      parse(Source.fromFile(file).mkString)
+        .flatMap(_.as[Map[String, GameState]])
+        .toOption
+    }.toOption.flatten
+      .getOrElse(Map.empty)
   private def write(state: Map[String, GameState]): Unit = {
     val writer = new FileWriter(file)
     writer.append(state.asJson.spaces2)

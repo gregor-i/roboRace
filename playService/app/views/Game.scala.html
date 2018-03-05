@@ -1,13 +1,16 @@
-@(player: String)
+@import gameLogic.GameScenario
+
+@(player: String, scenario: GameScenario)
 <!DOCTYPE html>
   <html>
     <head>
       <meta charset="utf-8"/>
       <script type="text/javascript" src="/roboRally.js"></script>
-      <script src="/jsboard.js"></script>
+      <link rel="stylesheet" type="text/css" href="/roboRally.css">
     </head>
-    <body player="@{player}">
-      <table id='game'></table>
+    <body player="@{player}" onload="start()">
+      @Scenario(scenario)
       <table id='controls'></table>
+      <ul id='eventLog'></ul>
     </body>
   </html>

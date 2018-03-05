@@ -1,0 +1,153 @@
+{
+  "default" : {
+    "GameRunning" : {
+      "cycle" : 5,
+      "players" : [
+        "player 1",
+        "player 2"
+      ],
+      "scenario" : {
+        "width" : 7,
+        "height" : 9,
+        "beaconPosition" : {
+          "x" : 3,
+          "y" : 8
+        },
+        "targetPosition" : {
+          "x" : 3,
+          "y" : 1
+        },
+        "initialRobots" : {
+          "4" : {
+            "position" : {
+              "x" : 0,
+              "y" : 8
+            },
+            "direction" : {
+              "Up" : {
+                
+              }
+            }
+          },
+          "5" : {
+            "position" : {
+              "x" : 6,
+              "y" : 8
+            },
+            "direction" : {
+              "Up" : {
+                
+              }
+            }
+          },
+          "1" : {
+            "position" : {
+              "x" : 5,
+              "y" : 8
+            },
+            "direction" : {
+              "Up" : {
+                
+              }
+            }
+          },
+          "0" : {
+            "position" : {
+              "x" : 1,
+              "y" : 8
+            },
+            "direction" : {
+              "Up" : {
+                
+              }
+            }
+          },
+          "2" : {
+            "position" : {
+              "x" : 2,
+              "y" : 8
+            },
+            "direction" : {
+              "Up" : {
+                
+              }
+            }
+          },
+          "3" : {
+            "position" : {
+              "x" : 4,
+              "y" : 8
+            },
+            "direction" : {
+              "Up" : {
+                
+              }
+            }
+          }
+        },
+        "walls" : [
+          {
+            "position" : {
+              "x" : 4,
+              "y" : 3
+            },
+            "direction" : {
+              "Down" : {
+                
+              }
+            }
+          },
+          {
+            "position" : {
+              "x" : 4,
+              "y" : 3
+            },
+            "direction" : {
+              "Right" : {
+                
+              }
+            }
+          },
+          {
+            "position" : {
+              "x" : 5,
+              "y" : 3
+            },
+            "direction" : {
+              "Down" : {
+                
+              }
+            }
+          }
+        ]
+      },
+      "robots" : {
+        "player 1" : {
+          "position" : {
+            "x" : 5,
+            "y" : 8
+          },
+          "direction" : {
+            "Right" : {
+              
+            }
+          }
+        },
+        "player 2" : {
+          "position" : {
+            "x" : 0,
+            "y" : 8
+          },
+          "direction" : {
+            "Left" : {
+              
+            }
+          }
+        }
+      },
+      "robotActions" : {
+        
+      }
+    }
+  }
+}

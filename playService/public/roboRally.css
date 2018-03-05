@@ -1,0 +1,51 @@
+table#game{
+    border-collapse:collapse;
+}
+
+.tile{
+    width: 50px;
+    height: 50px;
+    background: #ccc;
+    border: 1px;
+    text-align: center;
+    font-size: 30px;
+    border-bottom: 5px solid white;
+    border-right: 5px solid white;
+    padding: 0px;
+}
+
+.wall-down{
+    border-bottom: 5px solid #555;
+}
+
+.wall-right{
+    border-right: 5px solid #555;
+}
+
+.target-tile {
+    background: green;
+}
+
+.target-tile:before{
+    color: white;
+    content: "T";
+}
+
+.beacon-tile {
+    background: blue;
+}
+
+.beacon-tile:before {
+    color: white;
+    content: "B";
+}
+
+.robot{
+    background: red;
+    transition: left 2s;
+    transition: right 2s;
+}
+
+.robot:before{
+    content: "R";
+}

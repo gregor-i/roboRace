@@ -1,0 +1,26 @@
+@import gameLogic.GameScenario
+@import gameLogic.Position
+@import gameLogic.Wall
+@import gameLogic.Right
+@import gameLogic.Down
+
+@(scenario: GameScenario)
+
+<table id="game">
+    @for(y <- 0 until scenario.height){
+        <tr>
+        @for(x <- 0 until scenario.width) {
+            <td class="tile
+                @if(scenario.walls.contains(Wall(Position(x, y), Right))) { wall-right }
+                @if(scenario.walls.contains(Wall(Position(x, y), Down))) { wall-down }
+                @if(scenario.beaconPosition == Position(x, y)){ beacon-tile }
+                @if(scenario.targetPosition == Position(x, y)){ target-tile }
+"
+                title="@x, @y"
+                id="tile_@{x}_@{y}"
+            >
+            </td>
+        }
+        </tr>
+    }
+</table>
