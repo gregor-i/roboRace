@@ -1,5 +1,8 @@
 var state;
-var player = document.body.getAttribute("player");
+//var player = document.body.getAttribute("player");
+
+function start(){
+}
 
 function loadGameState() {
     return fetch("/api/game/default")
@@ -12,7 +15,7 @@ function loadGameState() {
 loadGameState().then(draw)
 
 
-var exampleSocket = new WebSocket("ws://" + (document.location.host) + "/events/default");
+var exampleSocket = new WebSocket("ws://" + (document.location.host) + "/api/events/default");
 
 function placePiece(b, x, y, piece) {
     b.cell([y, x]).place(piece.clone())
