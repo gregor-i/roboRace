@@ -1,8 +1,7 @@
 package gameLogic
-package command
+package gameUpdate
 
 import gameLogic.action.Action
-import gameLogic.eventLog._
 
 sealed trait Command extends GameUpdate {
   def apply(gameState: GameState): LoggedGameState
@@ -19,7 +18,7 @@ sealed trait FoldingCommand extends Command {
 
 case class DefineScenario(scenario: GameScenario) extends FoldingCommand{
   override def ifNotDefined: GameNotDefined.type => LoggedGameState =
-    _ => GameNotStarted(scenario, Nil).log(GameScenarioDefined(scenario))
+    _ => GameNotStarted(scenario, Nil).log(CommandAccepted(this))
 }
 
 case class RegisterForGame(playerName: String) extends FoldingCommand {

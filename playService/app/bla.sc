@@ -1,7 +1,7 @@
 import java.io.FileWriter
 
 import gameLogic._
-import gameLogic.command.DefineScenario
+import gameLogic.gameUpdate.DefineScenario
 import gameLogic.{GameNotDefined, GameState}
 import io.circe.generic.auto._
 import io.circe.parser._

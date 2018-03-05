@@ -1,7 +1,11 @@
 package gameLogic.action
 
 sealed trait Action
-case object MoveForward extends Action
-case object MoveBackward extends Action
-case object TurnRight extends Action
-case object TurnLeft extends Action
+
+sealed trait TurnAction extends Action
+sealed trait MoveAction extends Action
+
+case object MoveForward extends MoveAction
+case object MoveBackward extends MoveAction
+case object TurnRight extends TurnAction
+case object TurnLeft extends TurnAction

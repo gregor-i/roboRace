@@ -1,16 +1,17 @@
+package gameLogic
+
 import gameLogic.action.MoveForward
-import gameLogic.{GameRunning, GameScenario, GameState, Position, Robot, Up}
-import gameLogic.command.{DefineNextAction, RegisterForGame, StartGame}
-import gameLogic.eventLog.CommandAccepted
+import gameLogic.gameUpdate.{DefineNextAction, DefineScenario, RegisterForGame, StartGame}
 import gameLogic.processor.Processor
 import org.scalatest.{FunSuite, Matchers}
 
 class GameSpec extends FunSuite with Matchers {
 
   private val startGameActions = Seq(
+    DefineScenario(GameScenario.default),
     RegisterForGame(playerName = "player 1"),
     RegisterForGame(playerName = "player 2"),
-    StartGame(GameScenario.default)
+    StartGame
   )
 
   private val cycle0State = GameRunning(cycle = 0,

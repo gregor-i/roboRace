@@ -5,8 +5,8 @@ import javax.inject.{Inject, Singleton}
 import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.stream.Materializer
 import akka.util.Timeout
-import gameLogic.command.Command
-import gameLogic.eventLog.EventLog
+import gameLogic.EventLog
+import gameLogic.gameUpdate.Command
 import gameLogic.processor.Processor
 import io.circe.generic.auto._
 import io.circe.syntax._

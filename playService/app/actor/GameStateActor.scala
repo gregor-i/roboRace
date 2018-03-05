@@ -3,7 +3,7 @@ package actor
 import actor.GameStateActor._
 import akka.actor.{Actor, ActorRef}
 import gameLogic.{GameNotDefined, GameState}
-import gameLogic.command.Command
+import gameLogic.gameUpdate.Command
 import gameLogic.processor.Processor
 import play.api.Logger
 

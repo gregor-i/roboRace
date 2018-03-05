@@ -1,7 +1,7 @@
 package gameLogic
 
 import gameLogic.action.Action
-import gameLogic.command.{RegisterForGame, StartGame}
+import gameLogic.gameUpdate.{RegisterForGame, StartGame}
 import gameLogic.processor.Processor
 
 sealed trait GameState {

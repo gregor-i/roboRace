@@ -1,10 +1,9 @@
 package gameLogic
 package processor
 
-import gameLogic.command.{Command, Cycle}
-import gameLogic.eventLog.{Logged, LoggedSyntax}
+import gameLogic.gameUpdate.{Command, Cycle}
 
-object Processor extends LoggedSyntax {
+object Processor {
   def apply(gameState: GameState)(commands: Seq[Command]): LoggedGameState =
     commands.foldLeft[LoggedGameState](Logged.pure(gameState)){
       (state, command) =>
