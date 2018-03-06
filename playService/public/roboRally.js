@@ -1,13 +1,16 @@
 var state;
 var player;
+var source;
 
-function start(){
-    player = document.body.getAttribute("player");
-    loadGameState().then(draw)
-}
+document.addEventListener("DOMContentLoaded", start)
 
-function animation(json){
+setTimeout(loadGameState, 100)
 
+function start() {
+  player = document.body.getAttribute("player");
+  loadGameState().then(draw)
+  source = new EventSource("/api/events/default");
+  source.onmessage = eventHandler
 }
 
 function loadGameState() {
@@ -17,9 +20,6 @@ function loadGameState() {
         .then(() => console.log("loaded state from server"))
         .catch(error => console.log(error))
 }
-
-var source = new EventSource("/api/events/default");
-source.onmessage = eventHandler
 
 function sendCommand(command) {
     fetch("/api/game/default", {
@@ -32,10 +32,8 @@ function eventHandler(event) {
     var json = JSON.parse(event.data);
     console.log("event from server", json);
     document.getElementById('eventLog').innerHTML += ("<li>"+ JSON.stringify(json) +"</li>")
-//    if(json.PlayerActionsExecuted)
-//        loadGameState().then(draw);
-    if(json.RobotPositionTransition)
-        animation(json)
+    if(json.PlayerActionsExecuted)
+        loadGameState().then(draw);
 }
 
 function defineGlobalState(s) {
@@ -50,15 +48,29 @@ function draw() {
 function drawState() {
     var scenario = state.GameRunning.scenario
 
-    state.GameRunning.players.forEach((player, index) => {
+      state.GameRunning.players.forEach((player, index) => {
         var robot = state.GameRunning.robots[player]
-        var element = document.getElementById("robot_"+player);
-        if(!element)
-            document.getElementById("game").innerHTML += "<robot id='robot_"+player+"'></robot>"
-        element = document.getElementById("robot_"+player);
+        var element = document.getElementById("robot_" + player);
+
+        var tile = document.getElementById("tile_" + (robot.position.x) + "_" + (robot.position.y));
+
+        if (!element)
+          document.getElementById("game").innerHTML += "<robot id='robot_" + player + "' class='tile'>" + index + "</robot>"
+        element = document.getElementById("robot_" + player);
         element.className = ''
-        element.classList.add('direction_'+Object.keys(robot.direction))
-    })
+        element.classList.add('direction_' + Object.keys(robot.direction))
+        element.tile = JSON.stringify(robot)
+
+        if (tile) {
+          var rect = tile.getBoundingClientRect()
+          element.style.top = rect.top + "px"
+          element.style.left = rect.left + "px"
+          element.style.width = rect.width + "px"
+          element.style.height = rect.height + "px"
+        } else {
+          console.log("tile not found")
+        }
+     })
 }
 
 function drawActionButtons() {

@@ -83,15 +83,26 @@ object Cycle{
   }
 
   private def environmentEffects(game: GameRunning): Logged[GameRunning] = {
-    val robotsOutsideTheBoard = game.robots.filter{
-      case (player, robot) => robot.position.x >= game.scenario.width ||
+    def resetRobot(player: String, robot: Robot)(robots: Robots): Logged[Robots] = {
+      val index = game.players.zipWithIndex.find(_._1 == player).get._2
+      val initial = game.scenario.initialRobots(index)
+      for {
+        clearedInitial <- pushRobots(initial.position, initial.direction, robots)
+        resettedFallen <- (clearedInitial + (player -> initial)).log(RobotReset(player, robot, initial))
+      } yield resettedFallen
+    }
+
+    val actions = game.robots.filter {
+      case (_, robot) => robot.position.x >= game.scenario.width ||
         robot.position.x < 0 ||
         robot.position.y >= game.scenario.height ||
         robot.position.y < 0
+    }.map { case (player, robot) =>
+      resetRobot(player, robot)(_)
     }
-    // todo: actually move the robots to their start position.
-    if(robotsOutsideTheBoard.nonEmpty)
-      println("the following robots fell from the board: " + robotsOutsideTheBoard.keySet)
-    Logged.pure(game)
+
+    for {
+      updatedRobots <- Logged.flatMapFold[Robots, EventLog](Logged.pure(game.robots))(actions)
+    } yield game.copy(robots = updatedRobots)
   }
 }

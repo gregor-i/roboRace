@@ -10,15 +10,18 @@
     @for(y <- 0 until scenario.height){
         <tr>
         @for(x <- 0 until scenario.width) {
-            <td class="tile
+            <td class="cell
                 @if(scenario.walls.contains(Wall(Position(x, y), Right))) { wall-right }
                 @if(scenario.walls.contains(Wall(Position(x, y), Down))) { wall-down }
-                @if(scenario.beaconPosition == Position(x, y)){ beacon-tile }
-                @if(scenario.targetPosition == Position(x, y)){ target-tile }
-"
-                title="@x, @y"
-                id="tile_@{x}_@{y}"
-            >
+            ">
+                <tile
+                    class="tile
+                        @if(scenario.beaconPosition == Position(x, y)){ beacon-tile }
+                        @if(scenario.targetPosition == Position(x, y)){ target-tile }
+                    "
+                    id="tile_@{x}_@{y}"
+                    title="@x, @y"
+                ></tile>
             </td>
         }
         </tr>

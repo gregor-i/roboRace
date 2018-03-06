@@ -15,6 +15,7 @@ case class RobotAction(playerName: String, action: Action) extends EventLog
 case class RobotPositionTransition(playerName: String, from: Position, to: Position) extends EventLog
 case class RobotDirectionTransition(playerName: String, from: Direction, to: Direction) extends EventLog
 case class RobotMovementBlocked(playerName: String, position: Position, direction: Direction) extends EventLog
+case class RobotReset(playerName: String, from: Robot, to: Robot) extends EventLog
 
 case object AllPlayerDefinedActions extends EventLog
 case class PlayerActionsExecuted(nextCycle: Int) extends EventLog

@@ -1,29 +1,37 @@
 table#game{
     border-collapse:collapse;
+    position: relative;
 }
 
-.tile{
+.cell{
     width: 50px;
     height: 50px;
-    background: #ccc;
-    border: 1px;
     text-align: center;
     font-size: 30px;
+    border-top: 0;
+    border-left: 0;
     border-bottom: 5px solid white;
     border-right: 5px solid white;
-    padding: 0px;
+    padding: 0;
+    background: #ccc;
 }
 
-.wall-down{
+.cell.wall-down{
     border-bottom: 5px solid #555;
 }
 
-.wall-right{
+.cell.wall-right{
     border-right: 5px solid #555;
 }
 
 .target-tile {
     background: green;
+}
+
+.tile{
+    width:100%;
+    height:100%;
+    display: block;
 }
 
 .target-tile:before{
@@ -40,12 +48,28 @@ table#game{
     content: "B";
 }
 
-.robot{
+robot{
     background: red;
-    transition: left 2s;
-    transition: right 2s;
+    display: table-cell;
+    position: absolute;
+    height: 50px;
+    width: 50px;
+    transition: left 2s, top 2s, transform 2s;
 }
 
-.robot:before{
-    content: "R";
+robot.direction_Up{
+    transform: rotate(0deg);
+}
+
+robot.direction_Right{
+    transform: rotate(90deg);
+}
+
+
+robot.direction_Down{
+    transform: rotate(180deg);
+}
+
+robot.direction_Left{
+    transform: rotate(270deg);
 }
