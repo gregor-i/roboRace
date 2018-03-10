@@ -11,6 +11,7 @@ case class GameStateTransition(oldState: GameState, newState: GameState) extends
 
 case class GameScenarioDefined(scenario: GameScenario) extends EventLog
 
+case class NextRobotForActionDefined(playerName: String) extends EventLog
 case class RobotAction(playerName: String, action: Action) extends EventLog
 case class RobotPositionTransition(playerName: String, from: Position, to: Position) extends EventLog
 case class RobotDirectionTransition(playerName: String, from: Direction, to: Direction) extends EventLog

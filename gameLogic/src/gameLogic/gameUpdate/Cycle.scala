@@ -7,27 +7,64 @@ object Cycle{
   def apply(gameState: GameState): Logged[GameState] = gameState match {
     case g: GameRunning if g.robotActions.keySet == g.players.toSet =>
       for {
-        game <- g.log(AllPlayerDefinedActions)
-        playerActions = g.players.map { player =>
-          val robotAction = g.robotActions(player)
-          applyAction(player, robotAction)(_)
-        }
-        afterPlayerActions <- Logged.flatMapFold(Logged.pure(game))(playerActions)
-        nextCycle <- afterPlayerActions.copy(cycle = g.cycle + 1, robotActions = Map.empty).log(PlayerActionsExecuted(game.cycle + 1))
+        _ <- ().log(AllPlayerDefinedActions)
+        afterPlayerActions <- execAllActions(g)
+        nextCycle <- afterPlayerActions.copy(cycle = g.cycle + 1, robotActions = Map.empty).log(PlayerActionsExecuted(g.cycle + 1))
       } yield nextCycle
 
     case _ => Logged.pure(gameState)
   }
 
-  private def applyAction(player: String, action: Action)(game: GameRunning): Logged[GameRunning] =
+  private def execAllActions(gameRunning: GameRunning): Logged[GameRunning] = {
+    nextPlayer(gameRunning) match {
+      case Some(nextPlayer) => for{
+        _ <- ().log(NextRobotForActionDefined(nextPlayer))
+        nextState <- applyAction(gameRunning, nextPlayer)
+      } yield nextState
+      case None => Logged.pure(gameRunning)
+    }
+  }
+
+  private def nextPlayer(gameState: GameRunning): Option[String] = {
+    val beacon = gameState.scenario.beaconPosition
+
+    def distance(position: Position): Double = {
+      val dx = position.x - beacon.x
+      val dy = position.y - beacon.y
+      Math.sqrt(dx * dx + dy * dy)
+    }
+
+    def angle(position: Position): Double = {
+      val dx = position.x - beacon.x
+      val dy = position.y - beacon.y
+      Math.atan2(dx, dy)
+    }
+
+    def distanceAndPosition(position: Position): (Double, Double) = (distance(position), angle(position))
+
+    if (gameState.robotActions.isEmpty) {
+      None
+    } else {
+      Some((for {
+        player <- gameState.players
+        action <- gameState.robotActions.get(player)
+      } yield player)
+        .minBy(player => distanceAndPosition(gameState.robots(player).position))
+      )
+    }
+  }
+
+  private def applyAction(game: GameRunning, player: String): Logged[GameRunning] = {
+    val action = game.robotActions(player)
     for {
       robot <- game.robots(player).log(RobotAction(player, action))
-      afterAction <- action match {
+      afterAction <- (action match {
         case turn: TurnAction => turnAction(player, robot, turn, game)
         case move: MoveAction => moveAction(player, robot, move, game)
-      }
+      }).map(_.copy(robotActions = game.robotActions - player))
       afterEffects <- environmentEffects(afterAction)
     } yield afterEffects
+  }
 
   private def turnAction(player: String, robot: Robot, action: TurnAction, game: GameRunning): Logged[GameRunning] = {
     val nextDirection = action match {
