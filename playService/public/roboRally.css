@@ -1,6 +1,5 @@
 table#game{
     border-collapse:collapse;
-    position: relative;
 }
 
 .cell{
@@ -55,6 +54,10 @@ robot{
     height: 50px;
     width: 50px;
     transition: left 2s, top 2s, transform 2s;
+
+    font-size: 30px;
+    color: white;
+    text-align: center;
 }
 
 robot.direction_Up{

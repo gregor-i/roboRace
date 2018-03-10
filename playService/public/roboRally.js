@@ -1,10 +1,11 @@
 var state;
 var player;
 var source;
+var animationQueue = []
+var playingAnimation = null
 
 document.addEventListener("DOMContentLoaded", start)
 
-setTimeout(loadGameState, 100)
 
 function start() {
   player = document.body.getAttribute("player");
@@ -16,7 +17,7 @@ function start() {
 function loadGameState() {
     return fetch("/api/game/default")
         .then(x => x.json())
-        .then(defineGlobalState)
+        .then(s => {state = s})
         .then(() => console.log("loaded state from server"))
         .catch(error => console.log(error))
 }
@@ -30,47 +31,73 @@ function sendCommand(command) {
 
 function eventHandler(event) {
     var json = JSON.parse(event.data);
-    console.log("event from server", json);
+    // console.log("event from server", json);
     document.getElementById('eventLog').innerHTML += ("<li>"+ JSON.stringify(json) +"</li>")
-    if(json.PlayerActionsExecuted)
-        loadGameState().then(draw);
+    /*if(json.PlayerActionsExecuted)
+        loadGameState().then(draw);*/
+    if(json.RobotDirectionTransition || json.RobotPositionTransition)
+        pushAnimation(json);
+    if(json.PlayerActionsExecuted) {
+        state.GameRunning.cycle = json.PlayerActionsExecuted.nextCycle;
+        drawActionButtons();
+    }
 }
 
-function defineGlobalState(s) {
-    state = s;
+function pushAnimation(animation) {
+    animationQueue.push(animation)
+    triggerAnimation()
 }
+
+function triggerAnimation() {
+    if (animationQueue.length > 0 && !playingAnimation) {
+        playingAnimation = animationQueue.shift()
+        if (playingAnimation.RobotDirectionTransition) {
+            state.GameRunning.robots[playingAnimation.RobotDirectionTransition.playerName].direction = playingAnimation.RobotDirectionTransition.to
+        } else if (playingAnimation.RobotPositionTransition) {
+            state.GameRunning.robots[playingAnimation.RobotPositionTransition.playerName].position = playingAnimation.RobotPositionTransition.to
+        }
+        drawRobots()
+        setTimeout(clearRunningAnimation, 2000)
+    }
+}
+
+function clearRunningAnimation(){
+    playingAnimation = null;
+    triggerAnimation();
+}
+
 
 function draw() {
-    drawState();
+    drawRobots();
     drawActionButtons();
 }
 
-function drawState() {
-    var scenario = state.GameRunning.scenario
+function drawRobots() {
+    var scenario = state.GameRunning.scenario;
 
-      state.GameRunning.players.forEach((player, index) => {
-        var robot = state.GameRunning.robots[player]
+    state.GameRunning.players.forEach(function (player, index) {
+        var robot = state.GameRunning.robots[player];
         var element = document.getElementById("robot_" + player);
 
-        var tile = document.getElementById("tile_" + (robot.position.x) + "_" + (robot.position.y));
-
         if (!element)
-          document.getElementById("game").innerHTML += "<robot id='robot_" + player + "' class='tile'>" + index + "</robot>"
-        element = document.getElementById("robot_" + player);
-        element.className = ''
-        element.classList.add('direction_' + Object.keys(robot.direction))
-        element.tile = JSON.stringify(robot)
+            document.getElementById("game").innerHTML += "<robot id='robot_" + player + "' class='tile'>" + (index + 1) + "</robot>";
 
+        element = document.getElementById("robot_" + player);
+        element.className = '';
+        element.classList.add('direction_' + Object.keys(robot.direction));
+        element.tile = JSON.stringify(robot);
+
+        var tile = document.getElementById("tile_" + (robot.position.x) + "_" + (robot.position.y));
         if (tile) {
-          var rect = tile.getBoundingClientRect()
-          element.style.top = rect.top + "px"
-          element.style.left = rect.left + "px"
-          element.style.width = rect.width + "px"
-          element.style.height = rect.height + "px"
+            var rect = tile.getBoundingClientRect();
+            element.style.top = rect.top + "px";
+            element.style.left = rect.left + "px";
+            element.style.width = rect.width + "px";
+            element.style.height = rect.height + "px";
         } else {
-          console.log("tile not found")
+            console.log("tile not found");
         }
-     })
+    })
 }
 
 function drawActionButtons() {
@@ -90,7 +117,7 @@ function drawActionButtons() {
     var innerHtml = ""
     state.GameRunning.players.forEach((player, index) => {
         innerHtml += "<tr>" +
-        "<td>" + player + "</td>"+
+        "<td>" + player + "(" +(index+1) + ")" + "</td>"+
         "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'MoveForward') + ")'>MoveForward</button></td>"+
         "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'MoveBackward') + ")'>MoveBackward</button></td>"+
         "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'TurnRight') + ")'>TurnRight</button></td>"+

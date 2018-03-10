@@ -48,6 +48,7 @@ case object StartGame extends FoldingCommand {
 case class DefineNextAction(player: String, cycle: Int, action: Action) extends FoldingCommand {
   override def ifRunning: GameRunning => LoggedGameState = {
     case g: GameRunning if g.cycle != cycle => g.log(CommandRejected(this, WrongCycle))
+    case g: GameRunning if !g.players.contains(player) => g.log(CommandRejected(this, PlayerNotFound))
     case g: GameRunning => g.copy(robotActions = g.robotActions + (player -> action)).log(CommandAccepted(this))
   }
 }

@@ -25,4 +25,5 @@ case object PlayerAlreadyRegistered extends RejectionReason
 case object NoPlayersRegistered extends RejectionReason
 case object TooMuchPlayersRegistered extends RejectionReason
 case object WrongCycle extends RejectionReason
+case object PlayerNotFound extends RejectionReason
 case object WrongState extends RejectionReason
