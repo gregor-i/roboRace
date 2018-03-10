@@ -1,13 +1,15 @@
 package controller
 
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
 import akka.actor.{Actor, ActorRef, ActorSystem}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{BroadcastHub, Keep, MergeHub, Source}
-import gameLogic.EventLog
+import gameLogic.{EventLog, GameNotDefined, GameState}
 import gameLogic.gameUpdate.Command
 import gameLogic.processor.Processor
+import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 import play.api.http.ContentTypes
@@ -23,18 +25,27 @@ class GameController @Inject()(repo: GameRepository)
                               (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
   extends InjectedController with Circe {
 
-  private val id = "default"
-
   private[this] val (sink, source) =
     MergeHub.source[String](perProducerBufferSize = 16)
       .toMat(BroadcastHub.sink(bufferSize = 256))(Keep.both)
       .run()
 
-  def state() = Action{
-    Ok(repo.get("default").asJson)
+  def state(id: String) = Action{
+    Ok(repo.get(id).asJson)
   }
 
-  def sendCommand() = Action(circe.tolerantJson[Command]) { request =>
+  def create() = Action {
+    val id = UUID.randomUUID().toString
+    repo.save(id, GameNotDefined)
+    Ok(Json.fromString(id))
+  }
+
+  def delete(id: String) = Action {
+    repo.delete(id)
+    Ok
+  }
+
+  def sendCommand(id: String) = Action(circe.tolerantJson[Command]) { request =>
     repo.get(id) match{
       case Some(gameState) =>
         val logged = Processor(gameState)(Seq(request.body))
@@ -45,7 +56,7 @@ class GameController @Inject()(repo: GameRepository)
     }
   }
 
-  def sse = Action {
+  def sse(id: String) = Action {
     Ok.chunked(source via EventSource.flow).as(ContentTypes.EVENT_STREAM)
   }
 }

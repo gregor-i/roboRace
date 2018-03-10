@@ -17,6 +17,7 @@ class GameRepository {
   def get(id: String): Option[GameState] = read().get(id)
   def list(): Seq[(String, GameState)] = read().toSeq
   def save(id: String, gameState: GameState): Unit = write(read() + (id -> gameState))
+  def delete(id: String) : Unit = write(read() - id)
 
   if(get("default").isEmpty)
     save("default", GameNotDefined)

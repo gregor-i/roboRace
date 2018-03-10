@@ -1,11 +1,14 @@
 #API
-GET         /api/game/default                   controller.GameController.state()
-POST        /api/game/default                   controller.GameController.sendCommand()
-GET         /api/events/default                 controller.GameController.sse()
+POST          /api/games                        controller.GameController.create()
+GET           /api/games/:id                    controller.GameController.state(id:String)
+DELETE        /api/games/:id                    controller.GameController.delete(id: String)
+
+POST          /api/games/:id/commands           controller.GameController.sendCommand(id: String)
+GET           /api/games/:id/events             controller.GameController.sse(id: String)
 
 #Frontend
-GET         /                               controller.FrontendController.index()
-GET         /game/default                   controller.FrontendController.lobby()
-GET         /game/default/player/:player    controller.FrontendController.game(player: String)
-GET         /roboRally.js                   controllers.Assets.at(file = "roboRally.js")
-GET         /roboRally.css                  controllers.Assets.at(file = "roboRally.css")
+GET           /                                 controller.FrontendController.index()
+GET           /games/:id/players/:player        controller.FrontendController.game(id: String, player: String)
+GET           /roboRally.js                     controllers.Assets.at(file = "roboRally.js")
+GET           /roboRally.css                    controllers.Assets.at(file = "roboRally.css")
+GET           /lobby.js                         controllers.Assets.at(file = "lobby.js")
