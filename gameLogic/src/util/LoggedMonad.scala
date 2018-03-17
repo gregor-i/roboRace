@@ -19,7 +19,7 @@ object LoggedMonad {
 }
 
 trait LoggedMonadSyntax {
-  implicit class EnrichAny[A](val a: A) {
+  implicit class EnrichAny[A](private val a: A) {
     def log[L](events: L*): LoggedMonad[A, L] = LoggedMonad(a, events)
   }
 }

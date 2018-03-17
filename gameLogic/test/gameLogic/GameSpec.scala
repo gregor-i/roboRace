@@ -1,6 +1,6 @@
 package gameLogic
 
-import gameLogic.action.MoveForward
+import gameLogic.action.{ActionSlots, MoveForward}
 import gameLogic.gameUpdate.{DefineNextAction, DefineScenario, RegisterForGame, StartGame}
 import gameLogic.processor.Processor
 import org.scalatest.{FunSuite, Matchers}
@@ -20,16 +20,16 @@ class GameSpec extends FunSuite with Matchers {
     scenario = GameScenario.default,
     robots = Map("player 1" -> Robot(Position(1, 8), Up), "player 2" -> Robot(Position(5, 8), Up)))
 
-  private val bothMoveForewardActions = Seq(
-    DefineNextAction("player 2", 0, MoveForward),
-    DefineNextAction("player 1", 0, MoveForward)
-  )
+  private val bothMoveForwardActions = for {
+    slot <- 0 until ActionSlots.actionsPerCycle
+    player <- Seq("player 1", "player 2")
+  } yield DefineNextAction(player, 0, slot, Some(MoveForward))
 
   private val cycle1State = GameRunning(cycle = 1,
     players = Seq("player 1", "player 2"),
     robotActions = Map.empty,
     scenario = GameScenario.default,
-    robots = Map("player 1" -> Robot(Position(1, 7), Up), "player 2" -> Robot(Position(5, 7), Up)))
+    robots = Map("player 1" -> Robot(Position(1, 3), Up), "player 2" -> Robot(Position(5, 3), Up)))
 
   test("start the game") {
     val protocoledState = Processor(GameState.initalState)(startGameActions)
@@ -38,9 +38,9 @@ class GameSpec extends FunSuite with Matchers {
   }
 
   test("players define their actions") {
-    val protocoledState = Processor(cycle0State)(bothMoveForewardActions)
+    val protocoledState = Processor(cycle0State)(bothMoveForwardActions)
     protocoledState.state shouldBe cycle1State
-    for (command <- bothMoveForewardActions)
+    for (command <- bothMoveForwardActions)
       protocoledState.events should contain(CommandAccepted(command))
   }
 

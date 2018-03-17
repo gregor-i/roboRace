@@ -11,7 +11,7 @@ case class GameStateTransition(oldState: GameState, newState: GameState) extends
 
 case class GameScenarioDefined(scenario: GameScenario) extends EventLog
 
-case class NextRobotForActionDefined(playerName: String) extends EventLog
+case class NextRobotForActionDefined(playerName: String, weights: Map[String, (Int, Double, Double)]) extends EventLog
 case class RobotAction(playerName: String, action: Action) extends EventLog
 case class RobotPositionTransition(playerName: String, from: Position, to: Position) extends EventLog
 case class RobotDirectionTransition(playerName: String, from: Direction, to: Direction) extends EventLog
@@ -28,3 +28,4 @@ case object TooMuchPlayersRegistered extends RejectionReason
 case object WrongCycle extends RejectionReason
 case object PlayerNotFound extends RejectionReason
 case object WrongState extends RejectionReason
+case object InvalidActionSlot extends RejectionReason

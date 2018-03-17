@@ -19,9 +19,6 @@ class GameRepository {
   def save(id: String, gameState: GameState): Unit = write(read() + (id -> gameState))
   def delete(id: String) : Unit = write(read() - id)
 
-  if(get("default").isEmpty)
-    save("default", GameNotDefined)
-
   private def file = new java.io.File("gameRepo.json")
   private def read(): Map[String, GameState] =
     Try {

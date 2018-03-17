@@ -5,7 +5,7 @@ import gameLogic.action._
 
 object Cycle{
   def apply(gameState: GameState): Logged[GameState] = gameState match {
-    case g: GameRunning if g.robotActions.keySet == g.players.toSet =>
+    case g: GameRunning if g.robotActions.keySet == g.players.toSet && g.robotActions.forall(_._2.allDefined) =>
       for {
         _ <- ().log(AllPlayerDefinedActions)
         afterPlayerActions <- execAllActions(g)
@@ -16,16 +16,19 @@ object Cycle{
   }
 
   private def execAllActions(gameRunning: GameRunning): Logged[GameRunning] = {
-    nextPlayer(gameRunning) match {
-      case Some(nextPlayer) => for{
-        _ <- ().log(NextRobotForActionDefined(nextPlayer))
-        nextState <- applyAction(gameRunning, nextPlayer)
-      } yield nextState
-      case None => Logged.pure(gameRunning)
-    }
+    for {
+      maybeNextPlayer <- calcNextPlayer(gameRunning)
+      nextState <- maybeNextPlayer match {
+        case Some(nextPlayer) => for {
+          afterAction <- applyAction(gameRunning, nextPlayer)
+          afterRecursion <- execAllActions(afterAction)
+        } yield afterRecursion
+        case None => Logged.pure(gameRunning)
+      }
+    } yield nextState
   }
 
-  private def nextPlayer(gameState: GameRunning): Option[String] = {
+  private def calcNextPlayer(gameState: GameRunning): Logged[Option[String]] = {
     val beacon = gameState.scenario.beaconPosition
 
     def distance(position: Position): Double = {
@@ -40,28 +43,30 @@ object Cycle{
       Math.atan2(dx, dy)
     }
 
-    def distanceAndPosition(position: Position): (Double, Double) = (distance(position), angle(position))
+    def emptiedSlots(actionSet: ActionSlots): Int = actionSet.actions.count(_.isEmpty)
 
-    if (gameState.robotActions.isEmpty) {
-      None
+    def nextPlayerWeight(player: String): (Int, Double, Double) = {
+      val position = gameState.robots(player).position
+      (emptiedSlots(gameState.robotActions(player)), distance(position), angle(position))
+    }
+
+    if (gameState.robotActions.forall(_._2.allEmpty)) {
+       None.log()
     } else {
-      Some((for {
-        player <- gameState.players
-        action <- gameState.robotActions.get(player)
-      } yield player)
-        .minBy(player => distanceAndPosition(gameState.robots(player).position))
-      )
+      val p = gameState.players.minBy(nextPlayerWeight)
+      Some(p).log(NextRobotForActionDefined(p, gameState.players.map(player => player -> nextPlayerWeight(player)).toMap))
     }
   }
 
   private def applyAction(game: GameRunning, player: String): Logged[GameRunning] = {
-    val action = game.robotActions(player)
+    val actionSlots = game.robotActions(player)
+    val (Some(action), index) = actionSlots.actions.zipWithIndex.find(_._1.isDefined).get
     for {
       robot <- game.robots(player).log(RobotAction(player, action))
       afterAction <- (action match {
         case turn: TurnAction => turnAction(player, robot, turn, game)
         case move: MoveAction => moveAction(player, robot, move, game)
-      }).map(_.copy(robotActions = game.robotActions - player))
+      }).map(_.copy(robotActions = game.robotActions + (player -> actionSlots.updated(index, None))))
       afterEffects <- environmentEffects(afterAction)
     } yield afterEffects
   }

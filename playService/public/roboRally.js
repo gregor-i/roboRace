@@ -105,31 +105,32 @@ function drawRobots() {
     }
 }
 
-function drawActionButtons() {
 
-    function action(player, cycle, action) {
-        var a = {}
-        a[action] = {}
-        return JSON.stringify({
-            "DefineNextAction": {
-                "player": player,
-                "cycle": cycle,
-                "action": a
-            }
-        });
+function actionCommand(action, slot) {
+    var a = {}
+    a[action] = {}
+    return sendCommand({
+        "DefineNextAction": {
+            "player": player,
+            "cycle": state.GameRunning.cycle,
+            "slot" : slot,
+            "action": a
+        }
+    });
+}
+
+function drawActionButtons() {
+     function actionSelect(slot){
+        return "<select onblur='actionCommand(this.value, "+slot+")'><option>null</option><option>MoveForward</option><option>MoveBackward</option><option>TurnRight</option><option>TurnLeft</option></select>"
     }
 
     var innerHtml = ""
     if (state.GameRunning) {
-        state.GameRunning.players.forEach(function(player, index){
+        for(var slot = 0; slot < 5; slot ++ )
             innerHtml += "<tr>" +
-            "<td>" + player + "(" + (index + 1) + ")" + "</td>" +
-            "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'MoveForward') + ")'>MoveForward</button></td>" +
-            "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'MoveBackward') + ")'>MoveBackward</button></td>" +
-            "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'TurnRight') + ")'>TurnRight</button></td>" +
-            "<td><button onclick='sendCommand(" + action(player, state.GameRunning.cycle, 'TurnLeft') + ")'>TurnLeft</button></td>" +
-            "</tr>"
-        })
+                "<td>slot: "+(slot+1)+"</td>" +
+                "<td>" + actionSelect(slot)+"</td>" +
+                "</tr>"
     }else if(state.GameNotStarted){
         innerHtml += "Game has not yet started."
     }
