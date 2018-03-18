@@ -41,6 +41,7 @@ case object StartGame extends FoldingCommand {
     case g => GameRunning(
       cycle = 0,
       players = g.playerNames,
+      finishedPlayers = Seq.empty,
       scenario = g.scenario,
       robots = g.playerNames.zipWithIndex.map { case (name, index) => name -> g.scenario.initialRobots(index) }.toMap,
       robotActions = Map.empty)

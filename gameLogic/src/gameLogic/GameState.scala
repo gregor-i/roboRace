@@ -21,11 +21,12 @@ case class GameNotStarted(scenario: GameScenario,
 
 case class GameRunning(cycle: Int,
                        players: Seq[String],
+                       finishedPlayers: Seq[PlayerFinished],
                        scenario: GameScenario,
                        robots: Map[String, Robot],
                        robotActions: Map[String, ActionSlots]) extends GameState
 
-case class GameFinished() extends GameState
+case class GameFinished(players: Seq[PlayerFinished]) extends GameState
 
 
 object GameState {

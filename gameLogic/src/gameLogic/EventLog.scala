@@ -18,6 +18,9 @@ case class RobotDirectionTransition(playerName: String, from: Direction, to: Dir
 case class RobotMovementBlocked(playerName: String, position: Position, direction: Direction) extends EventLog
 case class RobotReset(playerName: String, from: Robot, to: Robot) extends EventLog
 
+case class PlayerFinished(playerName: String, rank: Int, cycle: Int) extends EventLog
+case object AllPlayersFinished extends EventLog
+
 case object AllPlayerDefinedActions extends EventLog
 case class PlayerActionsExecuted(nextCycle: Int) extends EventLog
 

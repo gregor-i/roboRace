@@ -9,8 +9,12 @@ object Cycle{
       for {
         _ <- ().log(AllPlayerDefinedActions)
         afterPlayerActions <- execAllActions(g)
-        nextCycle <- afterPlayerActions.copy(cycle = g.cycle + 1, robotActions = Map.empty).log(PlayerActionsExecuted(g.cycle + 1))
-      } yield nextCycle
+        afterEffects <- ScenarioEffects.afterCycle(afterPlayerActions)
+        nextState <- afterEffects match {
+          case running if running.players.isEmpty => GameFinished(running.finishedPlayers).log(AllPlayersFinished)
+          case running => afterEffects.asInstanceOf[GameRunning].copy(cycle = g.cycle + 1).log(PlayerActionsExecuted(g.cycle + 1))
+        }
+      } yield nextState
 
     case _ => Logged.pure(gameState)
   }
@@ -67,7 +71,7 @@ object Cycle{
         case turn: TurnAction => turnAction(player, robot, turn, game)
         case move: MoveAction => moveAction(player, robot, move, game)
       }).map(_.copy(robotActions = game.robotActions + (player -> actionSlots.updated(index, None))))
-      afterEffects <- environmentEffects(afterAction)
+      afterEffects <- ScenarioEffects.afterAction(afterAction)
     } yield afterEffects
   }
 
@@ -88,22 +92,12 @@ object Cycle{
     }
     for {
       updatedRobots <- if (movementIsAllowed(game, robot.position, direction))
-        pushRobots(robot.position, direction, game.robots)
+        PushRobots(robot.position, direction, game.robots)
       else
         game.robots.log(RobotMovementBlocked(player, robot.position, direction))
     } yield game.copy(robots = updatedRobots)
   }
 
-  private def pushRobots(position: Position, direction: Direction, robots: Map[String, Robot]): Logged[Map[String, Robot]] =
-    robots.find(_._2.position == position) match {
-      case Some((player, robot)) =>
-        val nextPos  = robot.position.move(direction)
-        for {
-          pushedRobots <- pushRobots(position.move(direction), direction, robots)
-          nextRobotState <- robot.copy(position = nextPos).log(RobotPositionTransition(player, robot.position, nextPos))
-      } yield pushedRobots + (player -> nextRobotState)
-      case None => Logged.pure(robots)
-    }
 
   private def movementIsAllowed(game: GameRunning, position: Position, direction: Direction): Boolean = {
     val downWalls = game.scenario.walls.filter(_.direction == Down).map(_.position)
@@ -124,27 +118,4 @@ object Cycle{
       true
   }
 
-  private def environmentEffects(game: GameRunning): Logged[GameRunning] = {
-    def resetRobot(player: String, robot: Robot)(robots: Robots): Logged[Robots] = {
-      val index = game.players.zipWithIndex.find(_._1 == player).get._2
-      val initial = game.scenario.initialRobots(index)
-      for {
-        clearedInitial <- pushRobots(initial.position, initial.direction, robots)
-        resettedFallen <- (clearedInitial + (player -> initial)).log(RobotReset(player, robot, initial))
-      } yield resettedFallen
-    }
-
-    val actions = game.robots.filter {
-      case (_, robot) => robot.position.x >= game.scenario.width ||
-        robot.position.x < 0 ||
-        robot.position.y >= game.scenario.height ||
-        robot.position.y < 0
-    }.map { case (player, robot) =>
-      resetRobot(player, robot)(_)
-    }
-
-    for {
-      updatedRobots <- Logged.flatMapFold[Robots, EventLog](Logged.pure(game.robots))(actions)
-    } yield game.copy(robots = updatedRobots)
-  }
 }
