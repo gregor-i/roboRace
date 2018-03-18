@@ -59,20 +59,3 @@ robot{
     color: white;
     text-align: center;
 }
-
-robot.direction_Up{
-    transform: rotate(0deg);
-}
-
-robot.direction_Right{
-    transform: rotate(90deg);
-}
-
-
-robot.direction_Down{
-    transform: rotate(180deg);
-}
-
-robot.direction_Left{
-    transform: rotate(270deg);
-}

@@ -12,3 +12,4 @@ GET           /games/:id/players/:player        controller.FrontendController.ga
 GET           /roboRally.js                     controllers.Assets.at(file = "roboRally.js")
 GET           /roboRally.css                    controllers.Assets.at(file = "roboRally.css")
 GET           /lobby.js                         controllers.Assets.at(file = "lobby.js")
+GET           /favicon.ico                      controllers.Assets.at(file = "favicon.icon")

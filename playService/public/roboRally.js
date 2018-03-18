@@ -4,6 +4,7 @@ var player;
 var source;
 var animationQueue = []
 var playingAnimation = null
+var robotRotations = {}
 
 document.addEventListener("DOMContentLoaded", start)
 
@@ -18,7 +19,7 @@ function start() {
 function loadGameState() {
     return fetch("/api/games/"+game)
         .then(x => x.json())
-        .then(s => {state = s})
+        .then(initalizeState)
         .then(() => console.log("loaded state from server"))
         .catch(error => console.log(error))
 }
@@ -28,6 +29,24 @@ function sendCommand(command) {
         method: "POST",
         body: JSON.stringify(command)
     }).then(resp => console.log("sendCommand", command))
+}
+
+function initalizeState(s) {
+    state = s;
+    state.GameRunning.players.forEach(function (player, index) {
+        robotRotations[player] = nearestRotation(0, state.GameRunning.robots[player].direction)
+    })
+}
+
+function directionToRotation(direction) {
+    if(direction.Up)
+        return 0
+    else if(direction.Right)
+        return 1
+    else if(direction.Down)
+        return 2
+    else if(direction.Left)
+        return 3
 }
 
 function eventHandler(event) {
@@ -49,11 +68,37 @@ function pushAnimation(animation) {
     triggerAnimation()
 }
 
+function nearestRotation(currentRotation, newDirection){
+    var newRotation = directionToRotation(newDirection)
+    var c = (newRotation % 4 + 4) % 4
+    var ret1 = c +Math.floor(currentRotation /4)*4
+    var ret2 = c +Math.floor(currentRotation /4 -1)*4
+    var ret3 = c +Math.floor(currentRotation /4 +1)*4
+
+    var d1 = Math.abs(ret1 - currentRotation)
+    var d2 = Math.abs(ret2 - currentRotation)
+    var d3 = Math.abs(ret3 - currentRotation)
+
+    var ret
+    if(d1 <= d2 && d1 <= d3)
+        ret = ret1
+    else if(d2 <= d1 && d2 <= d3)
+        ret = ret2
+    else
+        ret = ret3
+
+    console.log(newRotation, currentRotation, [ret1, ret2, ret3], [d1, d2, d3], ret)
+    return ret
+}
+
 function triggerAnimation() {
     if (animationQueue.length > 0 && !playingAnimation) {
         playingAnimation = animationQueue.shift()
         if (playingAnimation.RobotDirectionTransition) {
-            state.GameRunning.robots[playingAnimation.RobotDirectionTransition.playerName].direction = playingAnimation.RobotDirectionTransition.to
+            robotRotations[playingAnimation.RobotDirectionTransition.playerName] =
+                nearestRotation(
+                    robotRotations[playingAnimation.RobotDirectionTransition.playerName],
+                    playingAnimation.RobotDirectionTransition.to)
         } else if (playingAnimation.RobotPositionTransition) {
             state.GameRunning.robots[playingAnimation.RobotPositionTransition.playerName].position = playingAnimation.RobotPositionTransition.to
         } else if (playingAnimation.RobotReset) {
@@ -98,6 +143,7 @@ function drawRobots() {
                 element.style.left = rect.left + "px";
                 element.style.width = rect.width + "px";
                 element.style.height = rect.height + "px";
+                element.style.transform = "rotate("+(robotRotations[player]*90)+"deg)"
             } else {
                 console.log("tile not found");
             }
