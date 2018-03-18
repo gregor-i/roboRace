@@ -55,7 +55,7 @@ function eventHandler(event) {
     document.getElementById('eventLog').innerHTML += ("<li>"+ JSON.stringify(json) +"</li>")
     /*if(json.PlayerActionsExecuted)
         loadGameState().then(draw);*/
-    if(json.RobotDirectionTransition || json.RobotPositionTransition || json.RobotReset)
+    if(json.RobotDirectionTransition || json.RobotPositionTransition || json.RobotReset || PlayerFinished)
         pushAnimation(json);
     if(json.PlayerActionsExecuted) {
         state.GameRunning.cycle = json.PlayerActionsExecuted.nextCycle;
@@ -103,9 +103,12 @@ function triggerAnimation() {
             state.GameRunning.robots[playingAnimation.RobotPositionTransition.playerName].position = playingAnimation.RobotPositionTransition.to
         } else if (playingAnimation.RobotReset) {
             state.GameRunning.robots[playingAnimation.RobotReset.playerName] = playingAnimation.RobotReset.to
+        } else if(playingAnimation.PlayerFinished) {
+            // todo
         }
+
         drawRobots()
-        setTimeout(clearRunningAnimation, 2000)
+        setTimeout(clearRunningAnimation, 1000)
     }
 }
 

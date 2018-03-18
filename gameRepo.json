@@ -1,153 +1,29 @@
 {
-  "default" : {
-    "GameRunning" : {
-      "cycle" : 5,
+  "bfcd9d1d-3459-420b-91d3-d7a0543d2abf" : {
+    "GameFinished" : {
       "players" : [
-        "player 1",
-        "player 2"
-      ],
-      "scenario" : {
-        "width" : 7,
-        "height" : 9,
-        "beaconPosition" : {
-          "x" : 3,
-          "y" : 8
-        },
-        "targetPosition" : {
-          "x" : 3,
-          "y" : 1
-        },
-        "initialRobots" : {
-          "4" : {
-            "position" : {
-              "x" : 0,
-              "y" : 8
-            },
-            "direction" : {
-              "Up" : {
-                
-              }
-            }
-          },
-          "5" : {
-            "position" : {
-              "x" : 6,
-              "y" : 8
-            },
-            "direction" : {
-              "Up" : {
-                
-              }
-            }
-          },
-          "1" : {
-            "position" : {
-              "x" : 5,
-              "y" : 8
-            },
-            "direction" : {
-              "Up" : {
-                
-              }
-            }
-          },
-          "0" : {
-            "position" : {
-              "x" : 1,
-              "y" : 8
-            },
-            "direction" : {
-              "Up" : {
-                
-              }
-            }
-          },
-          "2" : {
-            "position" : {
-              "x" : 2,
-              "y" : 8
-            },
-            "direction" : {
-              "Up" : {
-                
-              }
-            }
-          },
-          "3" : {
-            "position" : {
-              "x" : 4,
-              "y" : 8
-            },
-            "direction" : {
-              "Up" : {
-                
-              }
-            }
-          }
-        },
-        "walls" : [
-          {
-            "position" : {
-              "x" : 4,
-              "y" : 3
-            },
-            "direction" : {
-              "Down" : {
-                
-              }
-            }
-          },
-          {
-            "position" : {
-              "x" : 4,
-              "y" : 3
-            },
-            "direction" : {
-              "Right" : {
-                
-              }
-            }
-          },
-          {
-            "position" : {
-              "x" : 5,
-              "y" : 3
-            },
-            "direction" : {
-              "Down" : {
-                
-              }
-            }
-          }
-        ]
-      },
-      "robots" : {
-        "player 1" : {
-          "position" : {
-            "x" : 5,
-            "y" : 8
-          },
-          "direction" : {
-            "Right" : {
-              
-            }
-          }
-        },
-        "player 2" : {
-          "position" : {
-            "x" : 0,
-            "y" : 8
-          },
-          "direction" : {
-            "Left" : {
-              
-            }
-          }
+        {
+          "playerName" : "1",
+          "rank" : 1,
+          "cycle" : 1
         }
-      },
-      "robotActions" : {
-        
-      }
+      ]
+    }
+  },
+  "eba24e0f-f6d1-4661-8073-cd4f1fea315a" : {
+    "GameFinished" : {
+      "players" : [
+        {
+          "playerName" : "2",
+          "rank" : 1,
+          "cycle" : 2
+        },
+        {
+          "playerName" : "1",
+          "rank" : 2,
+          "cycle" : 3
+        }
+      ]
     }
   }
 }

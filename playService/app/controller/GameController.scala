@@ -3,12 +3,12 @@ package controller
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
 
-import akka.actor.{Actor, ActorRef, ActorSystem}
+import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.{BroadcastHub, Keep, MergeHub, Source}
-import gameLogic.{EventLog, GameNotDefined, GameState}
 import gameLogic.gameUpdate.Command
 import gameLogic.processor.Processor
+import gameLogic.{EventLog, GameNotDefined}
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._

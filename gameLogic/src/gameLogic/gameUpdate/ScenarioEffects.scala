@@ -61,7 +61,8 @@ object ScenarioEffects {
 
         game.copy(
           players = game.players.filter(_ != player),
-          finishedPlayers = game.finishedPlayers :+ playerFinished
+          finishedPlayers = game.finishedPlayers :+ playerFinished,
+          robots = game.robots - player
         ).log(playerFinished)
     }
   }
