@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "clone": "^2.1.1",
+    "es6-promise": "^4.1.1",
+    "snabbdom": "^0.7.0",
+    "union-type": "^0.4.0",
+    "whatwg-fetch": "^2.0.3"
+  },
+  "devDependencies": {
+    "browserify": "^14.4.0",
+    "fetch-mock": "^5.12.2",
+    "phantomjs": "^2.1.7",
+    "stringify": "^5.1.0",
+    "stylus": "^0.54.5",
+    "testem": "^1.18.3",
+    "uglify-js": "^3.0.27",
+    "wait-until-promise": "^1.0.0"
+  },
+  "scripts": {
+    "watch": "nodemon --watch . -e json,js,styl,svg --exec 'npm run build'",
+    "build": "npm run build-js && npm run build-css",
+    "build-js": "mkdir -p ../../public/js && ./node_modules/browserify/bin/cmd.js -t [ stringify --extensions [.svg] ] src/init.js  > ../public/robo-race.js",
+    "build-css": "mkdir -p ../../public/css && ./node_modules/stylus/bin/stylus src/index.styl -o ../public/robo-race.css",
+    "test": "./node_modules/testem/testem.js ci -p 0 -l Chrome"
+  }
+}

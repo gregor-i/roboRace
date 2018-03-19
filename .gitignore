@@ -3,6 +3,9 @@
 *.sc
 
 target/
-jsboard/
 
 .idea/
+
+node_modules/
+
+gameRepo.json

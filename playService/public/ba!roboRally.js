@@ -79,16 +79,12 @@ function nearestRotation(currentRotation, newDirection){
     var d2 = Math.abs(ret2 - currentRotation)
     var d3 = Math.abs(ret3 - currentRotation)
 
-    var ret
     if(d1 <= d2 && d1 <= d3)
-        ret = ret1
+      return ret1
     else if(d2 <= d1 && d2 <= d3)
-        ret = ret2
+      return ret2
     else
-        ret = ret3
-
-    console.log(newRotation, currentRotation, [ret1, ret2, ret3], [d1, d2, d3], ret)
-    return ret
+      return ret3
 }
 
 function triggerAnimation() {
@@ -170,7 +166,7 @@ function actionCommand(action, slot) {
 
 function drawActionButtons() {
      function actionSelect(slot){
-        return "<select onblur='actionCommand(this.value, "+slot+")'><option>null</option><option>MoveForward</option><option>MoveBackward</option><option>TurnRight</option><option>TurnLeft</option></select>"
+        return "<select oninput='actionCommand(this.value, "+slot+")'><option>null</option><option>MoveForward</option><option>MoveBackward</option><option>TurnRight</option><option>TurnLeft</option></select>"
     }
 
     var innerHtml = ""

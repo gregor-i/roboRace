@@ -9,8 +9,8 @@ GET           /api/games/:id/events             controller.GameController.sse(id
 #Frontend
 GET           /                                 controller.FrontendController.index()
 GET           /games/:id/players/:player        controller.FrontendController.game(id: String, player: String)
-GET           /roboRally.js                     controllers.Assets.at(file = "roboRally.js")
-GET           /roboRally.css                    controllers.Assets.at(file = "roboRally.css")
+GET           /roboRace.js                      controllers.Assets.at(file = "robo-race.js")
+GET           /roboRace.css                     controllers.Assets.at(file = "robo-race.css")
 GET           /lobby.js                         controllers.Assets.at(file = "lobby.js")
 GET           /favicon.ico                      controllers.Assets.at(file = "favicon.icon")
 GET           /default-scenario                 controller.FrontendController.defaultScenario()
