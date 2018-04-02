@@ -15,22 +15,22 @@ import repo.GameRepository
 
 import scala.concurrent.ExecutionContext
 
-class LobbyController @Inject()(repo: GameRepository)
+class LobbyController @Inject()(gameRepo: GameRepository)
                                (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
   extends InjectedController with Circe {
 
   def list() = Action {
-    Ok(repo.list().toMap.asJson)
+    Ok(gameRepo.list().toMap.asJson)
   }
 
   def create() = Action {
     val id = UUID.randomUUID().toString
-    repo.save(id, GameNotDefined)
+    gameRepo.save(id, GameNotDefined)
     Ok(Json.fromString(id))
   }
 
   def delete(id: String) = Action {
-    repo.delete(id)
+    gameRepo.delete(id)
     NoContent
   }
 }

@@ -5,7 +5,7 @@ import gameLogic.action._
 
 object Cycle{
   def apply(gameState: GameState): Logged[GameState] = gameState match {
-    case g: GameRunning if g.players.forall(player => g.robotActions(player).allDefined) =>
+    case g: GameRunning if g.players.forall(player => g.robotActions.get(player).exists(_.allDefined)) =>
       for {
         _ <- ().log(AllPlayerDefinedActions)
         afterPlayerActions <- execAllActions(g)
