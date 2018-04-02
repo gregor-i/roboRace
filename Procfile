@@ -1,0 +1,1 @@
+web: playService/target/universal/stage/bin/playService -Dhttp.port=${PORT}
