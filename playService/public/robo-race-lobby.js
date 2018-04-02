@@ -662,9 +662,10 @@ var patch = snabbdom.init([
 
 var render = require('./lobby/index')
 var service = require('./lobbyService')
+var actions = require('./lobbyActions')
 
 function Lobby(element, player) {
-    var init = function (player, games) {
+    function state(player, games) {
         return {
             player: player,
             games: games,
@@ -673,26 +674,13 @@ function Lobby(element, player) {
 
     function updateCallback(action) {
         console.log("updateCallback(", action, ")")
-    }
-
-    /*var updateCallback = function (action) {
-        var result = update(action, oldState)
-        Result.case({
-            Sync: function (newState) {
-                newState.error = null
-                main(newState, vnode)
-            },
-            Async: function (promise) {
-                promise.then(function (newState) {
-                    newState.error = null
-                    main(newState, vnode)
-                }).catch(function (err) {
-                    oldState.error = err
-                    main(oldState, vnode)
+        actions.apply(action)
+            .then(function () {
+                service.getAllGames().then(function (games) {
+                    main(state(player, games), element)
                 })
-            },
-        }, result)
-    }*/
+            })
+    }
 
     var node = element
     function main(oldState) {
@@ -701,8 +689,7 @@ function Lobby(element, player) {
     }
 
     service.getAllGames().then(function (games) {
-        var state = init(player, games)
-        main(state, element)
+        main(state(player, games), element)
     })
 
     return this
@@ -714,14 +701,37 @@ document.addEventListener('DOMContentLoaded', function (event) {
     new Lobby(container, player)
 })
 
-},{"./lobby/index":12,"./lobbyService":11,"snabbdom":7,"snabbdom/modules/class":4,"snabbdom/modules/eventlisteners":5,"snabbdom/modules/props":6}],11:[function(require,module,exports){
+},{"./lobby/index":13,"./lobbyActions":11,"./lobbyService":12,"snabbdom":7,"snabbdom/modules/class":4,"snabbdom/modules/eventlisteners":5,"snabbdom/modules/props":6}],11:[function(require,module,exports){
+var service = require('./lobbyService')
+
+function apply(action){
+    if(action.createGame)
+        return service.createGame()
+    else if(action.defineScenario)
+        return service.defineGame(action.defineScenario)
+    else if(action.joinGame)
+        return service.joinGame(action.joinGame, window.prompt("Player Name:", ""))
+    else if(action.startGame)
+        return service.startGame(action.startGame)
+    else if(action.deleteGame)
+        return service.deleteGame(action.deleteGame)
+    else
+        console.error("unknown action", action)
+}
+
+
+module.exports = {
+    apply: apply,
+}
+
+},{"./lobbyService":12}],12:[function(require,module,exports){
 function getAllGames() {
   return fetch("/api/games")
       .then(parseJson)
 }
 
 function sendCommand(gameId, command) {
-  return fetch("/api/games/" + game + "/commands", {
+  return fetch("/api/games/" + gameId + "/commands", {
     method: "POST",
     body: JSON.stringify(command)
   })
@@ -745,6 +755,10 @@ function joinGame(gameId, playerName) {
   return sendCommand(gameId, {RegisterForGame: {playerName: playerName}})
 }
 
+function startGame(gameId){
+  return sendCommand(gameId, {StartGame: {}})
+}
+
 function defineGame(gameId) {
   return fetch("/default-scenario")
       .then(parseJson)
@@ -755,14 +769,14 @@ function defineGame(gameId) {
 
 module.exports = {
   getAllGames: getAllGames,
-  sendCommand: sendCommand,
   createGame: createGame,
   deleteGame: deleteGame,
   joinGame: joinGame,
   defineGame: defineGame,
+  startGame: startGame,
 }
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var h = require('snabbdom/h').default
 
 function render(model, update) {

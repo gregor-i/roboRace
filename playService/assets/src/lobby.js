@@ -7,9 +7,10 @@ var patch = snabbdom.init([
 
 var render = require('./lobby/index')
 var service = require('./lobbyService')
+var actions = require('./lobbyActions')
 
 function Lobby(element, player) {
-    var init = function (player, games) {
+    function state(player, games) {
         return {
             player: player,
             games: games,
@@ -18,26 +19,13 @@ function Lobby(element, player) {
 
     function updateCallback(action) {
         console.log("updateCallback(", action, ")")
-    }
-
-    /*var updateCallback = function (action) {
-        var result = update(action, oldState)
-        Result.case({
-            Sync: function (newState) {
-                newState.error = null
-                main(newState, vnode)
-            },
-            Async: function (promise) {
-                promise.then(function (newState) {
-                    newState.error = null
-                    main(newState, vnode)
-                }).catch(function (err) {
-                    oldState.error = err
-                    main(oldState, vnode)
+        actions.apply(action)
+            .then(function () {
+                service.getAllGames().then(function (games) {
+                    main(state(player, games), element)
                 })
-            },
-        }, result)
-    }*/
+            })
+    }
 
     var node = element
     function main(oldState) {
@@ -46,8 +34,7 @@ function Lobby(element, player) {
     }
 
     service.getAllGames().then(function (games) {
-        var state = init(player, games)
-        main(state, element)
+        main(state(player, games), element)
     })
 
     return this

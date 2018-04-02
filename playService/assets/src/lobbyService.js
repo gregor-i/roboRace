@@ -4,7 +4,7 @@ function getAllGames() {
 }
 
 function sendCommand(gameId, command) {
-  return fetch("/api/games/" + game + "/commands", {
+  return fetch("/api/games/" + gameId + "/commands", {
     method: "POST",
     body: JSON.stringify(command)
   })
@@ -28,6 +28,10 @@ function joinGame(gameId, playerName) {
   return sendCommand(gameId, {RegisterForGame: {playerName: playerName}})
 }
 
+function startGame(gameId){
+  return sendCommand(gameId, {StartGame: {}})
+}
+
 function defineGame(gameId) {
   return fetch("/default-scenario")
       .then(parseJson)
@@ -38,9 +42,9 @@ function defineGame(gameId) {
 
 module.exports = {
   getAllGames: getAllGames,
-  sendCommand: sendCommand,
   createGame: createGame,
   deleteGame: deleteGame,
   joinGame: joinGame,
   defineGame: defineGame,
+  startGame: startGame,
 }
