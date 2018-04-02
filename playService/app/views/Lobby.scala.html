@@ -8,37 +8,11 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script type="text/javascript" src="/roboRace.js"></script>
+    <script type="text/javascript" src="/roboRaceLobby.js"></script>
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.css">
 </head>
 <body class="content container">
     <div id="robo-rally-lobby"></div>
-
-    <table class="table is-hoverable is-fullwidth">
-        <tr class="tr">
-            <th class="th">id</th>
-            <th class="th">state</th>
-            <th class="th">players</th>
-            <th class="th">actions</th>
-        </tr>
-    @for((id, game) <- games) {
-        <tr>
-            <td class="td">@id</td>
-            <td class="td">@game.getClass.getSimpleName.replaceAll("\\$", "")</td>
-            <td class="td">@game.fold[Seq[String]](_ => Seq.empty)(x => x.playerNames)(x => x.players)(_ => Seq.empty).map{player =>
-                <a href="/games/@id/players/@player">@player</a>}</td>
-            <td class="td">
-            @game match {
-                case g:GameNotDefined.type => {<button class="button is-primary" onclick="defineGame('@id')">Define Scenario</button>}
-                case g:GameNotStarted => {<button class="button is-primary" onclick="joinGame('@id')">Join Game</button> <button class="button is-primary" onclick="startGame('@id')">Start Game</button>}
-                case g:GameRunning => {}
-                case g:GameFinished => {}
-            }
-            <button class="button is-danger" onclick="deleteGame('@id')">Delete</button></td>
-        </tr>
-        }
-</table>
-<button class="button is-primary" onclick="newGame()">New Game</button>
 </body>
 </html>

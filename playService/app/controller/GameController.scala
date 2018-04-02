@@ -1,17 +1,14 @@
 package controller
 
-import java.util.UUID
-import javax.inject.{Inject, Singleton}
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.{BroadcastHub, Keep, MergeHub, Source}
+import gameLogic.EventLog
 import gameLogic.gameUpdate.Command
 import gameLogic.processor.Processor
-import gameLogic.{EventLog, GameNotDefined}
-import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
+import javax.inject.{Inject, Singleton}
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.libs.circe.Circe
@@ -32,17 +29,6 @@ class GameController @Inject()(repo: GameRepository)
 
   def state(id: String) = Action{
     Ok(repo.get(id).asJson)
-  }
-
-  def create() = Action {
-    val id = UUID.randomUUID().toString
-    repo.save(id, GameNotDefined)
-    Ok(Json.fromString(id))
-  }
-
-  def delete(id: String) = Action {
-    repo.delete(id)
-    Ok
   }
 
   def sendCommand(id: String) = Action(circe.tolerantJson[Command]) { request =>

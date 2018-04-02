@@ -2,7 +2,7 @@ var snabbdom = require('snabbdom')
 var render = require('./ui/index')
 // var update = require('./update')
 // var Result = require('./result')
-var service = require('./service')
+var service = require('./gameService')
 
 var patch = snabbdom.init([
   require('snabbdom/modules/eventlisteners').default,

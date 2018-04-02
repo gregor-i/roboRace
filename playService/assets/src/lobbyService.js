@@ -1,8 +1,3 @@
-function getState(gameId) {
-  return fetch("/api/games/" + gameId)
-      .then(parseJson)
-}
-
 function getAllGames() {
   return fetch("/api/games")
       .then(parseJson)
@@ -30,7 +25,7 @@ function deleteGame(gameId) {
 }
 
 function joinGame(gameId, playerName) {
-  return sendCommand(gameId, {"RegisterForGame": {"playerName": playerName}})
+  return sendCommand(gameId, {RegisterForGame: {playerName: playerName}})
 }
 
 function defineGame(gameId) {
@@ -41,9 +36,7 @@ function defineGame(gameId) {
       })
 }
 
-
 module.exports = {
-  getState: getState,
   getAllGames: getAllGames,
   sendCommand: sendCommand,
   createGame: createGame,

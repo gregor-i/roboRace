@@ -1,15 +1,16 @@
 #API
-POST          /api/games                        controller.GameController.create()
-GET           /api/games/:id                    controller.GameController.state(id:String)
-DELETE        /api/games/:id                    controller.GameController.delete(id: String)
+POST          /api/games                        controller.LobbyController.create()
+GET           /api/games                        controller.LobbyController.list()
+DELETE        /api/games/:id                    controller.LobbyController.delete(id: String)
 
+GET           /api/games/:id                    controller.GameController.state(id:String)
 POST          /api/games/:id/commands           controller.GameController.sendCommand(id: String)
 GET           /api/games/:id/events             controller.GameController.sse(id: String)
 
 #Frontend
 GET           /                                 controller.FrontendController.index()
 GET           /games/:id/players/:player        controller.FrontendController.game(id: String, player: String)
-GET           /roboRace.js                      controllers.Assets.at(file = "robo-race.js")
+GET           /roboRaceLobby.js                      controllers.Assets.at(file = "robo-race-lobby.js")
 GET           /roboRace.css                     controllers.Assets.at(file = "robo-race.css")
 GET           /lobby.js                         controllers.Assets.at(file = "lobby.js")
 GET           /favicon.ico                      controllers.Assets.at(file = "favicon.icon")
