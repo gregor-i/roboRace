@@ -3,9 +3,11 @@ var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
     require('snabbdom/modules/props').default,
     require('snabbdom/modules/class').default,
+    require('snabbdom/modules/class').default
 ])
 
-var render = require('./lobby/index')
+var renderLobby = require('./lobby/index')
+var renderGame = require('./game/index')
 var service = require('./lobby-service')
 var actions = require('./lobby-actions')
 
@@ -28,7 +30,11 @@ function Lobby(element, player) {
     var node = element
 
     function main(oldState) {
-        var vnode = render(oldState, updateCallback)
+        var vnode
+        if(oldState.selectedGame)
+            vnode = renderGame(oldState, updateCallback)
+        else
+            vnode = renderLobby(oldState, updateCallback)
         node = patch(node, vnode)
     }
 

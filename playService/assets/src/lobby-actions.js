@@ -24,7 +24,16 @@ function apply(oldState, action){
     else if(action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
         return Promise.resolve({player: action.definePlayerName, games: oldState.games})
-    }else
+    }else if(action.enterGame)
+        return Promise.resolve(Object.assign({}, oldState, {
+            selectedGame: action.enterGame
+        }))
+    else if(action.leaveGame){
+        var newState = Object.assign({}, oldState)
+        delete newState.selectedGame
+        return Promise.resolve(newState)
+    }
+    else
         console.error("unknown action", action)
 }
 

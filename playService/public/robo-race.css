@@ -1,8 +1,13 @@
-table#game{
+board{
     border-collapse:collapse;
+    display: table;
+}
+board row {
+    display: table-row;
 }
 
-.cell{
+board row cell{
+    display: table-cell;
     width: 50px;
     height: 50px;
     text-align: center;
@@ -15,34 +20,28 @@ table#game{
     background: #ccc;
 }
 
-.cell.wall-down{
+cell.wall-down{
     border-bottom: 5px solid #555;
 }
 
-.cell.wall-right{
+cell.wall-right{
     border-right: 5px solid #555;
 }
 
-.target-tile {
+.target-cell {
     background: green;
 }
 
-.tile{
-    width:100%;
-    height:100%;
-    display: block;
-}
-
-.target-tile:before{
+.target-cell:before{
     color: white;
     content: "T";
 }
 
-.beacon-tile {
-    background: blue;
-}
+.beacon-cell {
+     background: blue;
+ }
 
-.beacon-tile:before {
+.beacon-cell:before {
     color: white;
     content: "B";
 }
@@ -50,10 +49,10 @@ table#game{
 robot{
     background: red;
     display: table-cell;
-    position: absolute;
+    /*position: absolute;*/
     height: 50px;
     width: 50px;
-    transition: left 1s, top 1s, transform 1s, display 1s;
+    /*transition: left 1s, top 1s, transform 1s, display 1s;*/
 
     font-size: 30px;
     color: white;

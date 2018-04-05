@@ -653,14 +653,93 @@ exports.vnode = vnode;
 exports.default = vnode;
 
 },{}],10:[function(require,module,exports){
+var h = require('snabbdom/h').default
+
+function render(state, update) {
+    if (state.selectedGame && state.games[state.selectedGame] && state.games[state.selectedGame].GameRunning) {
+        var selectedGame = state.games[state.selectedGame].GameRunning
+        return h('div', [
+            h('h1', 'Game ' + state.selectedGame),
+            renderBoard(selectedGame),
+            renderRobots(selectedGame),
+            h('button.button.is-primary',
+                {on: {click: [update, state, {leaveGame: true}]}},
+                'Back to Lobby')
+        ])
+    } else
+        return h('div', h('h1', 'Game is not running'))
+}
+
+function renderBoard(game) {
+    var rows = range(game.scenario.height).map(function (r) {
+        return renderRow(game, r)
+    });
+    return h('board', rows)
+}
+
+function renderRow(game, row) {
+    var cells = range(game.scenario.width).map(function (c) {
+        return renderCell(game, row, c)
+    })
+    return h('row', cells)
+}
+
+function renderCell(game, row, column) {
+    function positionEqual(pos) {
+        return pos.x === column && pos.y === row
+    }
+
+    var isWallRight = false
+    var isWallDown = false
+    game.scenario.walls.forEach(function (wall) {
+        if (positionEqual(wall.position)) {
+            if (wall.direction.Down) isWallDown = true
+            if (wall.direction.Right) isWallRight = true
+        }
+    })
+
+    var isBeacon = positionEqual(game.scenario.beaconPosition)
+    var isTarget = positionEqual(game.scenario.targetPosition)
+
+    return h('cell', {
+        class: {
+            'wall-down': isWallDown,
+            'wall-right': isWallRight,
+            'beacon-cell': isBeacon,
+            'target-cell': isTarget
+        },
+        props: {title: row + ", " + column}
+    }, '')
+}
+
+
+function renderRobots(game) {
+    var robots = Object.keys(game.robots).map(function(key, index) {
+        var robot = game.robots[key]
+        return h('robot', {props:{title:JSON.stringify(robot)}});
+    })
+    return h('div', robots)
+}
+
+
+function range(n) {
+    return Array.apply(null, Array(n)).map(function (_, i) {
+        return i;
+    })
+}
+
+module.exports = render
+},{"snabbdom/h":1}],11:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
     require('snabbdom/modules/props').default,
     require('snabbdom/modules/class').default,
+    require('snabbdom/modules/class').default
 ])
 
-var render = require('./lobby/index')
+var renderLobby = require('./lobby/index')
+var renderGame = require('./game/index')
 var service = require('./lobby-service')
 var actions = require('./lobby-actions')
 
@@ -683,7 +762,11 @@ function Lobby(element, player) {
     var node = element
 
     function main(oldState) {
-        var vnode = render(oldState, updateCallback)
+        var vnode
+        if(oldState.selectedGame)
+            vnode = renderGame(oldState, updateCallback)
+        else
+            vnode = renderLobby(oldState, updateCallback)
         node = patch(node, vnode)
     }
 
@@ -700,7 +783,7 @@ document.addEventListener('DOMContentLoaded', function (event) {
     new Lobby(container, player)
 })
 
-},{"./lobby-actions":11,"./lobby-service":12,"./lobby/index":13,"snabbdom":7,"snabbdom/modules/class":4,"snabbdom/modules/eventlisteners":5,"snabbdom/modules/props":6}],11:[function(require,module,exports){
+},{"./game/index":10,"./lobby-actions":12,"./lobby-service":13,"./lobby/index":14,"snabbdom":7,"snabbdom/modules/class":4,"snabbdom/modules/eventlisteners":5,"snabbdom/modules/props":6}],12:[function(require,module,exports){
 var service = require('./lobby-service')
 
 function apply(oldState, action){
@@ -727,7 +810,16 @@ function apply(oldState, action){
     else if(action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
         return Promise.resolve({player: action.definePlayerName, games: oldState.games})
-    }else
+    }else if(action.enterGame)
+        return Promise.resolve(Object.assign({}, oldState, {
+            selectedGame: action.enterGame
+        }))
+    else if(action.leaveGame){
+        var newState = Object.assign({}, oldState)
+        delete newState.selectedGame
+        return Promise.resolve(newState)
+    }
+    else
         console.error("unknown action", action)
 }
 
@@ -749,7 +841,7 @@ module.exports = {
     apply: apply,
 }
 
-},{"./lobby-service":12}],12:[function(require,module,exports){
+},{"./lobby-service":13}],13:[function(require,module,exports){
 function getAllGames() {
   return fetch("/api/games")
       .then(parseJson)
@@ -801,7 +893,7 @@ module.exports = {
   startGame: startGame,
 }
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var h = require('snabbdom/h').default
 
 function render(state, update) {
@@ -912,4 +1004,4 @@ function renderLoginModal(state, player, update) {
 }
 
 module.exports = render
-},{"snabbdom/h":1}]},{},[10]);
+},{"snabbdom/h":1}]},{},[11]);
