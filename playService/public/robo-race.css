@@ -47,7 +47,6 @@ cell.wall-right{
 }
 
 robot{
-    background: red;
     display: table-cell;
     /*position: absolute;*/
     height: 50px;
@@ -57,4 +56,30 @@ robot{
     font-size: 30px;
     color: white;
     text-align: center;
+    background-repeat: no-repeat;
+    background-size: 50px 50px;
+}
+
+.robot1{
+    background-image: url("/assets/gem1.png");
+}
+
+.robot2{
+    background-image: url("/assets/gem2.png");
+}
+
+.robot3{
+    background-image: url("/assets/gem3.png");
+}
+
+.robot4{
+     background-image: url("/assets/gem4.png");
+ }
+
+.robot5{
+    background-image: url("/assets/gem5.png");
+}
+
+.robot6{
+    background-image: url("/assets/gem6.png");
 }

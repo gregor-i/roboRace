@@ -716,7 +716,8 @@ function renderCell(game, row, column) {
 function renderRobots(game) {
     var robots = Object.keys(game.robots).map(function(key, index) {
         var robot = game.robots[key]
-        return h('robot', {props:{title:JSON.stringify(robot)}});
+        var type = (index%6+1)
+        return h('robot.robot'+type, {props:{title:JSON.stringify(robot)}});
     })
     return h('div', robots)
 }
