@@ -1,4 +1,4 @@
-var service = require('./lobbyService')
+var service = require('./lobby-service')
 
 function apply(oldState, action){
     if(action.createGame)

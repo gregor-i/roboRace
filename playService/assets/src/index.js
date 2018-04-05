@@ -1,55 +1,46 @@
 var snabbdom = require('snabbdom')
-var render = require('./ui/index')
-// var update = require('./update')
-// var Result = require('./result')
-var service = require('./gameService')
-
 var patch = snabbdom.init([
-  require('snabbdom/modules/eventlisteners').default,
-  require('snabbdom/modules/props').default,
-  require('snabbdom/modules/class').default,
+    require('snabbdom/modules/eventlisteners').default,
+    require('snabbdom/modules/props').default,
+    require('snabbdom/modules/class').default,
 ])
 
-function Game(element, gameId, player) {
-  var init = function(gameId, player, backendState) {
-    return {
-      gameId : gameId,
-      player: player,
-      backendState: backendState
+var render = require('./lobby/index')
+var service = require('./lobby-service')
+var actions = require('./lobby-actions')
+
+function Lobby(element, player) {
+    function state(player, games) {
+        return {
+            player: player,
+            games: games,
+        }
     }
-  }
 
-  var updateCallback = function(action) {
-    var result = update(action, oldState)
-    Result.case({
-      Sync: function(newState) {
-        newState.error = null
-        main(newState, vnode)
-      },
-      Async: function(promise) {
-        promise.then(function(newState) {
-          newState.error = null
-          main(newState, vnode)
-        }).catch(function(err) {
-          oldState.error = err
-          main(oldState, vnode)
-        })
-      },
-    }, result)
-  }
+    function updateCallback(oldState, action) {
+        actions.apply(oldState, action)
+            .then(function (newState) {
+                console.log("state Transition", action, oldState, newState)
+                main(newState, element)
+            })
+    }
 
-  var node = element
-  var main = function(oldState) {
-    var vnode = render(oldState, updateCallback)
-    node = patch(node, vnode)
-  }
+    var node = element
 
-  service.getState(gameId).then(function(state) {
-    var state = init(gameId, player)
-    main(state, element)
-  })
+    function main(oldState) {
+        var vnode = render(oldState, updateCallback)
+        node = patch(node, vnode)
+    }
 
-  return this
+    service.getAllGames().then(function (games) {
+        main(state(player, games), element)
+    })
+
+    return this
 }
 
-module.exports = Game
+document.addEventListener('DOMContentLoaded', function (event) {
+    var container = document.getElementById('robo-race')
+    var player = localStorage.getItem('playerName')
+    new Lobby(container, player)
+})

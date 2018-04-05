@@ -19,7 +19,7 @@
   "scripts": {
     "watch": "nodemon --watch . -e json,js,styl,svg --exec \"npm run build\"",
     "build": "npm run build-js",
-    "build-js": "browserify -e src/lobby.js  > ../public/robo-race-lobby.js",
+    "build-js": "browserify -e src/index.js  > ../public/robo-race.js",
     "build-css": "mkdir -p ../../public/css && ./node_modules/stylus/bin/stylus src/index.styl -o ../public/robo-race.css",
     "test": "./node_modules/testem/testem.js ci -p 0 -l Chrome"
   }
