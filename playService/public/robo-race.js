@@ -58,7 +58,7 @@ exports.h = h;
 ;
 exports.default = h;
 
-},{"./is":3,"./vnode":9}],2:[function(require,module,exports){
+},{"./is":3,"./vnode":10}],2:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function createElement(tagName) {
@@ -284,6 +284,93 @@ exports.propsModule = { create: updateProps, update: updateProps };
 exports.default = exports.propsModule;
 
 },{}],7:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+var raf = (typeof window !== 'undefined' && window.requestAnimationFrame) || setTimeout;
+var nextFrame = function (fn) { raf(function () { raf(fn); }); };
+function setNextFrame(obj, prop, val) {
+    nextFrame(function () { obj[prop] = val; });
+}
+function updateStyle(oldVnode, vnode) {
+    var cur, name, elm = vnode.elm, oldStyle = oldVnode.data.style, style = vnode.data.style;
+    if (!oldStyle && !style)
+        return;
+    if (oldStyle === style)
+        return;
+    oldStyle = oldStyle || {};
+    style = style || {};
+    var oldHasDel = 'delayed' in oldStyle;
+    for (name in oldStyle) {
+        if (!style[name]) {
+            if (name[0] === '-' && name[1] === '-') {
+                elm.style.removeProperty(name);
+            }
+            else {
+                elm.style[name] = '';
+            }
+        }
+    }
+    for (name in style) {
+        cur = style[name];
+        if (name === 'delayed' && style.delayed) {
+            for (var name2 in style.delayed) {
+                cur = style.delayed[name2];
+                if (!oldHasDel || cur !== oldStyle.delayed[name2]) {
+                    setNextFrame(elm.style, name2, cur);
+                }
+            }
+        }
+        else if (name !== 'remove' && cur !== oldStyle[name]) {
+            if (name[0] === '-' && name[1] === '-') {
+                elm.style.setProperty(name, cur);
+            }
+            else {
+                elm.style[name] = cur;
+            }
+        }
+    }
+}
+function applyDestroyStyle(vnode) {
+    var style, name, elm = vnode.elm, s = vnode.data.style;
+    if (!s || !(style = s.destroy))
+        return;
+    for (name in style) {
+        elm.style[name] = style[name];
+    }
+}
+function applyRemoveStyle(vnode, rm) {
+    var s = vnode.data.style;
+    if (!s || !s.remove) {
+        rm();
+        return;
+    }
+    var name, elm = vnode.elm, i = 0, compStyle, style = s.remove, amount = 0, applied = [];
+    for (name in style) {
+        applied.push(name);
+        elm.style[name] = style[name];
+    }
+    compStyle = getComputedStyle(elm);
+    var props = compStyle['transition-property'].split(', ');
+    for (; i < props.length; ++i) {
+        if (applied.indexOf(props[i]) !== -1)
+            amount++;
+    }
+    elm.addEventListener('transitionend', function (ev) {
+        if (ev.target === elm)
+            --amount;
+        if (amount === 0)
+            rm();
+    });
+}
+exports.styleModule = {
+    create: updateStyle,
+    update: updateStyle,
+    destroy: applyDestroyStyle,
+    remove: applyRemoveStyle
+};
+exports.default = exports.styleModule;
+
+},{}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var vnode_1 = require("./vnode");
@@ -593,7 +680,7 @@ function init(modules, domApi) {
 }
 exports.init = init;
 
-},{"./h":1,"./htmldomapi":2,"./is":3,"./thunk":8,"./vnode":9}],8:[function(require,module,exports){
+},{"./h":1,"./htmldomapi":2,"./is":3,"./thunk":9,"./vnode":10}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var h_1 = require("./h");
@@ -641,7 +728,7 @@ exports.thunk = function thunk(sel, key, fn, args) {
 };
 exports.default = exports.thunk;
 
-},{"./h":1}],9:[function(require,module,exports){
+},{"./h":1}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function vnode(sel, data, children, text, elm) {
@@ -652,22 +739,117 @@ function vnode(sel, data, children, text, elm) {
 exports.vnode = vnode;
 exports.default = vnode;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
+var lobbyService = require('./lobby-service')
+var gameService = require('./game-service')
+
+function apply(oldState, action){
+    if(action.createGame)
+        return lobbyService.createGame()
+            .then(r(oldState))
+            .then(loadGamesFromBackend)
+    else if(action.defineScenario)
+        return lobbyService.defineGame(action.defineScenario)
+            .then(r(oldState))
+            .then(loadGamesFromBackend)
+    else if(action.joinGame)
+        return lobbyService.joinGame(action.joinGame, oldState.player)
+            .then(r(oldState))
+            .then(loadGamesFromBackend)
+    else if(action.startGame)
+        return lobbyService.startGame(action.startGame)
+            .then(r(oldState))
+            .then(loadGamesFromBackend)
+    else if(action.deleteGame)
+        return lobbyService.deleteGame(action.deleteGame)
+            .then(r(oldState))
+            .then(loadGamesFromBackend)
+    else if(action.definePlayerName) {
+        localStorage.setItem('playerName', action.definePlayerName)
+        return Promise.resolve({player: action.definePlayerName, games: oldState.games})
+    }else if(action.enterGame) {
+        return refreshGameFromBackend(oldState, action.enterGame).then(function(state){
+            return Object.assign({}, state, {selectedGame: action.enterGame})
+        })
+    }else if(action.leaveGame){
+        var newState = Object.assign({}, oldState)
+        delete newState.selectedGame
+        return Promise.resolve(newState)
+    }
+    else
+        console.error("unknown action", action)
+}
+
+function r(response){
+    return function(){
+        return response
+    }
+}
+
+function loadGamesFromBackend(state){
+    return lobbyService.getAllGames().then(function(games){
+        state.games = games
+        return state
+    })
+}
+
+function refreshGameFromBackend(state, id){
+    return gameService.getState(id).then(function(game){
+        state.games[id] = game
+        return state
+    })
+}
+
+module.exports = {
+    apply: apply,
+}
+
+},{"./game-service":12,"./lobby-service":15}],12:[function(require,module,exports){
+function getState(gameId) {
+    return fetch("/api/games/" + gameId)
+        .then(parseJson)
+}
+
+function sendCommand(gameId, command) {
+    return fetch("/api/games/" + game + "/commands", {
+        method: "POST",
+        body: JSON.stringify(command)
+    })
+}
+
+function updates(gameId) {
+    return new EventSource("/api/games/" + gameId + "/events");
+}
+
+
+function parseJson(resp) {
+    return resp.json()
+}
+
+module.exports = {
+    getState: getState,
+    sendCommand: sendCommand,
+    updates: updates,
+}
+
+},{}],13:[function(require,module,exports){
 var h = require('snabbdom/h').default
 
-function render(state, update) {
-    if (state.selectedGame && state.games[state.selectedGame] && state.games[state.selectedGame].GameRunning) {
-        var selectedGame = state.games[state.selectedGame].GameRunning
+function render(state, game, update) {
+    if (game.GameRunning) {
+        var gameRunning = game.GameRunning
         return h('div', [
             h('h1', 'Game ' + state.selectedGame),
-            renderBoard(selectedGame),
-            renderRobots(selectedGame),
+            h('div.board', [
+                renderBoard(gameRunning),
+                renderRobots(gameRunning)
+            ]),
             h('button.button.is-primary',
                 {on: {click: [update, state, {leaveGame: true}]}},
                 'Back to Lobby')
         ])
     } else
-        return h('div', h('h1', 'Game is not running'))
+        return h('div', h('h1', 'GameState ' + Object.keys(game)[0] + ' is currently not supported.'))
 }
 
 function renderBoard(game) {
@@ -714,14 +896,29 @@ function renderCell(game, row, column) {
 
 
 function renderRobots(game) {
-    var robots = Object.keys(game.robots).map(function(key, index) {
+    var robots = Object.keys(game.robots).map(function (key, index) {
         var robot = game.robots[key]
-        var type = (index%6+1)
-        return h('robot.robot'+type, {props:{title:JSON.stringify(robot)}});
+        return h('robot.robot' + (index % 6 + 1),
+            {
+                style: {
+                    transform: 'translate('+robot.position.x*50+'px, '+robot.position.y*50+'px) rotate('+90*directionToRotation(robot.direction)+'deg)'
+                },
+                props: {title: key}
+            });
     })
     return h('div', robots)
 }
 
+function directionToRotation(direction) {
+    if(direction.Up)
+        return 0
+    else if(direction.Right)
+        return 1
+    else if(direction.Down)
+        return 2
+    else if(direction.Left)
+        return 3
+}
 
 function range(n) {
     return Array.apply(null, Array(n)).map(function (_, i) {
@@ -730,49 +927,45 @@ function range(n) {
 }
 
 module.exports = render
-},{"snabbdom/h":1}],11:[function(require,module,exports){
+},{"snabbdom/h":1}],14:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
     require('snabbdom/modules/props').default,
     require('snabbdom/modules/class').default,
-    require('snabbdom/modules/class').default
+    require('snabbdom/modules/style').default
 ])
 
 var renderLobby = require('./lobby/index')
 var renderGame = require('./game/index')
 var service = require('./lobby-service')
-var actions = require('./lobby-actions')
+var actions = require('./actions')
 
 function Lobby(element, player) {
-    function state(player, games) {
-        return {
-            player: player,
-            games: games,
-        }
-    }
-
     function updateCallback(oldState, action) {
         actions.apply(oldState, action)
             .then(function (newState) {
                 console.log("state Transition", action, oldState, newState)
-                main(newState, element)
+                renderState(newState, element)
             })
     }
 
     var node = element
 
-    function main(oldState) {
+    function renderState(state) {
         var vnode
-        if(oldState.selectedGame)
-            vnode = renderGame(oldState, updateCallback)
+        if(state.selectedGame && state.games[state.selectedGame])
+            vnode = renderGame(state, state.games[state.selectedGame], updateCallback)
         else
-            vnode = renderLobby(oldState, updateCallback)
+            vnode = renderLobby(state, updateCallback)
         node = patch(node, vnode)
     }
 
     service.getAllGames().then(function (games) {
-        main(state(player, games), element)
+        renderState({
+            player: player,
+            games: games,
+        }, element)
     })
 
     return this
@@ -784,65 +977,7 @@ document.addEventListener('DOMContentLoaded', function (event) {
     new Lobby(container, player)
 })
 
-},{"./game/index":10,"./lobby-actions":12,"./lobby-service":13,"./lobby/index":14,"snabbdom":7,"snabbdom/modules/class":4,"snabbdom/modules/eventlisteners":5,"snabbdom/modules/props":6}],12:[function(require,module,exports){
-var service = require('./lobby-service')
-
-function apply(oldState, action){
-    if(action.createGame)
-        return service.createGame()
-            .then(r(oldState))
-            .then(loadGamesFromBackend)
-    else if(action.defineScenario)
-        return service.defineGame(action.defineScenario)
-            .then(r(oldState))
-            .then(loadGamesFromBackend)
-    else if(action.joinGame)
-        return service.joinGame(action.joinGame, oldState.player)
-            .then(r(oldState))
-            .then(loadGamesFromBackend)
-    else if(action.startGame)
-        return service.startGame(action.startGame)
-            .then(r(oldState))
-            .then(loadGamesFromBackend)
-    else if(action.deleteGame)
-        return service.deleteGame(action.deleteGame)
-            .then(r(oldState))
-            .then(loadGamesFromBackend)
-    else if(action.definePlayerName) {
-        localStorage.setItem('playerName', action.definePlayerName)
-        return Promise.resolve({player: action.definePlayerName, games: oldState.games})
-    }else if(action.enterGame)
-        return Promise.resolve(Object.assign({}, oldState, {
-            selectedGame: action.enterGame
-        }))
-    else if(action.leaveGame){
-        var newState = Object.assign({}, oldState)
-        delete newState.selectedGame
-        return Promise.resolve(newState)
-    }
-    else
-        console.error("unknown action", action)
-}
-
-function r(response){
-    return function(){
-        return response
-    }
-}
-
-function loadGamesFromBackend(state){
-    return service.getAllGames().then(function(games){
-        state.games = games
-        return state
-    })
-}
-
-
-module.exports = {
-    apply: apply,
-}
-
-},{"./lobby-service":13}],13:[function(require,module,exports){
+},{"./actions":11,"./game/index":13,"./lobby-service":15,"./lobby/index":16,"snabbdom":8,"snabbdom/modules/class":4,"snabbdom/modules/eventlisteners":5,"snabbdom/modules/props":6,"snabbdom/modules/style":7}],15:[function(require,module,exports){
 function getAllGames() {
   return fetch("/api/games")
       .then(parseJson)
@@ -894,7 +1029,7 @@ module.exports = {
   startGame: startGame,
 }
 
-},{}],14:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 var h = require('snabbdom/h').default
 
 function render(state, update) {
@@ -1005,4 +1140,4 @@ function renderLoginModal(state, player, update) {
 }
 
 module.exports = render
-},{"snabbdom/h":1}]},{},[11]);
+},{"snabbdom/h":1}]},{},[14]);

@@ -1,3 +1,7 @@
+div.board {
+    position: relative;
+}
+
 board{
     border-collapse:collapse;
     display: table;
@@ -47,17 +51,18 @@ cell.wall-right{
 }
 
 robot{
-    display: table-cell;
-    /*position: absolute;*/
+    display: block;
+    position: absolute;
     height: 50px;
     width: 50px;
-    /*transition: left 1s, top 1s, transform 1s, display 1s;*/
 
-    font-size: 30px;
-    color: white;
-    text-align: center;
+    left:0px;
+    top:0px;
+    padding: 5px;
+
     background-repeat: no-repeat;
-    background-size: 50px 50px;
+    background-size: 40px 40px;
+    background-origin: content-box;
 }
 
 .robot1{

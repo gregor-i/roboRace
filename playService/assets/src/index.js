@@ -3,43 +3,39 @@ var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
     require('snabbdom/modules/props').default,
     require('snabbdom/modules/class').default,
-    require('snabbdom/modules/class').default
+    require('snabbdom/modules/style').default
 ])
 
 var renderLobby = require('./lobby/index')
 var renderGame = require('./game/index')
 var service = require('./lobby-service')
-var actions = require('./lobby-actions')
+var actions = require('./actions')
 
 function Lobby(element, player) {
-    function state(player, games) {
-        return {
-            player: player,
-            games: games,
-        }
-    }
-
     function updateCallback(oldState, action) {
         actions.apply(oldState, action)
             .then(function (newState) {
                 console.log("state Transition", action, oldState, newState)
-                main(newState, element)
+                renderState(newState, element)
             })
     }
 
     var node = element
 
-    function main(oldState) {
+    function renderState(state) {
         var vnode
-        if(oldState.selectedGame)
-            vnode = renderGame(oldState, updateCallback)
+        if(state.selectedGame && state.games[state.selectedGame])
+            vnode = renderGame(state, state.games[state.selectedGame], updateCallback)
         else
-            vnode = renderLobby(oldState, updateCallback)
+            vnode = renderLobby(state, updateCallback)
         node = patch(node, vnode)
     }
 
     service.getAllGames().then(function (games) {
-        main(state(player, games), element)
+        renderState({
+            player: player,
+            games: games,
+        }, element)
     })
 
     return this

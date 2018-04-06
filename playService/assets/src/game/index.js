@@ -1,18 +1,20 @@
 var h = require('snabbdom/h').default
 
-function render(state, update) {
-    if (state.selectedGame && state.games[state.selectedGame] && state.games[state.selectedGame].GameRunning) {
-        var selectedGame = state.games[state.selectedGame].GameRunning
+function render(state, game, update) {
+    if (game.GameRunning) {
+        var gameRunning = game.GameRunning
         return h('div', [
             h('h1', 'Game ' + state.selectedGame),
-            renderBoard(selectedGame),
-            renderRobots(selectedGame),
+            h('div.board', [
+                renderBoard(gameRunning),
+                renderRobots(gameRunning)
+            ]),
             h('button.button.is-primary',
                 {on: {click: [update, state, {leaveGame: true}]}},
                 'Back to Lobby')
         ])
     } else
-        return h('div', h('h1', 'Game is not running'))
+        return h('div', h('h1', 'GameState ' + Object.keys(game)[0] + ' is currently not supported.'))
 }
 
 function renderBoard(game) {
@@ -59,14 +61,29 @@ function renderCell(game, row, column) {
 
 
 function renderRobots(game) {
-    var robots = Object.keys(game.robots).map(function(key, index) {
+    var robots = Object.keys(game.robots).map(function (key, index) {
         var robot = game.robots[key]
-        var type = (index%6+1)
-        return h('robot.robot'+type, {props:{title:JSON.stringify(robot)}});
+        return h('robot.robot' + (index % 6 + 1),
+            {
+                style: {
+                    transform: 'translate('+robot.position.x*50+'px, '+robot.position.y*50+'px) rotate('+90*directionToRotation(robot.direction)+'deg)'
+                },
+                props: {title: key}
+            });
     })
     return h('div', robots)
 }
 
+function directionToRotation(direction) {
+    if(direction.Up)
+        return 0
+    else if(direction.Right)
+        return 1
+    else if(direction.Down)
+        return 2
+    else if(direction.Left)
+        return 3
+}
 
 function range(n) {
     return Array.apply(null, Array(n)).map(function (_, i) {
