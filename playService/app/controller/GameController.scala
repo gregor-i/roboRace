@@ -9,6 +9,7 @@ import gameLogic.processor.Processor
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
+import play.api.Logger
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.libs.circe.Circe
@@ -28,15 +29,18 @@ class GameController @Inject()(repo: GameRepository)
       .run()
 
   def state(id: String) = Action{
+    Logger.info("get state")
     Ok(repo.get(id).asJson)
   }
 
   def sendCommand(id: String) = Action(circe.tolerantJson[Command]) { request =>
     repo.get(id) match{
       case Some(gameState) =>
+        Logger.info("execute command")
         val logged = Processor(gameState)(Seq(request.body))
         repo.save(id, logged.state)
         Source[EventLog](logged.events.to[scala.collection.immutable.Iterable]).map(_.asJson.noSpaces).runWith(sink)
+        Logger.info("executed command")
         Ok(logged.state.asJson)
       case None => NotFound
     }

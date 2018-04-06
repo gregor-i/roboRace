@@ -9,6 +9,7 @@ function render(state, game, update) {
                 renderBoard(gameRunning),
                 renderRobots(gameRunning)
             ]),
+            renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, update),
             h('button.button.is-primary',
                 {on: {click: [update, state, {leaveGame: true}]}},
                 'Back to Lobby')
@@ -61,14 +62,17 @@ function renderCell(game, row, column) {
 
 
 function renderRobots(game) {
-    var robots = Object.keys(game.robots).map(function (key, index) {
-        var robot = game.robots[key]
+    var robots = Object.keys(game.robots).map(function (player, index) {
+        var robot = game.robots[player]
+        var x = robot.position.x*50
+        var y = robot.position.y*50
+        var rot = 90*directionToRotation(robot.direction)
         return h('robot.robot' + (index % 6 + 1),
             {
                 style: {
-                    transform: 'translate('+robot.position.x*50+'px, '+robot.position.y*50+'px) rotate('+90*directionToRotation(robot.direction)+'deg)'
+                    transform: 'translate('+x+'px, '+y+'px) rotate('+rot+'deg)'
                 },
-                props: {title: key}
+                props: {title: player + " - " + Object.keys(robot.direction)[0]}
             });
     })
     return h('div', robots)
@@ -83,6 +87,27 @@ function directionToRotation(direction) {
         return 2
     else if(direction.Left)
         return 3
+}
+
+function renderActionButtons(state, cycle, robotActions, update){
+    var headerRow = h('tr', range(5).map(function(i){return h('th', 'Action '+(i+1))}))
+    function actionRow(action){
+        function actionButton(slot){
+            return h('td',
+                h('button.button',
+                    {class: {'is-primary': robotActions[state.player] && robotActions[state.player].actions[slot] && robotActions[state.player].actions[slot][action]},
+                    on: {click: [update, state, {defineAction: {player: state.player, cycle, slot, action}}]}},
+                    action))
+        }
+        return h('tr', range(5).map(actionButton))
+    }
+    return h('table', [
+        headerRow,
+        actionRow('MoveForward'),
+        actionRow('TurnRight'),
+        actionRow('TurnLeft'),
+        actionRow('MoveBackward'),
+    ])
 }
 
 function range(n) {

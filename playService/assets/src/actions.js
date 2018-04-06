@@ -26,16 +26,29 @@ function apply(oldState, action){
         localStorage.setItem('playerName', action.definePlayerName)
         return Promise.resolve({player: action.definePlayerName, games: oldState.games})
     }else if(action.enterGame) {
-        return refreshGameFromBackend(oldState, action.enterGame).then(function(state){
+        return refreshGameFromBackend(oldState, action.enterGame)().then(function(state){
             return Object.assign({}, state, {selectedGame: action.enterGame})
         })
     }else if(action.leaveGame){
         var newState = Object.assign({}, oldState)
         delete newState.selectedGame
         return Promise.resolve(newState)
-    }
-    else
+    }else if(action.defineAction){
+        var a = {}
+        a[action.defineAction.action] = {}
+        return gameService.defineAction(oldState.selectedGame, action.defineAction.player, action.defineAction.cycle, action.defineAction.slot, a)
+            .then(refreshGameFromBackend(oldState,  oldState.selectedGame))
+    }else {
         console.error("unknown action", action)
+        return Promise.resolve(oldState)
+    }
+}
+
+function debug(marker){
+    return function(x){
+        console.log(marker, x)
+        return x;
+    }
 }
 
 function r(response){
@@ -52,10 +65,12 @@ function loadGamesFromBackend(state){
 }
 
 function refreshGameFromBackend(state, id){
-    return gameService.getState(id).then(function(game){
-        state.games[id] = game
-        return state
-    })
+    return function() {
+        return gameService.getState(id).then(function (game) {
+            state.games[id] = game
+            return state
+        })
+    }
 }
 
 module.exports = {

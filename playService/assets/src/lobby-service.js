@@ -10,18 +10,16 @@ function sendCommand(gameId, command) {
   })
 }
 
-function parseJson(resp) {
-  return resp.json()
-}
-
 function createGame() {
-  return fetch("/api/games",
-      {method: "POST"})
+  return fetch("/api/games", {method: "POST"})
 }
 
 function deleteGame(gameId) {
-  return fetch("/api/games/" + gameId,
-      {method: "DELETE"})
+  return fetch("/api/games/" + gameId, {method: "DELETE"})
+}
+
+function parseJson(resp) {
+    return resp.json()
 }
 
 function joinGame(gameId, playerName) {
@@ -36,7 +34,7 @@ function defineGame(gameId) {
   return fetch("/default-scenario")
       .then(parseJson)
       .then(function (scenario) {
-        sendCommand(gameId, {DefineScenario: {scenario: scenario}})
+        return sendCommand(gameId, {DefineScenario: {scenario: scenario}})
       })
 }
 

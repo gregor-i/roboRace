@@ -15,7 +15,7 @@ function Lobby(element, player) {
     function updateCallback(oldState, action) {
         actions.apply(oldState, action)
             .then(function (newState) {
-                console.log("state Transition", action, oldState, newState)
+                // console.log("state Transition", action, oldState, newState)
                 renderState(newState, element)
             })
     }

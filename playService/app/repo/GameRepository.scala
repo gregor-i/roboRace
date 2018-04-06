@@ -1,23 +1,42 @@
 package repo
 
 import java.io.FileWriter
-import javax.inject.Singleton
 
-import gameLogic.{GameNotDefined, GameState}
+import com.google.inject.ImplementedBy
+import gameLogic.GameState
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
+import javax.inject.Singleton
 
 import scala.io.Source
 import scala.util.Try
 
+@ImplementedBy(classOf[MemoryGameRepository])
+trait GameRepository {
+  def get(id: String): Option[GameState]
+  def list(): Seq[(String, GameState)]
+  def save(id: String, gameState: GameState): Unit
+  def delete(id: String): Unit
+}
+
 
 @Singleton
-class GameRepository {
-  def get(id: String): Option[GameState] = read().get(id)
-  def list(): Seq[(String, GameState)] = read().toSeq
-  def save(id: String, gameState: GameState): Unit = write(read() + (id -> gameState))
-  def delete(id: String) : Unit = write(read() - id)
+class MemoryGameRepository extends GameRepository {
+  def get(id: String): Option[GameState] = synchronized(cache).get(id)
+  def list(): Seq[(String, GameState)] = synchronized(cache).toSeq
+  def save(id: String, gameState: GameState): Unit = synchronized(cache = cache + (id -> gameState))
+  def delete(id: String): Unit = synchronized(cache = cache - id)
+
+  private[this] var cache: Map[String, GameState] = Map.empty
+}
+
+@Singleton
+class FileGameRepository extends GameRepository{
+  def get(id: String): Option[GameState] = synchronized(read().get(id))
+  def list(): Seq[(String, GameState)] = synchronized(read().toSeq)
+  def save(id: String, gameState: GameState): Unit = synchronized(write(read() + (id -> gameState)))
+  def delete(id: String) : Unit = synchronized(write(read() - id))
 
   private def file = new java.io.File("gameRepo.json")
   private def read(): Map[String, GameState] =
