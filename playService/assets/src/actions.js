@@ -27,7 +27,14 @@ function apply(oldState, action){
         return Promise.resolve({player: action.definePlayerName, games: oldState.games})
     }else if(action.enterGame) {
         return refreshGameFromBackend(oldState, action.enterGame)().then(function(state){
-            return Object.assign({}, state, {selectedGame: action.enterGame})
+            var oldEvents = state.eventSource
+            if(oldEvents)
+                oldEvents.close()
+            var newEvents = gameService.updates(action.enterGame)
+            newEvents.onmessage = function(x){
+                console.log('Server Sent Event', x.data)
+            }
+            return Object.assign({}, state, {selectedGame: action.enterGame, eventSource: newEvents})
         })
     }else if(action.leaveGame){
         var newState = Object.assign({}, oldState)

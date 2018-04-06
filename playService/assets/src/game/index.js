@@ -15,7 +15,11 @@ function render(state, game, update) {
                 'Back to Lobby')
         ])
     } else
-        return h('div', h('h1', 'GameState ' + Object.keys(game)[0] + ' is currently not supported.'))
+        return h('div', [
+            h('h1', 'GameState ' + Object.keys(game)[0] + ' is currently not supported.'),
+            h('button.button.is-primary',
+                {on: {click: [update, state, {leaveGame: true}]}},
+                'Back to Lobby')])
 }
 
 function renderBoard(game) {
