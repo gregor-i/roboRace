@@ -1,4 +1,6 @@
 var h = require('snabbdom/h').default
+var _ = require('lodash')
+var constants = require('../constants')
 
 function render(state, game, actionHandler) {
     if (game.GameRunning) {
@@ -40,14 +42,14 @@ function gameFrame(title, content, actionHandler) {
 }
 
 function renderBoard(game) {
-    var rows = range(game.scenario.height).map(function (r) {
+    var rows = _.range(game.scenario.height).map(function (r) {
         return renderRow(game, r)
     });
     return h('board', rows)
 }
 
 function renderRow(game, row) {
-    var cells = range(game.scenario.width).map(function (c) {
+    var cells = _.range(game.scenario.width).map(function (c) {
         return renderCell(game, row, c)
     })
     return h('row', cells)
@@ -111,7 +113,7 @@ function directionToRotation(direction) {
 }
 
 function renderActionButtons(state, cycle, robotActions, actionHandler) {
-    var headerRow = h('tr', range(5).map(function (i) {
+    var headerRow = h('tr', _.range(constants.numberOfActionsPerCycle).map(function (i) {
         return h('th', 'Action ' + (i + 1))
     }))
 
@@ -120,13 +122,13 @@ function renderActionButtons(state, cycle, robotActions, actionHandler) {
             return h('td',
                 h('button.button',
                     {
-                        class: {'is-primary': state.slots && state.slots[slot] && state.slots[slot][action]},
+                        class: {'is-primary': _.get(state, ['slots', slot,  action])},
                         on: {click: [actionHandler, {defineAction: {player: state.player, cycle, slot, action}}]}
                     },
                     action))
         }
 
-        return h('tr', range(5).map(actionButton))
+        return h('tr', _.range(constants.numberOfActionsPerCycle).map(actionButton))
     }
 
     return h('table', [
@@ -136,12 +138,6 @@ function renderActionButtons(state, cycle, robotActions, actionHandler) {
         actionRow('TurnLeft'),
         actionRow('MoveBackward'),
     ])
-}
-
-function range(n) {
-    return Array.apply(null, Array(n)).map(function (_, i) {
-        return i;
-    })
 }
 
 module.exports = render

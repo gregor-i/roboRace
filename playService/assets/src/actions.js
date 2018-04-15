@@ -1,5 +1,7 @@
 var lobbyService = require('./lobby-service')
 var gameService = require('./game-service')
+var _ = require('lodash')
+var constants = require('./constants')
 
 function actions(state, action) {
     // lobby actions
@@ -48,8 +50,7 @@ function actions(state, action) {
         var slot = action.defineAction.slot
         state.slots[slot] = {}
         state.slots[slot][action.defineAction.action] = {}
-
-        if(state.slots.length === 5)
+        if(_.range(constants.numberOfActionsPerCycle).every(function(i){return state.slots[i];}))
             gameService.defineAction(state.selectedGame, state.player, action.defineAction.cycle, state.slots)
         return Promise.resolve(state)
     } else {
@@ -70,6 +71,4 @@ function loadGamesFromBackend(state) {
     })
 }
 
-module.exports = {
-    actions
-}
+module.exports = actions

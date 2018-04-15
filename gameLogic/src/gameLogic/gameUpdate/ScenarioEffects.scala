@@ -18,7 +18,7 @@ object ScenarioEffects {
     firstFallenRobot match {
       case None => Logged.pure(game)
       case Some((player, robot)) =>
-        val index = game.players.zipWithIndex.collect { case (`player`, index) => index }.head
+        val index = game.players.zipWithIndex.find(_._1 == player).get._2
         val initial = game.scenario.initialRobots(index)
         for {
           clearedInitial <- PushRobots(initial.position, initial.direction, game.robots)

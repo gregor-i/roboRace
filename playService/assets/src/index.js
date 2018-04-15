@@ -6,10 +6,9 @@ var patch = snabbdom.init([
     require('snabbdom/modules/style').default
 ])
 
-var renderLobby = require('./lobby/index')
-var renderGame = require('./game/index')
+var ui = require('./ui/ui')
 var service = require('./lobby-service')
-var actions = require('./actions').actions
+var actions = require('./actions')
 
 function Lobby(element, player) {
     var node = element
@@ -17,14 +16,10 @@ function Lobby(element, player) {
 
     function renderState(state) {
         lobbyUpdates.onmessage = lobbyEventHandler(state)
-        var vnode
-        if(state.selectedGame && state.selectedGameState) {
-            if(state.eventSource)
-                state.eventSource.onmessage = gameEventHandler(state)
-            vnode = renderGame(state, state.selectedGameState, actionHandler(state))
-        }else
-            vnode = renderLobby(state, actionHandler(state))
-        node = patch(node, vnode)
+        if(state.eventSource)
+            state.eventSource.onmessage = gameEventHandler(state)
+
+        node = patch(node, ui(state, actionHandler(state)))
     }
 
     function actionHandler(state) {
