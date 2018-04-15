@@ -9,6 +9,7 @@ var patch = snabbdom.init([
 var ui = require('./ui/ui')
 var service = require('./lobby-service')
 var actions = require('./actions')
+var animations = require('./ui/animations')
 
 function Lobby(element, player) {
     var node = element
@@ -35,8 +36,9 @@ function Lobby(element, player) {
             const data = JSON.parse(event.data)
             const newGameState = data.state
             const events = data.events
+            animations.queue(state.selectedGameState, newGameState, events)
             state.selectedGameState = newGameState
-            console.log("game Events: ",events)
+            // console.log("game Events: ",events)
             if(events.find(function(event){
                 return !! event.PlayerActionsExecuted
             })) state.slots = []

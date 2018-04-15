@@ -96,13 +96,19 @@ function renderRobots(game) {
         var robot = game.robots[player]
         var x = robot.position.x * 50
         var y = robot.position.y * 50
-        var rot = 90 * directionToRotation(robot.direction)
+        var rot = directionToRotation(robot.direction)
         return h('robot.robot' + (index % 6 + 1),
             {
                 style: {
                     transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)'
                 },
-                props: {title: player + " - " + Object.keys(robot.direction)[0]}
+                props: {
+                    title: player + " - " + Object.keys(robot.direction)[0],
+                    id: 'robot_' + (index % 6 + 1),
+                    x: x,
+                    y: y,
+                    rot: rot + ''
+                }
             });
     })
     return h('div', robots)
@@ -110,13 +116,15 @@ function renderRobots(game) {
 
 function directionToRotation(direction) {
     if (direction.Up)
-        return 0
+        return "0"
     else if (direction.Right)
-        return 1
+        return "90"
     else if (direction.Down)
-        return 2
+        return "180"
     else if (direction.Left)
-        return 3
+        return "270"
+    else
+        console.error("unkown direction", direction)
 }
 
 function renderActionButtons(state, cycle, robotActions, actionHandler) {
