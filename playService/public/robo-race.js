@@ -743,87 +743,77 @@ exports.default = vnode;
 var lobbyService = require('./lobby-service')
 var gameService = require('./game-service')
 
-function apply(oldState, action){
-    if(action.createGame)
-        return lobbyService.createGame()
-            .then(r(oldState))
-            .then(loadGamesFromBackend)
-    else if(action.defineScenario)
-        return lobbyService.defineGame(action.defineScenario)
-            .then(r(oldState))
-            .then(loadGamesFromBackend)
-    else if(action.joinGame)
-        return lobbyService.joinGame(action.joinGame, oldState.player)
-            .then(r(oldState))
-            .then(loadGamesFromBackend)
-    else if(action.startGame)
-        return lobbyService.startGame(action.startGame)
-            .then(r(oldState))
-            .then(loadGamesFromBackend)
-    else if(action.deleteGame)
-        return lobbyService.deleteGame(action.deleteGame)
-            .then(r(oldState))
-            .then(loadGamesFromBackend)
-    else if(action.definePlayerName) {
-        localStorage.setItem('playerName', action.definePlayerName)
-        return Promise.resolve({player: action.definePlayerName, games: oldState.games})
-    }else if(action.enterGame) {
-        return refreshGameFromBackend(oldState, action.enterGame)().then(function(state){
-            var oldEvents = state.eventSource
-            if(oldEvents)
-                oldEvents.close()
-            var newEvents = gameService.updates(action.enterGame)
-            newEvents.onmessage = function(x){
-                console.log('Server Sent Event', x.data)
-            }
-            return Object.assign({}, state, {selectedGame: action.enterGame, eventSource: newEvents})
+function actions(state, action) {
+    // lobby actions
+    if (action.createGame) {
+        lobbyService.createGame()
+    } else if (action.deleteGame) {
+        lobbyService.deleteGame(action.deleteGame)
+    } else if (action.enterGame) {
+        const gameId = action.enterGame
+        const oldEvents = state.eventSource
+        if (oldEvents)
+            oldEvents.close()
+        const newEvents = gameService.updates(gameId)
+        const newState = Object.assign({}, state, {selectedGame: gameId, eventSource: newEvents})
+        return gameService.getState(gameId).then(function (gameState) {
+            newState.selectedGameState = gameState
+            return newState
         })
-    }else if(action.leaveGame){
-        var newState = Object.assign({}, oldState)
+    } else if (action.leaveGame) {
+        const oldEvents = state.eventSource
+        if (oldEvents)
+            oldEvents.close()
+        const newState = Object.assign({}, state)
         delete newState.selectedGame
+        delete newState.eventSource
         return Promise.resolve(newState)
-    }else if(action.defineAction){
-        var a = {}
-        a[action.defineAction.action] = {}
-        return gameService.defineAction(oldState.selectedGame, action.defineAction.player, action.defineAction.cycle, action.defineAction.slot, a)
-            .then(refreshGameFromBackend(oldState,  oldState.selectedGame))
-    }else {
+    } else if (action.definePlayerName) {
+        localStorage.setItem('playerName', action.definePlayerName)
+        return Promise.resolve(Object.assign({}, state, {player: action.definePlayerName}))
+        // game actions
+    } else if (action.defineScenario)
+        return lobbyService.defineGame(action.defineScenario)
+            .then(r(state))
+            .then(loadGamesFromBackend)
+    else if (action.joinGame)
+        return lobbyService.joinGame(action.joinGame, state.player)
+            .then(r(state))
+            .then(loadGamesFromBackend)
+    else if (action.startGame)
+        return lobbyService.startGame(action.startGame)
+            .then(r(state))
+            .then(loadGamesFromBackend)
+    else if (action.defineAction) {
+        if(!state.slots)
+            state.slots = []
+        var slot = action.defineAction.slot
+        state.slots[slot] = {}
+        state.slots[slot][action.defineAction.action] = {}
+
+        if(state.slots.length === 5)
+            gameService.defineAction(state.selectedGame, state.player, action.defineAction.cycle, state.slots)
+        return Promise.resolve(state)
+    } else {
         console.error("unknown action", action)
-        return Promise.resolve(oldState)
     }
 }
 
-function debug(marker){
-    return function(x){
-        console.log(marker, x)
-        return x;
-    }
-}
-
-function r(response){
-    return function(){
+function r(response) {
+    return function () {
         return response
     }
 }
 
-function loadGamesFromBackend(state){
-    return lobbyService.getAllGames().then(function(games){
+function loadGamesFromBackend(state) {
+    return lobbyService.getAllGames().then(function (games) {
         state.games = games
         return state
     })
 }
 
-function refreshGameFromBackend(state, id){
-    return function() {
-        return gameService.getState(id).then(function (game) {
-            state.games[id] = game
-            return state
-        })
-    }
-}
-
 module.exports = {
-    apply: apply,
+    actions
 }
 
 },{"./game-service":12,"./lobby-service":15}],12:[function(require,module,exports){
@@ -839,8 +829,8 @@ function sendCommand(gameId, command) {
     })
 }
 
-function defineAction(gameId, player, cycle, slot, action) {
-    return sendCommand(gameId, {DefineNextAction: {player, cycle, slot, action}})
+function defineAction(gameId, player, cycle, actions) {
+    return sendCommand(gameId, {DefineNextAction: {player, cycle, actions}})
         .then(parseJson)
 }
 
@@ -862,26 +852,43 @@ module.exports = {
 },{}],13:[function(require,module,exports){
 var h = require('snabbdom/h').default
 
-function render(state, game, update) {
+function render(state, game, actionHandler) {
     if (game.GameRunning) {
         var gameRunning = game.GameRunning
-        return h('div', [
-            h('h1', 'Game ' + state.selectedGame),
+        return gameFrame('Game ' + state.selectedGame, [
             h('div.board', [
                 renderBoard(gameRunning),
                 renderRobots(gameRunning)
             ]),
-            renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, update),
-            h('button.button.is-primary',
-                {on: {click: [update, state, {leaveGame: true}]}},
-                'Back to Lobby')
-        ])
-    } else
-        return h('div', [
-            h('h1', 'GameState ' + Object.keys(game)[0] + ' is currently not supported.'),
-            h('button.button.is-primary',
-                {on: {click: [update, state, {leaveGame: true}]}},
-                'Back to Lobby')])
+            renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler)],
+            actionHandler)
+    } else if (game.GameNotStarted) {
+        return gameFrame('Game '+state.selectedGame,
+            [
+                h('h3', 'joined Players:'),
+                h('ol', game.GameNotStarted.playerNames.map(function(player){
+                    return h('li', player)
+                })),
+                h('button.button.is-primary',
+                    {on: {click: [actionHandler, {joinGame: state.selectedGame}]}},
+                    'Join Game'),
+                h('button.button.is-primary',
+                    {on: {click: [actionHandler, {startGame: state.selectedGame}]}},
+                    'Start Game')
+            ], actionHandler)
+    } else {
+        return gameFrame('GameState ' + Object.keys(game)[0] + ' is currently not supported.', undefined, actionHandler)
+    }
+}
+
+function gameFrame(title, content, actionHandler) {
+    return h('div', [
+        h('h1', title),
+        h('div', content),
+        h('button.button.is-primary',
+            {on: {click: [actionHandler, {leaveGame: true}]}},
+            'Back to Lobby')
+    ])
 }
 
 function renderBoard(game) {
@@ -930,13 +937,13 @@ function renderCell(game, row, column) {
 function renderRobots(game) {
     var robots = Object.keys(game.robots).map(function (player, index) {
         var robot = game.robots[player]
-        var x = robot.position.x*50
-        var y = robot.position.y*50
-        var rot = 90*directionToRotation(robot.direction)
+        var x = robot.position.x * 50
+        var y = robot.position.y * 50
+        var rot = 90 * directionToRotation(robot.direction)
         return h('robot.robot' + (index % 6 + 1),
             {
                 style: {
-                    transform: 'translate('+x+'px, '+y+'px) rotate('+rot+'deg)'
+                    transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)'
                 },
                 props: {title: player + " - " + Object.keys(robot.direction)[0]}
             });
@@ -945,28 +952,35 @@ function renderRobots(game) {
 }
 
 function directionToRotation(direction) {
-    if(direction.Up)
+    if (direction.Up)
         return 0
-    else if(direction.Right)
+    else if (direction.Right)
         return 1
-    else if(direction.Down)
+    else if (direction.Down)
         return 2
-    else if(direction.Left)
+    else if (direction.Left)
         return 3
 }
 
-function renderActionButtons(state, cycle, robotActions, update){
-    var headerRow = h('tr', range(5).map(function(i){return h('th', 'Action '+(i+1))}))
-    function actionRow(action){
-        function actionButton(slot){
+function renderActionButtons(state, cycle, robotActions, actionHandler) {
+    var headerRow = h('tr', range(5).map(function (i) {
+        return h('th', 'Action ' + (i + 1))
+    }))
+
+    function actionRow(action) {
+        function actionButton(slot) {
             return h('td',
                 h('button.button',
-                    {class: {'is-primary': robotActions[state.player] && robotActions[state.player].actions[slot] && robotActions[state.player].actions[slot][action]},
-                    on: {click: [update, state, {defineAction: {player: state.player, cycle, slot, action}}]}},
+                    {
+                        class: {'is-primary': state.slots && state.slots[slot] && state.slots[slot][action]},
+                        on: {click: [actionHandler, {defineAction: {player: state.player, cycle, slot, action}}]}
+                    },
                     action))
         }
+
         return h('tr', range(5).map(actionButton))
     }
+
     return h('table', [
         headerRow,
         actionRow('MoveForward'),
@@ -995,26 +1009,59 @@ var patch = snabbdom.init([
 var renderLobby = require('./lobby/index')
 var renderGame = require('./game/index')
 var service = require('./lobby-service')
-var actions = require('./actions')
+var actions = require('./actions').actions
 
 function Lobby(element, player) {
-    function updateCallback(oldState, action) {
-        actions.apply(oldState, action)
-            .then(function (newState) {
-                // console.log("state Transition", action, oldState, newState)
-                renderState(newState, element)
-            })
-    }
-
     var node = element
+    const lobbyUpdates = service.updates()
 
     function renderState(state) {
+        lobbyUpdates.onmessage = lobbyEventHandler(state)
         var vnode
-        if(state.selectedGame && state.games[state.selectedGame])
-            vnode = renderGame(state, state.games[state.selectedGame], updateCallback)
-        else
-            vnode = renderLobby(state, updateCallback)
+        if(state.selectedGame && state.selectedGameState) {
+            if(state.eventSource)
+                state.eventSource.onmessage = gameEventHandler(state)
+            vnode = renderGame(state, state.selectedGameState, actionHandler(state))
+        }else
+            vnode = renderLobby(state, actionHandler(state))
         node = patch(node, vnode)
+    }
+
+    function actionHandler(state) {
+        return function(action) {
+            const promise = actions(state, action)
+            if (promise && promise.then)
+                promise.then(renderState)
+        }
+    }
+
+    function gameEventHandler(state){
+        return function(event){
+            const data = JSON.parse(event.data)
+            const newGameState = data.state
+            const events = data.events
+            state.selectedGameState = newGameState
+            console.log(events)
+            if(events.find(function(event){
+                return !! event.PlayerActionsExecuted
+            })) delete state.slots
+            renderState(state)
+        }
+    }
+
+    function lobbyEventHandler(state){
+        return function(event){
+            const data = JSON.parse(event.data)
+            if(data.GameDeleted){
+                delete state.games[data.GameDeleted.id]
+                renderState(state)
+            }else if(data.GameCreated){
+                state.games[data.GameCreated.id] = data.GameCreated.state
+                renderState(state)
+            }else {
+                console.log("unhandled lobby event", data)
+            }
+        }
     }
 
     service.getAllGames().then(function (games) {
@@ -1074,6 +1121,10 @@ function defineGame(gameId) {
       })
 }
 
+function updates() {
+    return new EventSource("/api/games/events");
+}
+
 module.exports = {
   getAllGames: getAllGames,
   createGame: createGame,
@@ -1081,32 +1132,33 @@ module.exports = {
   joinGame: joinGame,
   defineGame: defineGame,
   startGame: startGame,
+  updates: updates
 }
 
 },{}],16:[function(require,module,exports){
 var h = require('snabbdom/h').default
 
-function render(state, update) {
+function render(state, actionHandler) {
     return h('div', [
-            renderLoginModal(state, state.player, update),
+            renderLoginModal(state.player, actionHandler),
             h('h1', 'Game Lobby:'),
-            renderGameTable(state, state.games, update),
+            renderGameTable(state, state.games, actionHandler),
             h('button.button.is-primary',
-                {on: {click: [update, state, {createGame: true}]}},
+                {on: {click: [actionHandler, {createGame: true}]}},
                 'New Game')
         ]
     )
 }
 
-function renderGameTable(state, games, update) {
+function renderGameTable(state, games, actionHandler) {
+    console.log(games)
     var rows = Object.keys(games).map(function (id) {
-        return renderGameRow(state, id, games[id], update)
+        return renderGameRow(id, games[id], actionHandler)
     })
 
     var header = h('tr', [
         h('th', 'Id'),
         h('th', 'State'),
-        h('th', 'Players'),
         h('th', 'Actions'),
     ])
 
@@ -1115,54 +1167,28 @@ function renderGameTable(state, games, update) {
     return h('table', rows)
 }
 
-function renderGameRow(feState, id, game, update) {
-    var state = Object.keys(game)[0]
-    var players
-    if (state === 'GameRunning')
-        players = game[state].players
-    else if (state === 'GameNotStarted')
-        players = game[state].playerNames
-    else
-        players = []
-
+function renderGameRow(id, gameState, actionHandler) {
     var actions = [
-        state === 'GameNotDefined' ?
-            h('button.button.is-primary',
-                {on: {click: [update, feState, {defineScenario: id}]}},
-                'Define Scenario') : undefined,
-        state === 'GameNotStarted' ?
-            h('button.button.is-primary',
-                {on: {click: [update, feState, {joinGame: id}]}},
-                'Join') : undefined,
-        state === 'GameNotStarted' ?
-            h('button.button.is-primary',
-                {on: {click: [update, feState, {startGame: id}]}},
-                'Start') : undefined,
-        state === 'GameRunning' ?
-            h('button.button.is-primary',
-                {on: {click: [update, feState, {enterGame: id}]}},
-                'Enter') : undefined,
+        h('button.button.is-primary',
+            {on: {click: [actionHandler, {enterGame: id}]}},
+            'Enter'),
         h('button.button.is-danger',
-            {on: {click: [update, feState, {deleteGame: id}]}},
+            {on: {click: [actionHandler, {deleteGame: id}]}},
             'Delete')
     ]
 
     return h('tr', [
         h('td', id),
-        h('td', state),
-        h('td', h('span.tags',
-            players.map(function (player) {
-                return h('tag.tag', player)
-            }))),
+        h('td', gameState),
         h('td', h('span.buttons', actions))
     ])
 }
 
-function renderLoginModal(state, player, update) {
+function renderLoginModal(player, actionHandler) {
     function submit() {
         var player = document.getElementById('player-name-input').value
         if(player)
-            update(state, {definePlayerName: player})
+            actionHandler({definePlayerName: player})
     }
 
     if (!player) {

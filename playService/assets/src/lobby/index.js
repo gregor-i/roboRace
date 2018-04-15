@@ -1,26 +1,26 @@
 var h = require('snabbdom/h').default
 
-function render(state, update) {
+function render(state, actionHandler) {
     return h('div', [
-            renderLoginModal(state, state.player, update),
+            renderLoginModal(state.player, actionHandler),
             h('h1', 'Game Lobby:'),
-            renderGameTable(state, state.games, update),
+            renderGameTable(state, state.games, actionHandler),
             h('button.button.is-primary',
-                {on: {click: [update, state, {createGame: true}]}},
+                {on: {click: [actionHandler, {createGame: true}]}},
                 'New Game')
         ]
     )
 }
 
-function renderGameTable(state, games, update) {
+function renderGameTable(state, games, actionHandler) {
+    console.log(games)
     var rows = Object.keys(games).map(function (id) {
-        return renderGameRow(state, id, games[id], update)
+        return renderGameRow(id, games[id], actionHandler)
     })
 
     var header = h('tr', [
         h('th', 'Id'),
         h('th', 'State'),
-        h('th', 'Players'),
         h('th', 'Actions'),
     ])
 
@@ -29,54 +29,28 @@ function renderGameTable(state, games, update) {
     return h('table', rows)
 }
 
-function renderGameRow(feState, id, game, update) {
-    var state = Object.keys(game)[0]
-    var players
-    if (state === 'GameRunning')
-        players = game[state].players
-    else if (state === 'GameNotStarted')
-        players = game[state].playerNames
-    else
-        players = []
-
+function renderGameRow(id, gameState, actionHandler) {
     var actions = [
-        state === 'GameNotDefined' ?
-            h('button.button.is-primary',
-                {on: {click: [update, feState, {defineScenario: id}]}},
-                'Define Scenario') : undefined,
-        state === 'GameNotStarted' ?
-            h('button.button.is-primary',
-                {on: {click: [update, feState, {joinGame: id}]}},
-                'Join') : undefined,
-        state === 'GameNotStarted' ?
-            h('button.button.is-primary',
-                {on: {click: [update, feState, {startGame: id}]}},
-                'Start') : undefined,
-        state === 'GameRunning' ?
-            h('button.button.is-primary',
-                {on: {click: [update, feState, {enterGame: id}]}},
-                'Enter') : undefined,
+        h('button.button.is-primary',
+            {on: {click: [actionHandler, {enterGame: id}]}},
+            'Enter'),
         h('button.button.is-danger',
-            {on: {click: [update, feState, {deleteGame: id}]}},
+            {on: {click: [actionHandler, {deleteGame: id}]}},
             'Delete')
     ]
 
     return h('tr', [
         h('td', id),
-        h('td', state),
-        h('td', h('span.tags',
-            players.map(function (player) {
-                return h('tag.tag', player)
-            }))),
+        h('td', gameState),
         h('td', h('span.buttons', actions))
     ])
 }
 
-function renderLoginModal(state, player, update) {
+function renderLoginModal(player, actionHandler) {
     function submit() {
         var player = document.getElementById('player-name-input').value
         if(player)
-            update(state, {definePlayerName: player})
+            actionHandler({definePlayerName: player})
     }
 
     if (!player) {

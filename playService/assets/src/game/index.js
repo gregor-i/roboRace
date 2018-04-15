@@ -1,25 +1,42 @@
 var h = require('snabbdom/h').default
 
-function render(state, game, update) {
+function render(state, game, actionHandler) {
     if (game.GameRunning) {
         var gameRunning = game.GameRunning
-        return h('div', [
-            h('h1', 'Game ' + state.selectedGame),
+        return gameFrame('Game ' + state.selectedGame, [
             h('div.board', [
                 renderBoard(gameRunning),
                 renderRobots(gameRunning)
             ]),
-            renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, update),
-            h('button.button.is-primary',
-                {on: {click: [update, state, {leaveGame: true}]}},
-                'Back to Lobby')
-        ])
-    } else
-        return h('div', [
-            h('h1', 'GameState ' + Object.keys(game)[0] + ' is currently not supported.'),
-            h('button.button.is-primary',
-                {on: {click: [update, state, {leaveGame: true}]}},
-                'Back to Lobby')])
+            renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler)],
+            actionHandler)
+    } else if (game.GameNotStarted) {
+        return gameFrame('Game '+state.selectedGame,
+            [
+                h('h3', 'joined Players:'),
+                h('ol', game.GameNotStarted.playerNames.map(function(player){
+                    return h('li', player)
+                })),
+                h('button.button.is-primary',
+                    {on: {click: [actionHandler, {joinGame: state.selectedGame}]}},
+                    'Join Game'),
+                h('button.button.is-primary',
+                    {on: {click: [actionHandler, {startGame: state.selectedGame}]}},
+                    'Start Game')
+            ], actionHandler)
+    } else {
+        return gameFrame('GameState ' + Object.keys(game)[0] + ' is currently not supported.', undefined, actionHandler)
+    }
+}
+
+function gameFrame(title, content, actionHandler) {
+    return h('div', [
+        h('h1', title),
+        h('div', content),
+        h('button.button.is-primary',
+            {on: {click: [actionHandler, {leaveGame: true}]}},
+            'Back to Lobby')
+    ])
 }
 
 function renderBoard(game) {
@@ -68,13 +85,13 @@ function renderCell(game, row, column) {
 function renderRobots(game) {
     var robots = Object.keys(game.robots).map(function (player, index) {
         var robot = game.robots[player]
-        var x = robot.position.x*50
-        var y = robot.position.y*50
-        var rot = 90*directionToRotation(robot.direction)
+        var x = robot.position.x * 50
+        var y = robot.position.y * 50
+        var rot = 90 * directionToRotation(robot.direction)
         return h('robot.robot' + (index % 6 + 1),
             {
                 style: {
-                    transform: 'translate('+x+'px, '+y+'px) rotate('+rot+'deg)'
+                    transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)'
                 },
                 props: {title: player + " - " + Object.keys(robot.direction)[0]}
             });
@@ -83,28 +100,35 @@ function renderRobots(game) {
 }
 
 function directionToRotation(direction) {
-    if(direction.Up)
+    if (direction.Up)
         return 0
-    else if(direction.Right)
+    else if (direction.Right)
         return 1
-    else if(direction.Down)
+    else if (direction.Down)
         return 2
-    else if(direction.Left)
+    else if (direction.Left)
         return 3
 }
 
-function renderActionButtons(state, cycle, robotActions, update){
-    var headerRow = h('tr', range(5).map(function(i){return h('th', 'Action '+(i+1))}))
-    function actionRow(action){
-        function actionButton(slot){
+function renderActionButtons(state, cycle, robotActions, actionHandler) {
+    var headerRow = h('tr', range(5).map(function (i) {
+        return h('th', 'Action ' + (i + 1))
+    }))
+
+    function actionRow(action) {
+        function actionButton(slot) {
             return h('td',
                 h('button.button',
-                    {class: {'is-primary': robotActions[state.player] && robotActions[state.player].actions[slot] && robotActions[state.player].actions[slot][action]},
-                    on: {click: [update, state, {defineAction: {player: state.player, cycle, slot, action}}]}},
+                    {
+                        class: {'is-primary': state.slots && state.slots[slot] && state.slots[slot][action]},
+                        on: {click: [actionHandler, {defineAction: {player: state.player, cycle, slot, action}}]}
+                    },
                     action))
         }
+
         return h('tr', range(5).map(actionButton))
     }
+
     return h('table', [
         headerRow,
         actionRow('MoveForward'),

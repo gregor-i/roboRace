@@ -1,8 +1,7 @@
 package gameLogic
 
-import gameLogic.action.{ActionSlots, MoveForward}
+import gameLogic.action.{MoveForward}
 import gameLogic.gameUpdate.{DefineNextAction, DefineScenario, RegisterForGame, StartGame}
-import gameLogic.processor.Processor
 import org.scalatest.{FunSuite, Matchers}
 
 class GameSpec extends FunSuite with Matchers {

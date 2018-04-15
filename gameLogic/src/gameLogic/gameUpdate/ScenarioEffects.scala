@@ -1,7 +1,6 @@
 package gameLogic.gameUpdate
 
-import gameLogic.action.ActionSlots
-import gameLogic.{AllPlayersFinished, EventLog, GameFinished, GameRunning, GameState, Logged, PlayerFinished, Robot, RobotReset, Robots}
+import gameLogic.{EventLog, GameRunning, Logged, PlayerFinished, Robot, RobotReset, Robots}
 
 object ScenarioEffects {
 
@@ -45,7 +44,7 @@ object ScenarioEffects {
         for {
           clearedInitial <- PushRobots(initial.position, initial.direction, game.robots)
           resettedFallen <- (clearedInitial + (player -> initial)).log(RobotReset(player, robot, initial))
-          resettedActions = game.robotActions + (player -> ActionSlots.emptyActionSet)
+          resettedActions = game.robotActions + (player -> Seq.empty)
           recursion <- fallenRobots(game.copy(robots = resettedFallen, robotActions = resettedActions))
         } yield recursion
 

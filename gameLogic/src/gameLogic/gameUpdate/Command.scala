@@ -3,57 +3,63 @@ package gameUpdate
 
 import gameLogic.action.{Action, ActionSlots}
 
+sealed trait CommandResponse
+case class CommandRejected(reason: RejectionReason, command:Command) extends CommandResponse
+case class CommandAccepted(newState: GameState) extends CommandResponse
+
 sealed trait Command {
-  def apply(gameState: GameState): Logged[GameState]
+  type R = CommandResponse
+  def apply(gameState: GameState): R
 }
 
 sealed trait FoldingCommand extends Command {
-  def apply(gameState: GameState): Logged[GameState] = gameState.fold(ifNotDefined)(ifNotStarted)(ifRunning)(ifFinished)
+  def apply(gameState: GameState): R = gameState.fold(ifNotDefined)(ifNotStarted)(ifRunning)(ifFinished)
 
-  def ifNotDefined: GameNotDefined.type => Logged[GameState] = _.log(rejected(WrongState))
-  def ifNotStarted: GameNotStarted => Logged[GameState] = _.log(rejected(WrongState))
-  def ifRunning: GameRunning => Logged[GameState] = _.log(rejected(WrongState))
-  def ifFinished: GameFinished => Logged[GameState] = _.log(rejected(WrongState))
+  def ifNotDefined: GameNotDefined.type => R = _ => rejected(WrongState)
+  def ifNotStarted: GameNotStarted => R = _ => rejected(WrongState)
+  def ifRunning: GameRunning => R = _ => rejected(WrongState)
+  def ifFinished: GameFinished => R = _ => rejected(WrongState)
 
-  final def rejected(rejectionReason: RejectionReason): CommandRejected = CommandRejected(this, rejectionReason)
-  final def accepted: CommandAccepted = CommandAccepted(this)
+  final def rejected(rejectionReason: RejectionReason): R = CommandRejected(rejectionReason, this)
+  final def accepted(s: GameState): R = CommandAccepted(s)
 }
 
 case class DefineScenario(scenario: GameScenario) extends FoldingCommand{
-  override def ifNotDefined: GameNotDefined.type => Logged[GameState] =
-    _ => GameNotStarted(scenario, Nil).log(CommandAccepted(this))
+  override def ifNotDefined: GameNotDefined.type => R =
+    _ => accepted(GameNotStarted(scenario, Nil))
 }
 
 case class RegisterForGame(playerName: String) extends FoldingCommand {
-  override def ifNotStarted: GameNotStarted => Logged[GameState] = {
+  override def ifNotStarted: GameNotStarted => R = {
     case g if g.playerNames.contains(playerName) =>
-      g.log(rejected(PlayerAlreadyRegistered))
+      rejected(PlayerAlreadyRegistered)
     case g if g.playerNames.size >= g.scenario.initialRobots.size =>
-      g.log(rejected(TooMuchPlayersRegistered))
+      rejected(TooMuchPlayersRegistered)
     case g =>
-      g.copy(playerNames = g.playerNames :+ playerName).log(accepted)
+      accepted(g.copy(playerNames = g.playerNames :+ playerName))
   }
 }
 
 case object StartGame extends FoldingCommand {
-  override def ifNotStarted: GameNotStarted => Logged[GameState] = {
-    case g if g.playerNames.isEmpty => g.log(rejected(NoPlayersRegistered))
-    case g => GameRunning(
+  override def ifNotStarted: GameNotStarted => R = {
+    case g if g.playerNames.isEmpty => rejected(NoPlayersRegistered)
+    case g => accepted(GameRunning(
       cycle = 0,
       players = g.playerNames,
       finishedPlayers = Seq.empty,
       scenario = g.scenario,
       robots = g.playerNames.zipWithIndex.map { case (name, index) => name -> g.scenario.initialRobots(index) }.toMap,
-      robotActions = Map.empty)
-      .log(accepted)
+      robotActions = Map.empty))
   }
 }
 
-case class DefineNextAction(player: String, cycle: Int, slot: Int, action: Option[Action]) extends FoldingCommand {
-  override def ifRunning: GameRunning => Logged[GameRunning] = {
-    case g if g.cycle != cycle => g.log(rejected(WrongCycle))
-    case g if !g.players.contains(player) => g.log(rejected(PlayerNotFound))
-    case g if slot < 0 || slot >= ActionSlots.actionsPerCycle => g.log(rejected(InvalidActionSlot))
-    case g => g.copy(robotActions = g.robotActions + (player -> g.robotActions.getOrElse(player, ActionSlots.emptyActionSet).updated(slot, action))).log(accepted)
+case class DefineNextAction(player: String, cycle: Int, actions: Seq[Action]) extends FoldingCommand {
+  override def ifRunning: GameRunning => R = {
+    case g if g.cycle != cycle => rejected(WrongCycle)
+    case g if !g.players.contains(player) => rejected(PlayerNotFound)
+    case g if actions.size != ActionSlots.actionsPerCycle => rejected(InvalidActionCount)
+    case g => accepted(
+      g.copy(robotActions = g.robotActions + (player -> actions))
+    )
   }
 }

@@ -9,26 +9,59 @@ var patch = snabbdom.init([
 var renderLobby = require('./lobby/index')
 var renderGame = require('./game/index')
 var service = require('./lobby-service')
-var actions = require('./actions')
+var actions = require('./actions').actions
 
 function Lobby(element, player) {
-    function updateCallback(oldState, action) {
-        actions.apply(oldState, action)
-            .then(function (newState) {
-                // console.log("state Transition", action, oldState, newState)
-                renderState(newState, element)
-            })
-    }
-
     var node = element
+    const lobbyUpdates = service.updates()
 
     function renderState(state) {
+        lobbyUpdates.onmessage = lobbyEventHandler(state)
         var vnode
-        if(state.selectedGame && state.games[state.selectedGame])
-            vnode = renderGame(state, state.games[state.selectedGame], updateCallback)
-        else
-            vnode = renderLobby(state, updateCallback)
+        if(state.selectedGame && state.selectedGameState) {
+            if(state.eventSource)
+                state.eventSource.onmessage = gameEventHandler(state)
+            vnode = renderGame(state, state.selectedGameState, actionHandler(state))
+        }else
+            vnode = renderLobby(state, actionHandler(state))
         node = patch(node, vnode)
+    }
+
+    function actionHandler(state) {
+        return function(action) {
+            const promise = actions(state, action)
+            if (promise && promise.then)
+                promise.then(renderState)
+        }
+    }
+
+    function gameEventHandler(state){
+        return function(event){
+            const data = JSON.parse(event.data)
+            const newGameState = data.state
+            const events = data.events
+            state.selectedGameState = newGameState
+            console.log(events)
+            if(events.find(function(event){
+                return !! event.PlayerActionsExecuted
+            })) delete state.slots
+            renderState(state)
+        }
+    }
+
+    function lobbyEventHandler(state){
+        return function(event){
+            const data = JSON.parse(event.data)
+            if(data.GameDeleted){
+                delete state.games[data.GameDeleted.id]
+                renderState(state)
+            }else if(data.GameCreated){
+                state.games[data.GameCreated.id] = data.GameCreated.state
+                renderState(state)
+            }else {
+                console.log("unhandled lobby event", data)
+            }
+        }
     }
 
     service.getAllGames().then(function (games) {

@@ -1,14 +1,15 @@
 #API
-POST          /api/games                        controller.LobbyController.create()
-GET           /api/games                        controller.LobbyController.list()
-DELETE        /api/games/:id                    controller.LobbyController.delete(id: String)
+POST          /api/games                     controller.LobbyController.create()
+GET           /api/games                     controller.LobbyController.list()
+DELETE        /api/games/:id                 controller.LobbyController.delete(id: String)
+GET           /api/games/events              controller.LobbyController.sse()
 
-GET           /api/games/:id                    controller.GameController.state(id:String)
-POST          /api/games/:id/commands           controller.GameController.sendCommand(id: String)
-GET           /api/games/:id/events             controller.GameController.sse(id: String)
+GET           /api/games/:id                 controller.GameController.state(id:String)
+POST          /api/games/:id/commands        controller.GameController.sendCommand(id: String)
+GET           /api/games/:id/events          controller.GameController.sse(id: String)
 
 #Frontend
-GET           /                                 controller.UiController.index()
-GET           /default-scenario                 controller.UiController.defaultScenario()
+GET           /                              controller.UiController.index()
+GET           /default-scenario              controller.UiController.defaultScenario()
 
-GET           /assets/*file                     controllers.Assets.at(file)
+GET           /assets/*file                  controllers.Assets.at(file)

@@ -5,7 +5,7 @@ import gameLogic.action._
 
 object Cycle{
   def apply(gameState: GameState): Logged[GameState] = gameState match {
-    case g: GameRunning if g.players.forall(player => g.robotActions.get(player).exists(_.allDefined)) =>
+    case g: GameRunning if g.players.forall(player => g.robotActions.isDefinedAt(player)) =>
       for {
         _ <- ().log(AllPlayerDefinedActions)
         afterPlayerActions <- execAllActions(g)
@@ -47,14 +47,14 @@ object Cycle{
       Math.atan2(dx, dy)
     }
 
-    def emptiedSlots(actionSet: ActionSlots): Int = actionSet.actions.count(_.isEmpty)
+    def emptiedSlots(actions: Seq[Action]): Int = ActionSlots.actionsPerCycle - actions.size
 
     def nextPlayerWeight(player: String): (Int, Double, Double) = {
       val position = gameState.robots(player).position
       (emptiedSlots(gameState.robotActions(player)), distance(position), angle(position))
     }
 
-    if (gameState.robotActions.forall(_._2.allEmpty)) {
+    if (gameState.robotActions.forall(_._2.isEmpty)) {
        None.log()
     } else {
       val p = gameState.players.minBy(nextPlayerWeight)
@@ -63,14 +63,14 @@ object Cycle{
   }
 
   private def applyAction(game: GameRunning, player: String): Logged[GameRunning] = {
-    val actionSlots = game.robotActions(player)
-    val (Some(action), index) = actionSlots.actions.zipWithIndex.find(_._1.isDefined).get
+    val actions = game.robotActions(player)
+    val action = actions.head
     for {
       robot <- game.robots(player).log(RobotAction(player, action))
       afterAction <- (action match {
         case turn: TurnAction => turnAction(player, robot, turn, game)
         case move: MoveAction => moveAction(player, robot, move, game)
-      }).map(_.copy(robotActions = game.robotActions + (player -> actionSlots.updated(index, None))))
+      }).map(_.copy(robotActions = game.robotActions + (player -> actions.tail)))
       afterEffects <- ScenarioEffects.afterAction(afterAction)
     } yield afterEffects
   }

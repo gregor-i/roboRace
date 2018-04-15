@@ -10,8 +10,8 @@ function sendCommand(gameId, command) {
     })
 }
 
-function defineAction(gameId, player, cycle, slot, action) {
-    return sendCommand(gameId, {DefineNextAction: {player, cycle, slot, action}})
+function defineAction(gameId, player, cycle, actions) {
+    return sendCommand(gameId, {DefineNextAction: {player, cycle, actions}})
         .then(parseJson)
 }
 

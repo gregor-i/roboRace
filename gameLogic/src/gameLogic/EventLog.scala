@@ -4,8 +4,7 @@ import gameLogic.action.Action
 import gameLogic.gameUpdate.Command
 
 sealed trait EventLog
-case class CommandAccepted(command: Command) extends EventLog
-case class CommandRejected(command: Command, reason: RejectionReason) extends EventLog
+case class CommandProcessed(command: Command) extends EventLog
 
 case class GameStateTransition(oldState: GameState, newState: GameState) extends EventLog
 
@@ -31,4 +30,4 @@ case object TooMuchPlayersRegistered extends RejectionReason
 case object WrongCycle extends RejectionReason
 case object PlayerNotFound extends RejectionReason
 case object WrongState extends RejectionReason
-case object InvalidActionSlot extends RejectionReason
+case object InvalidActionCount extends RejectionReason

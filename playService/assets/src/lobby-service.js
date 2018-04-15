@@ -38,6 +38,10 @@ function defineGame(gameId) {
       })
 }
 
+function updates() {
+    return new EventSource("/api/games/events");
+}
+
 module.exports = {
   getAllGames: getAllGames,
   createGame: createGame,
@@ -45,4 +49,5 @@ module.exports = {
   joinGame: joinGame,
   defineGame: defineGame,
   startGame: startGame,
+  updates: updates
 }

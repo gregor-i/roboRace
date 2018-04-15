@@ -1,6 +1,6 @@
 package gameLogic
 
-import gameLogic.action.ActionSlots
+import gameLogic.action.Action
 
 sealed trait GameState {
   def fold[A](ifNotDefined: GameNotDefined.type => A)
@@ -12,6 +12,8 @@ sealed trait GameState {
     case g: GameRunning => ifRunning(g)
     case g: GameFinished => ifFinished(g)
   }
+
+  def stateDescription: String = getClass.getSimpleName.filter(_ != '$')
 }
 
 case object GameNotDefined extends GameState
@@ -24,11 +26,6 @@ case class GameRunning(cycle: Int,
                        finishedPlayers: Seq[PlayerFinished],
                        scenario: GameScenario,
                        robots: Map[String, Robot],
-                       robotActions: Map[String, ActionSlots]) extends GameState
+                       robotActions: Map[String, Seq[Action]]) extends GameState
 
 case class GameFinished(players: Seq[PlayerFinished]) extends GameState
-
-
-object GameState {
-  val initalState = GameNotDefined
-}
