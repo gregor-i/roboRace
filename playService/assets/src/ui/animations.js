@@ -12,26 +12,31 @@ function queue(oldGameState, newGameState, events) {
             var oldRobot = oldGameState.GameRunning.robots[player]
             var newRobot = newGameState.GameRunning.robots[player]
             var rot = directionToRotation(oldRobot.direction)
-            var x = oldRobot.position.x * 50
-            var y = oldRobot.position.y * 50
+            var x = oldRobot.position.x
+            var y = oldRobot.position.y
 
             keyframes.push(keyframe(x, y, directionToRotation(oldRobot.direction), 0))
 
             for (var j = 0; j < events.length; j++) {
                 if (events[j].RobotPositionTransition && events[j].RobotPositionTransition.playerName === player) {
-                    x = 50 * events[j].RobotPositionTransition.to.x
-                    y = 50 * events[j].RobotPositionTransition.to.y
+                    x = events[j].RobotPositionTransition.to.x
+                    y = events[j].RobotPositionTransition.to.y
                     keyframes.push(keyframe(x, y, rot, j / (1 + events.length)))
                 } else if (events[j].RobotDirectionTransition && events[j].RobotDirectionTransition.playerName === player) {
                     rot = nearestRotation(rot, events[j].RobotDirectionTransition.to)
                     keyframes.push(keyframe(x, y, rot, j / (1 + events.length)))
+                }else if(events[j].RobotReset && events[j].RobotReset.playerName === player){
+                    x = events[j].RobotReset.to.position.x
+                    y = events[j].RobotReset.to.position.y
+                    rot = nearestRotation(rot, events[j].RobotReset.to.direction)
+                    keyframes.push(keyframe(x, y, rot, j / (1 + events.length)))
                 }
             }
             rot = nearestRotation(rot, newRobot.direction)
-            keyframes.push(keyframe(newRobot.position.x * 50, newRobot.position.y * 50, rot, 1))
+            keyframes.push(keyframe(newRobot.position.x, newRobot.position.y, rot, 1))
 
             if (keyframes.length !== 1) {
-                console.log(keyframes)
+                console.log("animation", keyframes)
                 element.animate(keyframes, 2000)
             }
         }
@@ -40,7 +45,7 @@ function queue(oldGameState, newGameState, events) {
 
 function keyframe(x, y, rot, offset) {
     return {
-        transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + (rot * 90) + 'deg)',
+        transform: 'translate(' + (50 * x) + 'px, ' + (50 * y) + 'px) rotate(' + (rot * 90) + 'deg)',
         offset: offset
     }
 }
