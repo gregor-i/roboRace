@@ -755,7 +755,7 @@ function actions(state, action) {
         if (oldEvents)
             oldEvents.close()
         const newEvents = gameService.updates(gameId)
-        const newState = Object.assign({}, state, {selectedGame: gameId, eventSource: newEvents})
+        const newState = Object.assign({}, state, {selectedGame: gameId, eventSource: newEvents, slots: []})
         return gameService.getState(gameId).then(function (gameState) {
             newState.selectedGameState = gameState
             return newState
@@ -1044,7 +1044,7 @@ function Lobby(element, player) {
             console.log(events)
             if(events.find(function(event){
                 return !! event.PlayerActionsExecuted
-            })) delete state.slots
+            })) state.slots = []
             renderState(state)
         }
     }
@@ -1068,6 +1068,10 @@ function Lobby(element, player) {
         renderState({
             player: player,
             games: games,
+            selectedGame: undefined,
+            eventSource: undefined,
+            selectedGameState: undefined,
+            slots: []
         }, element)
     })
 

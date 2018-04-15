@@ -44,7 +44,7 @@ function Lobby(element, player) {
             console.log(events)
             if(events.find(function(event){
                 return !! event.PlayerActionsExecuted
-            })) delete state.slots
+            })) state.slots = []
             renderState(state)
         }
     }
@@ -68,6 +68,10 @@ function Lobby(element, player) {
         renderState({
             player: player,
             games: games,
+            selectedGame: undefined,
+            eventSource: undefined,
+            selectedGameState: undefined,
+            slots: []
         }, element)
     })
 
