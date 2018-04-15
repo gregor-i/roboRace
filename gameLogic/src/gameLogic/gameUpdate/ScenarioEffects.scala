@@ -1,32 +1,11 @@
 package gameLogic.gameUpdate
 
-import gameLogic.{EventLog, GameRunning, Logged, PlayerFinished, Robot, RobotReset, Robots}
+import gameLogic.{GameRunning, Logged, PlayerFinished, RobotReset}
 
 object ScenarioEffects {
 
-  def afterAction(game: GameRunning): Logged[GameRunning] = {
-    def resetRobot(player: String, robot: Robot)(robots: Robots): Logged[Robots] = {
-      val index = game.players.zipWithIndex.find(_._1 == player).get._2
-      val initial = game.scenario.initialRobots(index)
-      for {
-        clearedInitial <- PushRobots(initial.position, initial.direction, robots)
-        resettedFallen <- (clearedInitial + (player -> initial)).log(RobotReset(player, robot, initial))
-      } yield resettedFallen
-    }
-
-    val actions = game.robots.filter {
-      case (_, robot) => robot.position.x >= game.scenario.width ||
-        robot.position.x < 0 ||
-        robot.position.y >= game.scenario.height ||
-        robot.position.y < 0
-    }.map { case (player, robot) =>
-      resetRobot(player, robot)(_)
-    }
-
-    for {
-      updatedRobots <- Logged.flatMapFold[Robots, EventLog](Logged.pure(game.robots))(actions)
-    } yield game.copy(robots = updatedRobots)
-  }
+  def afterAction(game: GameRunning): Logged[GameRunning] =
+    fallenRobots(game)
 
   private def fallenRobots(game: GameRunning): Logged[GameRunning] = {
     val firstFallenRobot = game.robots.find {
