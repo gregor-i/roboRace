@@ -1,31 +1,29 @@
 var h = require('snabbdom/h').default
 var _ = require('lodash')
 var constants = require('../constants')
+var button = require('./button')
 
 function render(state, game, actionHandler) {
     if (game.GameRunning) {
         var gameRunning = game.GameRunning
         return gameFrame('Game ' + state.selectedGame, [
-            h('div.board', [
-                renderBoard(gameRunning),
-                renderRobots(gameRunning)
-            ]),
-            renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler)],
+                h('div.board', [
+                    renderBoard(gameRunning),
+                    renderRobots(gameRunning)
+                ]),
+                renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler)],
             actionHandler)
     } else if (game.GameNotStarted) {
-        return gameFrame('Game '+state.selectedGame,
+        return gameFrame('Game ' + state.selectedGame,
             [
-                h('h3', 'joined Players:'),
-                h('ol', game.GameNotStarted.playerNames.map(function(player){
-                    return h('li', player)
-                })),
-                h('button.button.is-primary',
-                    {on: {click: [actionHandler, {joinGame: state.selectedGame}]}},
-                    'Join Game'),
-                h('button.button.is-primary',
-                    {on: {click: [actionHandler, {startGame: state.selectedGame}]}},
-                    'Start Game')
+                renderPlayerList('joined Players:', game.GameNotStarted.playerNames),
+                button.primary(actionHandler, 'Join Game', {joinGame: state.selectedGame}),
+                button.primary(actionHandler, 'Start Game', {startGame: state.selectedGame})
             ], actionHandler)
+    } else if (game.GameFinished) {
+        return gameFrame('Game ' + state.selectedGame + ' is finished',
+            renderPlayerList('finial ranking:', game.GameFinished.players.map(function(obj){return obj.playerName})),
+            actionHandler)
     } else {
         return gameFrame('GameState ' + Object.keys(game)[0] + ' is currently not supported.', undefined, actionHandler)
     }
@@ -35,10 +33,19 @@ function gameFrame(title, content, actionHandler) {
     return h('div', [
         h('h1', title),
         h('div', content),
-        h('button.button.is-primary',
-            {on: {click: [actionHandler, {leaveGame: true}]}},
-            'Back to Lobby')
+        button.primary(actionHandler, 'Back to Lobby', {leaveGame: true})
     ])
+}
+
+function renderPlayerList(title, playerNames) {
+    return h('h4', [
+        title,
+        h('ol',
+            playerNames.map(function (playerName) {
+                    return h('li', playerName)
+                }
+            ))]
+    )
 }
 
 function renderBoard(game) {
@@ -120,12 +127,9 @@ function renderActionButtons(state, cycle, robotActions, actionHandler) {
     function actionRow(action) {
         function actionButton(slot) {
             return h('td',
-                h('button.button',
-                    {
-                        class: {'is-primary': _.get(state, ['slots', slot,  action])},
-                        on: {click: [actionHandler, {defineAction: {player: state.player, cycle, slot, action}}]}
-                    },
-                    action))
+                _.get(state, ['slots', slot, action]) ?
+                    button.primary(actionHandler, action, {defineAction: {player: state.player, cycle, slot, action}}) :
+                    button.normal(actionHandler, action, {defineAction: {player: state.player, cycle, slot, action}}))
         }
 
         return h('tr', _.range(constants.numberOfActionsPerCycle).map(actionButton))

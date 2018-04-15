@@ -33,17 +33,14 @@ function actions(state, action) {
         return Promise.resolve(Object.assign({}, state, {player: action.definePlayerName}))
         // game actions
     } else if (action.defineScenario)
-        return lobbyService.defineGame(action.defineScenario)
-            .then(r(state))
-            .then(loadGamesFromBackend)
+        return gameService.defineGame(action.defineScenario)
+            .then(_.constant(state))
     else if (action.joinGame)
-        return lobbyService.joinGame(action.joinGame, state.player)
-            .then(r(state))
-            .then(loadGamesFromBackend)
+        return gameService.joinGame(action.joinGame, state.player)
+            .then(_.constant(state))
     else if (action.startGame)
-        return lobbyService.startGame(action.startGame)
-            .then(r(state))
-            .then(loadGamesFromBackend)
+        return gameService.startGame(action.startGame)
+            .then(_.constant(state))
     else if (action.defineAction) {
         if(!state.slots)
             state.slots = []
@@ -56,19 +53,6 @@ function actions(state, action) {
     } else {
         console.error("unknown action", action)
     }
-}
-
-function r(response) {
-    return function () {
-        return response
-    }
-}
-
-function loadGamesFromBackend(state) {
-    return lobbyService.getAllGames().then(function (games) {
-        state.games = games
-        return state
-    })
 }
 
 module.exports = actions
