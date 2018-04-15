@@ -1041,7 +1041,7 @@ function Lobby(element, player) {
             const newGameState = data.state
             const events = data.events
             state.selectedGameState = newGameState
-            console.log(events)
+            console.log("game Events: "+events)
             if(events.find(function(event){
                 return !! event.PlayerActionsExecuted
             })) state.slots = []
@@ -1155,7 +1155,6 @@ function render(state, actionHandler) {
 }
 
 function renderGameTable(state, games, actionHandler) {
-    console.log(games)
     var rows = Object.keys(games).map(function (id) {
         return renderGameRow(id, games[id], actionHandler)
     })
@@ -1196,7 +1195,6 @@ function renderLoginModal(player, actionHandler) {
     }
 
     if (!player) {
-        console.log("modal")
         return h('div.modal.is-active', [
             h('div.modal-background'),
             h('div.modal-content', [

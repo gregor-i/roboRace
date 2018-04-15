@@ -41,7 +41,7 @@ function Lobby(element, player) {
             const newGameState = data.state
             const events = data.events
             state.selectedGameState = newGameState
-            console.log(events)
+            console.log("game Events: "+events)
             if(events.find(function(event){
                 return !! event.PlayerActionsExecuted
             })) state.slots = []
