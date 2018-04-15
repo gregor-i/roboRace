@@ -28,7 +28,7 @@ class LobbyController @Inject()(gameRepo: GameRepository)
   }
 
   def create() = Action {
-    val id = UUID.randomUUID().toString
+    val id = UUID.randomUUID().toString.take(8)
     val gameState = GameNotStarted(GameScenario.default, Seq.empty)
     gameRepo.save(id, gameState)
     Source.single((GameCreated(id, gameState.stateDescription):LobbyEvent).asJson.noSpaces).runWith(sink)
