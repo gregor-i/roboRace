@@ -17874,6 +17874,12 @@ function actions(state, action) {
     } else if (action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
         return Promise.resolve(Object.assign({}, state, {player: action.definePlayerName}))
+    }else if(action.reloadGameList){
+        return lobbyService.getAllGames().then(function(gameList){
+            return Object.assign({}, state, {games:gameList})
+        })
+
+
         // game actions
     } else if (action.defineScenario)
         return gameService.defineGame(action.defineScenario)
@@ -18165,12 +18171,23 @@ function primary(actionHandler, text, action) {
 function normal(actionHandler, text, action) {
     return button(actionHandler, 'button.button', text, action)
 }
+
 function danger(actionHandler, text, action) {
     return button(actionHandler, 'button.button.is-danger', text, action)
 }
 
+function info(actionHandler, text, action){
+    return button(actionHandler, 'button.button.is-info', text, action)
+}
+
+function group(){
+    var args = Array.prototype.slice.call(arguments);
+    var wrappedInControl = args.map(function(button){return h('span.control', button)})
+    return h('div.field.has-addons', wrappedInControl)
+}
+
 module.exports = {
-    primary, normal, danger
+    primary, normal, danger, info, group
 }
 },{"snabbdom/h":2}],19:[function(require,module,exports){
 var h = require('snabbdom/h').default
@@ -18192,8 +18209,10 @@ function render(state, game, actionHandler) {
         return gameFrame('Game ' + state.selectedGame,
             [
                 renderPlayerList('joined Players:', game.GameNotStarted.playerNames),
-                button.primary(actionHandler, 'Join Game', {joinGame: state.selectedGame}),
-                button.primary(actionHandler, 'Start Game', {startGame: state.selectedGame})
+                button.group(
+                    button.primary(actionHandler, 'Join Game', {joinGame: state.selectedGame}),
+                    button.primary(actionHandler, 'Start Game', {startGame: state.selectedGame})
+                )
             ], actionHandler)
     } else if (game.GameFinished) {
         return gameFrame('Game ' + state.selectedGame + ' is finished',
@@ -18337,7 +18356,10 @@ function render(state, actionHandler) {
             renderLoginModal(state.player, actionHandler),
             h('h1', 'Game Lobby:'),
             renderGameTable(state, state.games, actionHandler),
-            button.primary(actionHandler, 'New Game', {createGame: true})
+            button.group(
+                button.primary(actionHandler, 'New Game', {createGame: true}),
+                button.info(actionHandler, 'Reload', {reloadGameList: true})
+            )
         ]
     )
 }
@@ -18362,10 +18384,10 @@ function renderGameRow(id, gameState, actionHandler) {
     return h('tr', [
         h('td', id),
         h('td', gameState),
-        h('td', h('span.buttons', [
+        h('td', button.group(
             button.primary(actionHandler, 'Enter', {enterGame: id}),
             button.danger(actionHandler, 'Delete', {deleteGame: id})
-        ]))
+        ))
     ])
 }
 

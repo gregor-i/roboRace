@@ -17,8 +17,10 @@ function render(state, game, actionHandler) {
         return gameFrame('Game ' + state.selectedGame,
             [
                 renderPlayerList('joined Players:', game.GameNotStarted.playerNames),
-                button.primary(actionHandler, 'Join Game', {joinGame: state.selectedGame}),
-                button.primary(actionHandler, 'Start Game', {startGame: state.selectedGame})
+                button.group(
+                    button.primary(actionHandler, 'Join Game', {joinGame: state.selectedGame}),
+                    button.primary(actionHandler, 'Start Game', {startGame: state.selectedGame})
+                )
             ], actionHandler)
     } else if (game.GameFinished) {
         return gameFrame('Game ' + state.selectedGame + ' is finished',

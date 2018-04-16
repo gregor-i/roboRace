@@ -6,7 +6,10 @@ function render(state, actionHandler) {
             renderLoginModal(state.player, actionHandler),
             h('h1', 'Game Lobby:'),
             renderGameTable(state, state.games, actionHandler),
-            button.primary(actionHandler, 'New Game', {createGame: true})
+            button.group(
+                button.primary(actionHandler, 'New Game', {createGame: true}),
+                button.info(actionHandler, 'Reload', {reloadGameList: true})
+            )
         ]
     )
 }
@@ -31,10 +34,10 @@ function renderGameRow(id, gameState, actionHandler) {
     return h('tr', [
         h('td', id),
         h('td', gameState),
-        h('td', h('span.buttons', [
+        h('td', button.group(
             button.primary(actionHandler, 'Enter', {enterGame: id}),
             button.danger(actionHandler, 'Delete', {deleteGame: id})
-        ]))
+        ))
     ])
 }
 

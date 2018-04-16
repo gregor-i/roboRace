@@ -31,6 +31,12 @@ function actions(state, action) {
     } else if (action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
         return Promise.resolve(Object.assign({}, state, {player: action.definePlayerName}))
+    }else if(action.reloadGameList){
+        return lobbyService.getAllGames().then(function(gameList){
+            return Object.assign({}, state, {games:gameList})
+        })
+
+
         // game actions
     } else if (action.defineScenario)
         return gameService.defineGame(action.defineScenario)

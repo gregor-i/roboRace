@@ -2,15 +2,16 @@ div.board {
     position: relative;
 }
 
-board{
-    border-collapse:collapse;
+board {
+    border-collapse: collapse;
     display: table;
 }
+
 board row {
     display: table-row;
 }
 
-board row cell{
+board row cell {
     display: table-cell;
     width: 50px;
     height: 50px;
@@ -24,11 +25,11 @@ board row cell{
     background: #ccc;
 }
 
-cell.wall-down{
+cell.wall-down {
     border-bottom: 5px solid #555;
 }
 
-cell.wall-right{
+cell.wall-right {
     border-right: 5px solid #555;
 }
 
@@ -36,28 +37,28 @@ cell.wall-right{
     background: green;
 }
 
-.target-cell:before{
+.target-cell:before {
     color: white;
     content: "T";
 }
 
 .beacon-cell {
-     background: blue;
- }
+    background: blue;
+}
 
 .beacon-cell:before {
     color: white;
     content: "B";
 }
 
-robot{
+robot {
     display: block;
     position: absolute;
     height: 50px;
     width: 50px;
 
-    left:0px;
-    top:0px;
+    left: 0px;
+    top: 0px;
     padding: 5px;
 
     background-repeat: no-repeat;
@@ -65,26 +66,26 @@ robot{
     background-origin: content-box;
 }
 
-.robot1{
+.robot1 {
     background-image: url("/assets/gem1.png");
 }
 
-.robot2{
+.robot2 {
     background-image: url("/assets/gem2.png");
 }
 
-.robot3{
+.robot3 {
     background-image: url("/assets/gem3.png");
 }
 
-.robot4{
-     background-image: url("/assets/gem4.png");
- }
+.robot4 {
+    background-image: url("/assets/gem4.png");
+}
 
-.robot5{
+.robot5 {
     background-image: url("/assets/gem5.png");
 }
 
-.robot6{
+.robot6 {
     background-image: url("/assets/gem6.png");
 }

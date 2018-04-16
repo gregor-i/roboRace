@@ -11,10 +11,21 @@ function primary(actionHandler, text, action) {
 function normal(actionHandler, text, action) {
     return button(actionHandler, 'button.button', text, action)
 }
+
 function danger(actionHandler, text, action) {
     return button(actionHandler, 'button.button.is-danger', text, action)
 }
 
+function info(actionHandler, text, action){
+    return button(actionHandler, 'button.button.is-info', text, action)
+}
+
+function group(){
+    var args = Array.prototype.slice.call(arguments);
+    var wrappedInControl = args.map(function(button){return h('span.control', button)})
+    return h('div.field.has-addons', wrappedInControl)
+}
+
 module.exports = {
-    primary, normal, danger
+    primary, normal, danger, info, group
 }
