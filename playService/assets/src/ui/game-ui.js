@@ -11,7 +11,9 @@ function render(state, game, actionHandler) {
                     renderBoard(gameRunning),
                     renderRobots(gameRunning)
                 ]),
-                renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler),
+                gameRunning.players.includes(state.player) ?
+                    renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler) :
+                    'Observer mode',
                 button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
             ],
             actionHandler)
