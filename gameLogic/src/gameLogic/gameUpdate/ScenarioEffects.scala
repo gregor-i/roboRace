@@ -38,9 +38,8 @@ object ScenarioEffects {
         val remainingPlayers = game.players.filter(_ != player)
 
         game.copy(
-          players = game.players.filter(_ != player),
           finishedPlayers = game.finishedPlayers :+ playerFinished,
-          robots = game.robots - player
+          robots = game.robots + (player -> game.robots(player).copy(finished = true))
         ).log(playerFinished)
     }
   }

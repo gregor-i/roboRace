@@ -20,6 +20,7 @@ function Lobby(element, player) {
         if(state.eventSource)
             state.eventSource.onmessage = gameEventHandler(state)
 
+        window.currentState = state
         node = patch(node, ui(state, actionHandler(state)))
     }
 

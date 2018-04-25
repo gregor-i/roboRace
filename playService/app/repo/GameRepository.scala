@@ -23,10 +23,10 @@ trait GameRepository {
 
 @Singleton
 class MemoryGameRepository extends GameRepository {
-  def get(id: String): Option[GameState] = synchronized(cache).get(id)
-  def list(): Seq[(String, GameState)] = synchronized(cache).toSeq
-  def save(id: String, gameState: GameState): Unit = synchronized(cache = cache + (id -> gameState))
-  def delete(id: String): Unit = synchronized(cache = cache - id)
+  def get(id: String): Option[GameState] = synchronized(cache.get(id))
+  def list(): Seq[(String, GameState)] = synchronized(cache.toSeq)
+  def save(id: String, gameState: GameState): Unit = synchronized{cache = cache + (id -> gameState)}
+  def delete(id: String): Unit = synchronized{cache = cache - id}
 
   private[this] var cache: Map[String, GameState] = Map.empty
 }

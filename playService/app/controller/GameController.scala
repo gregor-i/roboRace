@@ -7,6 +7,7 @@ import gameLogic.gameUpdate.{Command, CommandAccepted, CommandRejected, Cycle}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
+import play.api.Logger
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.libs.circe.Circe

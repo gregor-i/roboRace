@@ -5,13 +5,14 @@ import gameLogic.action._
 
 object Cycle{
   def apply(gameState: GameState): Logged[GameState] = gameState match {
-    case g: GameRunning if g.players.forall(player => g.robotActions.isDefinedAt(player) && g.robotActions(player).length == Constants.actionsPerCycle) =>
+    case g: GameRunning if g.players.forall(player => g.robotActions.isDefinedAt(player) || g.finishedPlayers.exists(_.playerName == player)) =>
       for {
         _ <- ().log(AllPlayerDefinedActions)
         afterPlayerActions <- execAllActions(g)
         afterEffects <- ScenarioEffects.afterCycle(afterPlayerActions)
         nextState <- afterEffects match {
-          case running if running.players.isEmpty => GameFinished(running.finishedPlayers).log(AllPlayersFinished)
+          case running if running.players.forall(player => running.finishedPlayers.exists(_.playerName == player)) =>
+            GameFinished(running.finishedPlayers, scenario = running.scenario, robots = running.robots).log(AllPlayersFinished)
           case running => afterEffects.asInstanceOf[GameRunning].copy(cycle = g.cycle + 1).log(PlayerActionsExecuted(g.cycle + 1))
         }
       } yield nextState

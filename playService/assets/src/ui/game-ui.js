@@ -104,7 +104,8 @@ function renderRobots(game) {
         return h('robot.robot' + (index % 6 + 1),
             {
                 style: {
-                    transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)'
+                    transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)',
+                    opacity: robot.finished ? '0' : '1',
                 },
                 props: {
                     title: player + " - " + Object.keys(robot.direction)[0],

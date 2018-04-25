@@ -25,7 +25,9 @@ case class GameRunning(cycle: Int,
                        players: Seq[String],
                        finishedPlayers: Seq[PlayerFinished],
                        scenario: GameScenario,
-                       robots: Map[String, Robot],
+                       robots: Robots,
                        robotActions: Map[String, Seq[Action]]) extends GameState
 
-case class GameFinished(players: Seq[PlayerFinished]) extends GameState
+case class GameFinished(players: Seq[PlayerFinished],
+                        scenario: GameScenario,
+                        robots: Robots) extends GameState

@@ -1,10 +1,9 @@
-package gameLogic.gameUpdate
-
-import gameLogic.{Direction, Logged, Position, Robot, RobotPositionTransition}
+package gameLogic
+package gameUpdate
 
 object PushRobots {
 
-  def apply(position: Position, direction: Direction, robots: Map[String, Robot]): Logged[Map[String, Robot]] =
+  def apply(position: Position, direction: Direction, robots: Robots): Logged[Robots] =
     robots.find(_._2.position == position) match {
       case Some((player, robot)) =>
         val nextPos  = robot.position.move(direction)

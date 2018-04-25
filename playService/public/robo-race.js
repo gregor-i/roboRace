@@ -17990,6 +17990,7 @@ function Lobby(element, player) {
         if(state.eventSource)
             state.eventSource.onmessage = gameEventHandler(state)
 
+        window.currentState = state
         node = patch(node, ui(state, actionHandler(state)))
     }
 
@@ -18086,7 +18087,7 @@ module.exports = {
 var _ = require('lodash')
 
 function animations(oldGameState, newGameState, events) {
-    if (oldGameState.GameRunning && newGameState.GameRunning) {
+    if (oldGameState.GameRunning) {
         var animations = []
         var players = oldGameState.GameRunning.players
 
@@ -18095,34 +18096,36 @@ function animations(oldGameState, newGameState, events) {
             var player = players[i]
 
             var oldRobot = oldGameState.GameRunning.robots[player]
-            var newRobot = newGameState.GameRunning.robots[player]
+
             var rot = directionToRotation(oldRobot.direction)
             var x = oldRobot.position.x
             var y = oldRobot.position.y
+            var finished = oldRobot.finished
 
-            keyframes.push(keyframe(x, y, directionToRotation(oldRobot.direction), 0))
-
+            keyframes.push(keyframe(x, y, rot, finished, 0))
             for (var j = 0; j < events.length; j++) {
+                var offset = j / (1 + events.length)
                 if (events[j].RobotPositionTransition && events[j].RobotPositionTransition.playerName === player) {
                     x = events[j].RobotPositionTransition.to.x
                     y = events[j].RobotPositionTransition.to.y
-                    keyframes.push(keyframe(x, y, rot, j / (1 + events.length)))
+                    keyframes.push(keyframe(x, y, rot, finished, offset))
                 } else if (events[j].RobotDirectionTransition && events[j].RobotDirectionTransition.playerName === player) {
                     rot = nearestRotation(rot, events[j].RobotDirectionTransition.to)
-                    keyframes.push(keyframe(x, y, rot, j / (1 + events.length)))
+                    keyframes.push(keyframe(x, y, rot, finished, offset))
                 }else if(events[j].RobotReset && events[j].RobotReset.playerName === player){
                     x = events[j].RobotReset.to.position.x
                     y = events[j].RobotReset.to.position.y
                     rot = nearestRotation(rot, events[j].RobotReset.to.direction)
-                    keyframes.push(keyframe(x, y, rot, j / (1 + events.length)))
+                    keyframes.push(keyframe(x, y, rot, finished, offset))
+                } else if (events[j].PlayerFinished && events[j].PlayerFinished.playerName === player) {
+                    finished = true
+                    keyframes.push(keyframe(x, y, rot, finished, offset))
                 }
             }
-            rot = nearestRotation(rot, newRobot.direction)
-            keyframes.push(keyframe(newRobot.position.x, newRobot.position.y, rot, 1))
 
-            if (keyframes.length !== 1) {
-                animations.push({element: 'robot_' + (i + 1), keyframes: keyframes})
-            }
+            keyframes.push(keyframe(x, y, rot, finished, 1))
+
+            animations.push({element: 'robot_' + (i + 1), keyframes: keyframes})
         }
         return animations
     }
@@ -18134,9 +18137,10 @@ function playAnimations(animations) {
     }
 }
 
-function keyframe(x, y, rot, offset) {
+function keyframe(x, y, rot, finished, offset) {
     return {
         transform: 'translate(' + (50 * x) + 'px, ' + (50 * y) + 'px) rotate(' + (rot * 90) + 'deg)',
+        opacity: finished ? 0 : 1,
         offset: offset
     }
 }
@@ -18320,7 +18324,8 @@ function renderRobots(game) {
         return h('robot.robot' + (index % 6 + 1),
             {
                 style: {
-                    transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)'
+                    transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)',
+                    opacity: robot.finished ? '0' : '1',
                 },
                 props: {
                     title: player + " - " + Object.keys(robot.direction)[0],
