@@ -1,9 +1,5 @@
 package gameLogic.action
 
-object ActionSlots{
-  val actionsPerCycle = 5
-}
-
 sealed trait Action
 
 sealed trait TurnAction extends Action

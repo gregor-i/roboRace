@@ -1,7 +1,7 @@
 package gameLogic
 package gameUpdate
 
-import gameLogic.action.{Action, ActionSlots}
+import gameLogic.action.Action
 
 sealed trait CommandResponse
 case class CommandRejected(reason: RejectionReason, command:Command) extends CommandResponse
@@ -57,7 +57,7 @@ case class DefineNextAction(player: String, cycle: Int, actions: Seq[Action]) ex
   override def ifRunning: GameRunning => R = {
     case g if g.cycle != cycle => rejected(WrongCycle)
     case g if !g.players.contains(player) => rejected(PlayerNotFound)
-    case g if actions.size != ActionSlots.actionsPerCycle => rejected(InvalidActionCount)
+    case g if actions.size != Constants.actionsPerCycle => rejected(InvalidActionCount)
     case g => accepted(
       g.copy(robotActions = g.robotActions + (player -> actions))
     )

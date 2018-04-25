@@ -5,7 +5,7 @@ import gameLogic.action._
 
 object Cycle{
   def apply(gameState: GameState): Logged[GameState] = gameState match {
-    case g: GameRunning if g.players.forall(player => g.robotActions.isDefinedAt(player) && g.robotActions(player).length == 5) =>
+    case g: GameRunning if g.players.forall(player => g.robotActions.isDefinedAt(player) && g.robotActions(player).length == Constants.actionsPerCycle) =>
       for {
         _ <- ().log(AllPlayerDefinedActions)
         afterPlayerActions <- execAllActions(g)
@@ -47,7 +47,7 @@ object Cycle{
       Math.atan2(dx, dy)
     }
 
-    def emptiedSlots(actions: Seq[Action]): Int = ActionSlots.actionsPerCycle - actions.size
+    def emptiedSlots(actions: Seq[Action]): Int = Constants.actionsPerCycle - actions.size
 
     def nextPlayerWeight(player: String): (Int, Double, Double) = {
       val position = gameState.robots(player).position
