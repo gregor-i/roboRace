@@ -11,15 +11,17 @@ function render(state, game, actionHandler) {
                     renderBoard(gameRunning),
                     renderRobots(gameRunning)
                 ]),
-                renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler)],
+                renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler),
+                button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
+            ],
             actionHandler)
     } else if (game.GameNotStarted) {
         return gameFrame('Game ' + state.selectedGame,
             [
                 renderPlayerList('joined Players:', game.GameNotStarted.playerNames),
                 button.group(
-                    button.primary(actionHandler, 'Join Game', {joinGame: state.selectedGame}),
-                    button.primary(actionHandler, 'Start Game', {startGame: state.selectedGame})
+                    button.builder.primary()(actionHandler, {joinGame: state.selectedGame}, 'Join Game'),
+                    button.builder.primary()(actionHandler, {startGame: state.selectedGame}, 'Start Game')
                 )
             ], actionHandler)
     } else if (game.GameFinished) {
@@ -35,7 +37,7 @@ function gameFrame(title, content, actionHandler) {
     return h('div', [
         h('h1', title),
         h('div', content),
-        button.primary(actionHandler, 'Back to Lobby', {leaveGame: true})
+        button.builder.primary()(actionHandler, {leaveGame: true}, 'Back to Lobby')
     ])
 }
 
@@ -136,10 +138,11 @@ function renderActionButtons(state, cycle, robotActions, actionHandler) {
 
     function actionRow(action) {
         function actionButton(slot) {
+            var isEnabled = !!(_.get(state, ['slots', slot, action]))
             return h('td',
-                _.get(state, ['slots', slot, action]) ?
-                    button.primary(actionHandler, action, {defineAction: {player: state.player, cycle, slot, action}}) :
-                    button.normal(actionHandler, action, {defineAction: {player: state.player, cycle, slot, action}}))
+                    button.builder.primary(isEnabled)(actionHandler,
+                        {defineAction: {player: state.player, cycle, slot, action}},
+                        action))
         }
 
         return h('tr', _.range(constants.numberOfActionsPerCycle).map(actionButton))

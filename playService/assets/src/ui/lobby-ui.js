@@ -7,8 +7,8 @@ function render(state, actionHandler) {
             h('h1', 'Game Lobby:'),
             renderGameTable(state, state.games, actionHandler),
             button.group(
-                button.primary(actionHandler, 'New Game', {createGame: true}),
-                button.info(actionHandler, 'Reload', {reloadGameList: true})
+                button.builder.primary()(actionHandler, {createGame: true}, 'New Game'),
+                button.builder.info()(actionHandler, {reloadGameList: true}, 'Reload')
             )
         ]
     )
@@ -35,8 +35,8 @@ function renderGameRow(id, gameState, actionHandler) {
         h('td', id),
         h('td', gameState),
         h('td', button.group(
-            button.primary(actionHandler, 'Enter', {enterGame: id}),
-            button.danger(actionHandler, 'Delete', {deleteGame: id})
+            button.builder.primary()(actionHandler, {enterGame: id}, 'Enter'),
+            button.builder.danger()(actionHandler, {deleteGame: id}, 'Delete')
         ))
     ])
 }

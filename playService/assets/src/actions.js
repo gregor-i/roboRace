@@ -1,5 +1,6 @@
 var lobbyService = require('./lobby-service')
 var gameService = require('./game-service')
+var animations = require('./ui/animations')
 var _ = require('lodash')
 var constants = require('./constants')
 
@@ -27,6 +28,7 @@ function actions(state, action) {
         const newState = Object.assign({}, state)
         delete newState.selectedGame
         delete newState.eventSource
+        delete newState.animations
         return Promise.resolve(newState)
     } else if (action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
@@ -48,14 +50,19 @@ function actions(state, action) {
         return gameService.startGame(action.startGame)
             .then(_.constant(state))
     else if (action.defineAction) {
-        if(!state.slots)
+        if (!state.slots)
             state.slots = []
         var slot = action.defineAction.slot
         state.slots[slot] = {}
         state.slots[slot][action.defineAction.action] = {}
-        if(_.range(constants.numberOfActionsPerCycle).every(function(i){return state.slots[i];}))
+        if (_.range(constants.numberOfActionsPerCycle).every(function (i) {
+                return state.slots[i];
+            }))
             gameService.defineAction(state.selectedGame, state.player, action.defineAction.cycle, state.slots)
         return Promise.resolve(state)
+    } else if(action.replayAnimations) {
+        if(state.animations)
+            animations.playAnimations(state.animations)
     } else {
         console.error("unknown action", action)
     }

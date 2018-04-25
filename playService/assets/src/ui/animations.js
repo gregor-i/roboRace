@@ -1,12 +1,12 @@
 var _ = require('lodash')
 
-function queue(oldGameState, newGameState, events) {
+function animations(oldGameState, newGameState, events) {
     if (oldGameState.GameRunning && newGameState.GameRunning) {
+        var animations = []
         var players = oldGameState.GameRunning.players
 
         for (var i = 0; i < players.length; i++) {
             var keyframes = []
-            var element = document.getElementById('robot_' + (i + 1))
             var player = players[i]
 
             var oldRobot = oldGameState.GameRunning.robots[player]
@@ -36,10 +36,16 @@ function queue(oldGameState, newGameState, events) {
             keyframes.push(keyframe(newRobot.position.x, newRobot.position.y, rot, 1))
 
             if (keyframes.length !== 1) {
-                console.log("animation", keyframes)
-                element.animate(keyframes, 2000)
+                animations.push({element: 'robot_' + (i + 1), keyframes: keyframes})
             }
         }
+        return animations
+    }
+}
+
+function playAnimations(animations) {
+    for(var i=0; i<animations.length; i++){
+        document.getElementById(animations[i].element).animate(animations[i].keyframes, 2000)
     }
 }
 
@@ -80,4 +86,4 @@ function directionToRotation(direction) {
         return 3
 }
 
-module.exports = {queue}
+module.exports = {animations, playAnimations}

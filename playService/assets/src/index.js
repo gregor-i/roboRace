@@ -36,7 +36,9 @@ function Lobby(element, player) {
             const data = JSON.parse(event.data)
             const newGameState = data.state
             const events = data.events
-            animations.queue(state.selectedGameState, newGameState, events)
+            state.animations = animations.animations(state.selectedGameState, newGameState, events)
+            if(state.animations)
+                animations.playAnimations(state.animations)
             state.selectedGameState = newGameState
             // console.log("game Events: ",events)
             if(events.find(function(event){

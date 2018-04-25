@@ -17843,6 +17843,7 @@ exports.default = vnode;
 },{}],12:[function(require,module,exports){
 var lobbyService = require('./lobby-service')
 var gameService = require('./game-service')
+var animations = require('./ui/animations')
 var _ = require('lodash')
 var constants = require('./constants')
 
@@ -17870,6 +17871,7 @@ function actions(state, action) {
         const newState = Object.assign({}, state)
         delete newState.selectedGame
         delete newState.eventSource
+        delete newState.animations
         return Promise.resolve(newState)
     } else if (action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
@@ -17891,21 +17893,26 @@ function actions(state, action) {
         return gameService.startGame(action.startGame)
             .then(_.constant(state))
     else if (action.defineAction) {
-        if(!state.slots)
+        if (!state.slots)
             state.slots = []
         var slot = action.defineAction.slot
         state.slots[slot] = {}
         state.slots[slot][action.defineAction.action] = {}
-        if(_.range(constants.numberOfActionsPerCycle).every(function(i){return state.slots[i];}))
+        if (_.range(constants.numberOfActionsPerCycle).every(function (i) {
+                return state.slots[i];
+            }))
             gameService.defineAction(state.selectedGame, state.player, action.defineAction.cycle, state.slots)
         return Promise.resolve(state)
+    } else if(action.replayAnimations) {
+        if(state.animations)
+            animations.playAnimations(state.animations)
     } else {
         console.error("unknown action", action)
     }
 }
 
 module.exports = actions
-},{"./constants":13,"./game-service":14,"./lobby-service":16,"lodash":1}],13:[function(require,module,exports){
+},{"./constants":13,"./game-service":14,"./lobby-service":16,"./ui/animations":17,"lodash":1}],13:[function(require,module,exports){
 module.exports = {
     numberOfActionsPerCycle: 5
 }
@@ -17999,7 +18006,9 @@ function Lobby(element, player) {
             const data = JSON.parse(event.data)
             const newGameState = data.state
             const events = data.events
-            animations.queue(state.selectedGameState, newGameState, events)
+            state.animations = animations.animations(state.selectedGameState, newGameState, events)
+            if(state.animations)
+                animations.playAnimations(state.animations)
             state.selectedGameState = newGameState
             // console.log("game Events: ",events)
             if(events.find(function(event){
@@ -18076,13 +18085,13 @@ module.exports = {
 },{}],17:[function(require,module,exports){
 var _ = require('lodash')
 
-function queue(oldGameState, newGameState, events) {
+function animations(oldGameState, newGameState, events) {
     if (oldGameState.GameRunning && newGameState.GameRunning) {
+        var animations = []
         var players = oldGameState.GameRunning.players
 
         for (var i = 0; i < players.length; i++) {
             var keyframes = []
-            var element = document.getElementById('robot_' + (i + 1))
             var player = players[i]
 
             var oldRobot = oldGameState.GameRunning.robots[player]
@@ -18112,10 +18121,16 @@ function queue(oldGameState, newGameState, events) {
             keyframes.push(keyframe(newRobot.position.x, newRobot.position.y, rot, 1))
 
             if (keyframes.length !== 1) {
-                console.log("animation", keyframes)
-                element.animate(keyframes, 2000)
+                animations.push({element: 'robot_' + (i + 1), keyframes: keyframes})
             }
         }
+        return animations
+    }
+}
+
+function playAnimations(animations) {
+    for(var i=0; i<animations.length; i++){
+        document.getElementById(animations[i].element).animate(animations[i].keyframes, 2000)
     }
 }
 
@@ -18156,40 +18171,49 @@ function directionToRotation(direction) {
         return 3
 }
 
-module.exports = {queue}
+module.exports = {animations, playAnimations}
 },{"lodash":1}],18:[function(require,module,exports){
 var h = require('snabbdom/h').default
+var _ = require('lodash')
 
-function button(actionHandler, classes, text, action) {
-    return h(classes, {on: {click: [actionHandler, action]}}, text)
+function builder(props) {
+    var f = function (actionHandler, action, text) {
+        return h('button.button', _.merge(props, {on: {click: [actionHandler, action]}}), text)
+    }
+    f.addProperty = function (p) {
+        return builder(_.merge(props, p))
+    }
+
+    f.primary = function (bool) {
+        return f.addProperty({class: {'is-primary': bool === undefined ? true : bool}})
+    }
+    f.danger = function (bool) {
+        return f.addProperty({class: {'is-danger': bool === undefined ? true : bool}})
+    }
+    f.info = function (bool) {
+        return f.addProperty({class: {'is-info': bool === undefined ? true : bool}})
+    }
+    f.disable = function (bool) {
+        return f.addProperty({props: {disabled: bool === undefined ? true : bool}})
+    }
+
+    return f
 }
 
-function primary(actionHandler, text, action) {
-    return button(actionHandler, 'button.button.is-primary', text, action)
-}
-
-function normal(actionHandler, text, action) {
-    return button(actionHandler, 'button.button', text, action)
-}
-
-function danger(actionHandler, text, action) {
-    return button(actionHandler, 'button.button.is-danger', text, action)
-}
-
-function info(actionHandler, text, action){
-    return button(actionHandler, 'button.button.is-info', text, action)
-}
-
-function group(){
+function group() {
     var args = Array.prototype.slice.call(arguments);
-    var wrappedInControl = args.map(function(button){return h('span.control', button)})
+    var wrappedInControl = args.map(function (button) {
+        return h('span.control', button)
+    })
     return h('div.field.has-addons', wrappedInControl)
 }
 
 module.exports = {
-    primary, normal, danger, info, group
+    group: group,
+    builder: builder()
 }
-},{"snabbdom/h":2}],19:[function(require,module,exports){
+
+},{"lodash":1,"snabbdom/h":2}],19:[function(require,module,exports){
 var h = require('snabbdom/h').default
 var _ = require('lodash')
 var constants = require('../constants')
@@ -18203,15 +18227,17 @@ function render(state, game, actionHandler) {
                     renderBoard(gameRunning),
                     renderRobots(gameRunning)
                 ]),
-                renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler)],
+                renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler),
+                button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
+            ],
             actionHandler)
     } else if (game.GameNotStarted) {
         return gameFrame('Game ' + state.selectedGame,
             [
                 renderPlayerList('joined Players:', game.GameNotStarted.playerNames),
                 button.group(
-                    button.primary(actionHandler, 'Join Game', {joinGame: state.selectedGame}),
-                    button.primary(actionHandler, 'Start Game', {startGame: state.selectedGame})
+                    button.builder.primary()(actionHandler, {joinGame: state.selectedGame}, 'Join Game'),
+                    button.builder.primary()(actionHandler, {startGame: state.selectedGame}, 'Start Game')
                 )
             ], actionHandler)
     } else if (game.GameFinished) {
@@ -18227,7 +18253,7 @@ function gameFrame(title, content, actionHandler) {
     return h('div', [
         h('h1', title),
         h('div', content),
-        button.primary(actionHandler, 'Back to Lobby', {leaveGame: true})
+        button.builder.primary()(actionHandler, {leaveGame: true}, 'Back to Lobby')
     ])
 }
 
@@ -18328,10 +18354,11 @@ function renderActionButtons(state, cycle, robotActions, actionHandler) {
 
     function actionRow(action) {
         function actionButton(slot) {
+            var isEnabled = !!(_.get(state, ['slots', slot, action]))
             return h('td',
-                _.get(state, ['slots', slot, action]) ?
-                    button.primary(actionHandler, action, {defineAction: {player: state.player, cycle, slot, action}}) :
-                    button.normal(actionHandler, action, {defineAction: {player: state.player, cycle, slot, action}}))
+                    button.builder.primary(isEnabled)(actionHandler,
+                        {defineAction: {player: state.player, cycle, slot, action}},
+                        action))
         }
 
         return h('tr', _.range(constants.numberOfActionsPerCycle).map(actionButton))
@@ -18357,8 +18384,8 @@ function render(state, actionHandler) {
             h('h1', 'Game Lobby:'),
             renderGameTable(state, state.games, actionHandler),
             button.group(
-                button.primary(actionHandler, 'New Game', {createGame: true}),
-                button.info(actionHandler, 'Reload', {reloadGameList: true})
+                button.builder.primary()(actionHandler, {createGame: true}, 'New Game'),
+                button.builder.info()(actionHandler, {reloadGameList: true}, 'Reload')
             )
         ]
     )
@@ -18385,8 +18412,8 @@ function renderGameRow(id, gameState, actionHandler) {
         h('td', id),
         h('td', gameState),
         h('td', button.group(
-            button.primary(actionHandler, 'Enter', {enterGame: id}),
-            button.danger(actionHandler, 'Delete', {deleteGame: id})
+            button.builder.primary()(actionHandler, {enterGame: id}, 'Enter'),
+            button.builder.danger()(actionHandler, {deleteGame: id}, 'Delete')
         ))
     ])
 }
