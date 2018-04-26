@@ -25,6 +25,10 @@ board row cell {
     background: #ccc;
 }
 
+.pit {
+    background: white;
+}
+
 cell.wall-down {
     border-bottom: 5px solid #555;
 }

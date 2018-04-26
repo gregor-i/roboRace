@@ -12,7 +12,8 @@ object ScenarioEffects {
       case (_, robot) => robot.position.x >= game.scenario.width ||
         robot.position.x < 0 ||
         robot.position.y >= game.scenario.height ||
-        robot.position.y < 0
+        robot.position.y < 0 ||
+        game.scenario.pits.contains(robot.position)
     }
 
     firstFallenRobot match {

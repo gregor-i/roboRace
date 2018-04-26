@@ -73,26 +73,38 @@ function renderCell(game, row, column) {
         return pos.x === column && pos.y === row
     }
 
-    var isWallRight = false
-    var isWallDown = false
-    game.scenario.walls.forEach(function (wall) {
-        if (positionEqual(wall.position)) {
-            if (wall.direction.Down) isWallDown = true
-            if (wall.direction.Right) isWallRight = true
-        }
+    const isWallRight = !! game.scenario.walls.find(function(wall){
+        return wall.direction.Right && positionEqual(wall.position)
+    })
+    const isWallDown = !! game.scenario.walls.find(function(wall){
+        return wall.direction.Down && positionEqual(wall.position)
+    })
+    const isPit = !!game.scenario.pits.find(function(pit){
+        return positionEqual(pit)
     })
 
-    var isBeacon = positionEqual(game.scenario.beaconPosition)
-    var isTarget = positionEqual(game.scenario.targetPosition)
+    const isBeacon = positionEqual(game.scenario.beaconPosition)
+    const isTarget = positionEqual(game.scenario.targetPosition)
+
+    var desc
+    if(isTarget)
+        desc = 'Target'
+    else if(isBeacon)
+        desc = 'Beacon'
+    else if(isPit)
+        desc = 'Pit'
+    else
+        desc = 'normal Field'
 
     return h('cell', {
         class: {
             'wall-down': isWallDown,
             'wall-right': isWallRight,
             'beacon-cell': isBeacon,
-            'target-cell': isTarget
+            'target-cell': isTarget,
+            'pit' : isPit
         },
-        props: {title: row + ", " + column}
+        props: {title: `${column}, ${row} => ${desc}`}
     }, '')
 }
 

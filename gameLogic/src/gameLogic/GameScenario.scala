@@ -4,7 +4,8 @@ case class GameScenario(width: Int, height: Int,
                         beaconPosition: Position,
                         targetPosition: Position,
                         initialRobots: Map[Int, Robot],
-                        walls: Seq[Wall])
+                        walls: Seq[Wall],
+                        pits: Seq[Position])
 
 object GameScenario {
   private def robot(x: Int, y: Int, direction: Direction): Robot = Robot(Position(x, y), direction, finished = false)
@@ -24,13 +25,16 @@ object GameScenario {
       5 -> robot(6, 8, Up)
     ),
     walls = Seq(
-      wall(3,0, Down),
-      wall(1,1, Down),
-      wall(5,1, Down),
-      wall(1,3, Down),
-      wall(5,3, Down),
-      wall(2,5, Right),
-      wall(3,5, Right)
+      wall(1, 1, Down),
+      wall(5, 1, Down),
+      wall(2, 1, Down),
+      wall(4, 1, Down)
+    ),
+    pits = Seq(
+      Position(3, 0),
+      Position(1, 5),
+      Position(3, 5),
+      Position(5, 5)
     )
   )
 }
