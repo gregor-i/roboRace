@@ -103,9 +103,9 @@ object Cycle{
   private def movementIsAllowed(game: GameRunning, position: Position, direction: Direction): Boolean = {
     val downWalls = game.scenario.walls.filter(_.direction == Down).map(_.position)
     val rightWalls = game.scenario.walls.filter(_.direction == Right).map(_.position)
-    if (game.scenario.beaconPosition == position.move(direction))
-      false
-    else if (direction == Down && downWalls.contains(position))
+//    if (game.scenario.beaconPosition == position.move(direction))
+//      false
+    if (direction == Down && downWalls.contains(position))
       false
     else if (direction == Right && rightWalls.contains(position))
       false

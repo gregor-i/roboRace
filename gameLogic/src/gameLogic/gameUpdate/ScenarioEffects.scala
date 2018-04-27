@@ -32,7 +32,9 @@ object ScenarioEffects {
   }
 
   def afterCycle(game: GameRunning): Logged[GameRunning] = {
-    game.robots.find(_._2.position == game.scenario.targetPosition) match {
+    game.robots.find {
+      case (_, robot) => robot.position == game.scenario.targetPosition && !robot.finished
+    } match {
       case None => Logged.pure(game)
       case Some((player, _)) =>
         val playerFinished = PlayerFinished(player, game.finishedPlayers.size + 1, game.cycle)

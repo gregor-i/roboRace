@@ -83,7 +83,7 @@ function renderCell(game, row, column) {
         return positionEqual(pit)
     })
 
-    const isBeacon = positionEqual(game.scenario.beaconPosition)
+    const isBeacon = false //positionEqual(game.scenario.beaconPosition)
     const isTarget = positionEqual(game.scenario.targetPosition)
 
     var desc

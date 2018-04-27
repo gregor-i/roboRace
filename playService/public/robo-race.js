@@ -18303,7 +18303,7 @@ function renderCell(game, row, column) {
         return positionEqual(pit)
     })
 
-    const isBeacon = positionEqual(game.scenario.beaconPosition)
+    const isBeacon = false //positionEqual(game.scenario.beaconPosition)
     const isTarget = positionEqual(game.scenario.targetPosition)
 
     var desc
@@ -18393,6 +18393,7 @@ function renderActionButtons(state, cycle, robotActions, actionHandler) {
 }
 
 module.exports = render
+
 },{"../constants":13,"./button":18,"lodash":1,"snabbdom/h":2}],20:[function(require,module,exports){
 var h = require('snabbdom/h').default
 var button = require('./button')
