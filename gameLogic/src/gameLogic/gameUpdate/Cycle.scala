@@ -48,11 +48,11 @@ object Cycle{
       Math.atan2(dx, dy)
     }
 
-    def emptiedSlots(actions: Seq[Action]): Int = Constants.actionsPerCycle - actions.size
+    def emptiedSlots(actions: Option[Seq[Action]]): Int = Constants.actionsPerCycle - actions.fold(0)(_.size)
 
     def nextPlayerWeight(player: String): (Int, Double, Double) = {
       val position = gameState.robots(player).position
-      (emptiedSlots(gameState.robotActions(player)), distance(position), angle(position))
+      (emptiedSlots(gameState.robotActions.get(player)), distance(position), angle(position))
     }
 
     if (gameState.robotActions.forall(_._2.isEmpty)) {
@@ -71,7 +71,7 @@ object Cycle{
       afterAction <- (action match {
         case turn: TurnAction => turnAction(player, robot, turn, game)
         case move: MoveAction => moveAction(player, robot, move, game)
-      }).map(_.copy(robotActions = game.robotActions + (player -> actions.tail)))
+      }).map(_.copy(robotActions = (game.robotActions + (player -> actions.tail)).filter(_._2.nonEmpty)))
       afterEffects <- ScenarioEffects.afterAction(afterAction)
     } yield afterEffects
   }
