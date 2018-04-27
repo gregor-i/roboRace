@@ -111,7 +111,7 @@ object Cycle{
       false
     else if (direction == Up && downWalls.contains(position.move(Up)))
       false
-    else if (direction == Left && downWalls.contains(position.move(Left)))
+    else if (direction == Left && rightWalls.contains(position.move(Left)))
       false
     else if (game.robots.exists(_._2.position == position.move(direction)))
       movementIsAllowed(game, position.move(direction), direction)
