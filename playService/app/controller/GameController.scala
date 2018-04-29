@@ -3,7 +3,7 @@ package controller
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import gameLogic.gameUpdate.{Command, CommandAccepted, CommandRejected, Cycle}
+import gameLogic.gameUpdate._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
@@ -29,14 +29,12 @@ class GameController @Inject()(repo: GameRepository)
     repo.get(id) match {
       case Some(gameState) =>
         val command = request.body
-        command(gameState) match {
-          case CommandAccepted(afterCommand) =>
-            val newState = Cycle(afterCommand)
-            repo.save(id, newState.state)
-            Source.single(newState.asJson.noSpaces).runWith(SinkSourceCache.sink(id))
-            Ok(newState.asJson)
-          case CommandRejected(reason, _) =>
-            BadRequest(reason.asJson)
+        Processor(gameState, command) { loggedState =>
+          repo.save(id, loggedState.state)
+          Source.single(loggedState.asJson.noSpaces).runWith(SinkSourceCache.sink(id))
+          Ok(loggedState.asJson)
+        } { rejected =>
+          BadRequest(rejected.reason.asJson)
         }
       case None => NotFound
     }
