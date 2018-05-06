@@ -22,7 +22,10 @@ class GameController @Inject()(repo: GameRepository)
   extends InjectedController with Circe {
 
   def state(id: String) = Action {
-    Ok(repo.get(id).asJson)
+    repo.get(id) match {
+      case Some(game) => Ok(game.asJson)
+      case None => NotFound
+    }
   }
 
   def sendCommand(id: String) = Action(circe.tolerantJson[Command]) { request =>

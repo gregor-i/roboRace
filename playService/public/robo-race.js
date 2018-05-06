@@ -18249,7 +18249,7 @@ function render(state, game, actionHandler) {
             [
                 renderPlayerList(game.GameNotStarted.playerNames),
                 button.group(
-                    button.builder.primary()(actionHandler, {joinGame: state.selectedGame}, 'Join Game'),
+                    button.builder.primary().disable(game.GameNotStarted.playerNames.includes(state.player))(actionHandler, {joinGame: state.selectedGame}, 'Join Game'),
                     button.builder.primary()(actionHandler, {startGame: state.selectedGame}, 'Start Game')
                 )
             ], actionHandler)
