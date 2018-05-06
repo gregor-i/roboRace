@@ -7,20 +7,21 @@ function render(state, game, actionHandler) {
     if (game.GameRunning) {
         var gameRunning = game.GameRunning
         return gameFrame('Game ' + state.selectedGame, [
+                renderPlayerList(game.GameRunning.players),
                 h('div.board', [
                     renderBoard(gameRunning),
                     renderRobots(gameRunning)
                 ]),
-                gameRunning.players.find(function(player){return player.name === state.player}) ?
+                gameRunning.players.find(function(player){return player.name === state.player && !player.finished}) ?
                     renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler) :
-                    'Observer mode',
+                    h('div', 'observer mode or target reached'),
                 button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
             ],
             actionHandler)
     } else if (game.GameNotStarted) {
         return gameFrame('Game ' + state.selectedGame,
             [
-                renderPlayerList('joined Players:', game.GameNotStarted.playerNames),
+                renderPlayerList(game.GameNotStarted.playerNames),
                 button.group(
                     button.builder.primary()(actionHandler, {joinGame: state.selectedGame}, 'Join Game'),
                     button.builder.primary()(actionHandler, {startGame: state.selectedGame}, 'Start Game')
@@ -28,7 +29,7 @@ function render(state, game, actionHandler) {
             ], actionHandler)
     } else if (game.GameFinished) {
         return gameFrame('Game ' + state.selectedGame + ' is finished',
-            renderPlayerList('finial ranking:', game.GameFinished.players.map(function(obj){return obj.playerName})),
+            renderPlayerList(game.GameFinished.players),
             actionHandler)
     } else {
         return gameFrame('GameState ' + Object.keys(game)[0] + ' is currently not supported.', undefined, actionHandler)
@@ -43,29 +44,37 @@ function gameFrame(title, content, actionHandler) {
     ])
 }
 
-function renderPlayerList(title, playerNames) {
-    return h('h4', [
-        title,
-        h('ol',
-            playerNames.map(function (playerName) {
-                    return h('li', playerName)
-                }
-            ))]
-    )
+function renderPlayerList(players) {
+    var rows = players.map(function (player, index) {
+        return h('tr', [
+            h('td', h('img', {
+                props: {src: '/assets/gem' + (index + 1) + '.png'},
+                style: {'max-width': '20px', 'max-height': '20px'}
+            })),
+            h('td', (index + 1)),
+            h('td', player.name || player),
+            h('td', player.finished ? player.finished.rank : '')
+        ])
+    })
+
+    rows.unshift(h('tr', [h('th', 'icon'), h('th', 'index'), h('th', 'name'), h('th', 'finished as')]))
+
+    return h('div', [
+        h('h4', 'Players: '),
+        h('table',rows)
+    ])
 }
 
 function renderBoard(game) {
-    var rows = _.range(game.scenario.height).map(function (r) {
+    return h('board', _.range(game.scenario.height).map(function (r) {
         return renderRow(game, r)
-    });
-    return h('board', rows)
+    }))
 }
 
 function renderRow(game, row) {
-    var cells = _.range(game.scenario.width).map(function (c) {
+    return h('row', _.range(game.scenario.width).map(function (c) {
         return renderCell(game, row, c)
-    })
-    return h('row', cells)
+    }))
 }
 
 function renderCell(game, row, column) {
