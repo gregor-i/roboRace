@@ -64,36 +64,49 @@ object Cycle{
     for {
       robot <- player.robot.log(RobotAction(player.name, action))
       afterAction <- action match {
-        case turn: TurnAction => turnAction(player, robot, turn, game)
-        case move: MoveAction => moveAction(player, robot, move, game)
+        case turn: TurnAction => turnAction(player, turn, game)
+        case move: MoveAction => moveAction(player, move, game)
+        case Sleep => sleepAction(player, game)
       }
-      afterDroppedAction = afterAction.copy(players = afterAction.players.map(p => if(p.name == player.name) p.copy(actions = p.actions.tail) else p))
-      afterEffects <- ScenarioEffects.afterAction(afterDroppedAction)
-    } yield afterEffects
+      afterRemovedAction = afterAction.copy(players = afterAction.players.map(p => if (p.name == player.name) p.copy(actions = p.actions.drop(1)) else p))
+    } yield afterRemovedAction
   }
 
-  private def turnAction(player: Player, robot: Robot, action: TurnAction, game: GameRunning): Logged[GameRunning] = {
+  private def turnAction(player: Player, action: TurnAction, game: GameRunning): Logged[GameRunning] = {
     val nextDirection = action match {
-      case TurnLeft => robot.direction.left
-      case TurnRight => robot.direction.right
+      case TurnLeft => player.robot.direction.left
+      case TurnRight => player.robot.direction.right
+      case UTurn => player.robot.direction.right.right
     }
     for {
-      nextRobotState <- robot.copy(direction = nextDirection).log(RobotDirectionTransition(player.name, robot.direction, nextDirection))
+      nextRobotState <- player.robot.copy(direction = nextDirection).log(RobotDirectionTransition(player.name, player.robot.direction, nextDirection))
     } yield game.copy(players = game.players.map(p => if(p.name == player.name) p.copy(robot = nextRobotState) else p))
   }
 
-  private def moveAction(player: Player, robot: Robot, action: MoveAction, game: GameRunning): Logged[GameRunning] = {
-    val direction = action match {
-      case MoveForward => robot.direction
-      case MoveBackward => robot.direction.back
+  private def moveAction(player: Player, action: MoveAction, game: GameRunning): Logged[GameRunning] = {
+    def move(direction: Direction, gameRunning: GameRunning): Logged[GameRunning] ={
+      if (movementIsAllowed(gameRunning, player.robot.position, direction)) {
+        for{
+          afterPush <- PushRobots(player.robot.position, player.robot.direction, gameRunning)
+          afterEffects <- ScenarioEffects.afterMoveAction(afterPush)
+        } yield afterEffects
+      }else{
+        gameRunning.log(RobotMovementBlocked(player.name, player.robot.position, player.robot.direction))
+      }
     }
 
-    if (movementIsAllowed(game, robot.position, direction))
-      PushRobots(robot.position, direction, game)
-    else
-      game.log(RobotMovementBlocked(player.name, robot.position, direction))
+    action match {
+      case MoveForward => move(player.robot.direction, game)
+      case MoveBackward => move(player.robot.direction.back, game)
+      case MoveTwiceForward =>
+        for{
+          after1Move <- move(player.robot.direction, game)
+          after2Move <- move(player.robot.direction, after1Move)
+        } yield after2Move
+    }
   }
 
+  private def sleepAction(player: Player, game: GameRunning): Logged[GameRunning] = Logged.pure(game)
 
   private def movementIsAllowed(game: GameRunning, position: Position, direction: Direction): Boolean = {
     val downWalls = game.scenario.walls.filter(_.direction == Down).map(_.position)

@@ -7,5 +7,10 @@ sealed trait MoveAction extends Action
 
 case object MoveForward extends MoveAction
 case object MoveBackward extends MoveAction
+case object MoveTwiceForward extends MoveAction
+
 case object TurnRight extends TurnAction
 case object TurnLeft extends TurnAction
+case object UTurn extends TurnAction
+
+case object Sleep extends Action

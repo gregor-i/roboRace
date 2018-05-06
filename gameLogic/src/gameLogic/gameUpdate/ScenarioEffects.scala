@@ -4,7 +4,7 @@ import gameLogic.{FinishedStatistic, GameRunning, Logged, PlayerFinished, RobotR
 
 object ScenarioEffects {
 
-  def afterAction(game: GameRunning): Logged[GameRunning] =
+  def afterMoveAction(game: GameRunning): Logged[GameRunning] =
     fallenRobots(game)
 
   private def fallenRobots(game: GameRunning): Logged[GameRunning] = {

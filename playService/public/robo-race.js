@@ -18393,9 +18393,12 @@ function renderActionButtons(state, cycle, robotActions, actionHandler) {
     return h('table', [
         headerRow,
         actionRow('MoveForward'),
+        actionRow('MoveTwiceForward'),
+        actionRow('MoveBackward'),
         actionRow('TurnRight'),
         actionRow('TurnLeft'),
-        actionRow('MoveBackward'),
+        actionRow('UTurn'),
+        actionRow('Sleep')
     ])
 }
 
