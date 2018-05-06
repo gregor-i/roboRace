@@ -1,7 +1,5 @@
 name := "roboRace"
 
-version := "0.1"
-
 scalaVersion := "2.12.4"
 
 cancelable in ThisBuild := true
@@ -14,7 +12,7 @@ lazy val playService = project.in(file("playService"))
   .dependsOn(gameLogic)
 
 lazy val gameLogic = project.in(file("gameLogic"))
-  .settings(folderSettings, scalaTest)
+  .settings(folderSettings, monocle, scalaTest)
 
 def folderSettings = Seq(
   scalaSource in Compile := baseDirectory.value / "src",
@@ -22,3 +20,9 @@ def folderSettings = Seq(
 )
 
 def scalaTest = libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % Test
+
+def monocle = libraryDependencies ++= Seq(
+  "com.github.julien-truffaut" %%  "monocle-core"  % "1.5.0",
+  "com.github.julien-truffaut" %%  "monocle-macro" % "1.5.0",
+  "com.github.julien-truffaut" %%  "monocle-law"   % "1.5.0" % Test
+)

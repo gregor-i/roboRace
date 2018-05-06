@@ -8,7 +8,7 @@ case class GameScenario(width: Int, height: Int,
                         pits: Seq[Position])
 
 object GameScenario {
-  private def robot(x: Int, y: Int, direction: Direction): Robot = Robot(Position(x, y), direction, finished = false)
+  private def robot(x: Int, y: Int, direction: Direction): Robot = Robot(Position(x, y), direction)
   private def wall(x: Int, y: Int, direction: WallDirection): Wall = Wall(Position(x, y), direction)
 
   val default = GameScenario(

@@ -37,7 +37,7 @@ function Lobby(element, player) {
             const data = JSON.parse(event.data)
             const newGameState = data.state
             const events = data.events
-            state.animations = animations.animations(state.selectedGameState, newGameState, events)
+            state.animations = animations.animations(state.selectedGameState, events)
             if(state.animations)
                 animations.playAnimations(state.animations)
             state.selectedGameState = newGameState
@@ -78,7 +78,7 @@ function Lobby(element, player) {
     return this
 }
 
-document.addEventListener('DOMContentLoaded', function (event) {
+document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('robo-race')
     var player = localStorage.getItem('playerName')
     new Lobby(container, player)

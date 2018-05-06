@@ -1,7 +1,5 @@
 package gameLogic
 
-import gameLogic.action.Action
-
 sealed trait GameState {
   def fold[A](ifNotDefined: GameNotDefined.type => A)
              (ifNotStarted: GameNotStarted => A)
@@ -22,12 +20,8 @@ case class GameNotStarted(scenario: GameScenario,
                           playerNames: Seq[String]) extends GameState
 
 case class GameRunning(cycle: Int,
-                       players: Seq[String],
-                       finishedPlayers: Seq[PlayerFinished],
                        scenario: GameScenario,
-                       robots: Robots,
-                       robotActions: Map[String, Seq[Action]]) extends GameState
+                       players: Seq[Player]) extends GameState
 
-case class GameFinished(players: Seq[PlayerFinished],
-                        scenario: GameScenario,
-                        robots: Robots) extends GameState
+case class GameFinished(players: Seq[Player],
+                        scenario: GameScenario) extends GameState

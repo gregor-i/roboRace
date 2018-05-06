@@ -11,7 +11,7 @@ function render(state, game, actionHandler) {
                     renderBoard(gameRunning),
                     renderRobots(gameRunning)
                 ]),
-                gameRunning.players.includes(state.player) ?
+                gameRunning.players.find(function(player){return player.name === state.player}) ?
                     renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler) :
                     'Observer mode',
                 button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
@@ -110,20 +110,20 @@ function renderCell(game, row, column) {
 
 
 function renderRobots(game) {
-    var robots = Object.keys(game.robots).map(function (player, index) {
-        var robot = game.robots[player]
+    var robots = game.players.map(function (player) {
+        var robot = player.robot
         var x = robot.position.x * 50
         var y = robot.position.y * 50
         var rot = directionToRotation(robot.direction)
-        return h('robot.robot' + (index % 6 + 1),
+        return h('robot.robot' + (player.index % 6 + 1),
             {
                 style: {
                     transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)',
-                    opacity: robot.finished ? '0' : '1',
+                    opacity: player.finished ? '0' : '1',
                 },
                 props: {
-                    title: player + " - " + Object.keys(robot.direction)[0],
-                    id: 'robot_' + (index % 6 + 1),
+                    title: JSON.stringify(player),
+                    id: 'robot_' + (player.index % 6 + 1),
                     x: x,
                     y: y,
                     rot: rot + ''

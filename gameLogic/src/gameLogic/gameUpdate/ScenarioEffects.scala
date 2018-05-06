@@ -1,6 +1,6 @@
 package gameLogic.gameUpdate
 
-import gameLogic.{GameRunning, Logged, PlayerFinished, RobotReset}
+import gameLogic.{FinishedStatistic, GameRunning, Logged, PlayerFinished, RobotReset}
 
 object ScenarioEffects {
 
@@ -8,41 +8,42 @@ object ScenarioEffects {
     fallenRobots(game)
 
   private def fallenRobots(game: GameRunning): Logged[GameRunning] = {
-    val firstFallenRobot = game.robots.find {
-      case (_, robot) => robot.position.x >= game.scenario.width ||
-        robot.position.x < 0 ||
-        robot.position.y >= game.scenario.height ||
-        robot.position.y < 0 ||
-        game.scenario.pits.contains(robot.position)
+    val firstFallenPlayer = game.players.find {
+      player =>
+        val robot = player.robot
+        robot.position.x >= game.scenario.width ||
+          robot.position.x < 0 ||
+          robot.position.y >= game.scenario.height ||
+          robot.position.y < 0 ||
+          game.scenario.pits.contains(robot.position)
     }
 
-    firstFallenRobot match {
+    firstFallenPlayer match {
       case None => Logged.pure(game)
-      case Some((player, robot)) =>
-        val index = game.players.zipWithIndex.find(_._1 == player).get._2
+      case Some(player) =>
+        val index = player.index
         val initial = game.scenario.initialRobots(index)
         for {
-          clearedInitial <- PushRobots(initial.position, initial.direction, game.robots)
-          resettedFallen <- (clearedInitial + (player -> initial)).log(RobotReset(player, robot, initial))
-          resettedActions = game.robotActions + (player -> Seq.empty)
-          recursion <- fallenRobots(game.copy(robots = resettedFallen, robotActions = resettedActions))
+          clearedInitial <- PushRobots(initial.position, initial.direction, game)
+          resettedFallen <- clearedInitial.copy(players = clearedInitial.players.map(p => if (p.name == player.name) p.copy(robot = initial, actions = Seq.empty) else p)).log(RobotReset(player.name, player.robot, initial))
+          recursion <- fallenRobots(resettedFallen)
         } yield recursion
 
     }
   }
 
   def afterCycle(game: GameRunning): Logged[GameRunning] = {
-    game.robots.find {
-      case (_, robot) => robot.position == game.scenario.targetPosition && !robot.finished
+    game.players.find {
+      player => player.robot.position == game.scenario.targetPosition && player.finished.isEmpty
     } match {
       case None => Logged.pure(game)
-      case Some((player, _)) =>
-        val playerFinished = PlayerFinished(player, game.finishedPlayers.size + 1, game.cycle)
+      case Some(player) =>
+        val stats = FinishedStatistic(rank = game.players.count(_.finished.isDefined) + 1, cycle = game.cycle)
+        val playerFinished = PlayerFinished(player.name, stats)
         val remainingPlayers = game.players.filter(_ != player)
 
         game.copy(
-          finishedPlayers = game.finishedPlayers :+ playerFinished,
-          robots = game.robots + (player -> game.robots(player).copy(finished = true))
+          players = game.players.map(p => if (p.name == player.name) p.copy(finished = Some(stats)) else p)
         ).log(playerFinished)
     }
   }

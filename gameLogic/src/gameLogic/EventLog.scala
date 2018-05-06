@@ -1,6 +1,5 @@
 package gameLogic
 
-import gameLogic.action.Action
 import gameLogic.gameUpdate.Command
 
 sealed trait EventLog
@@ -10,14 +9,14 @@ case class GameStateTransition(oldState: GameState, newState: GameState) extends
 
 case class GameScenarioDefined(scenario: GameScenario) extends EventLog
 
-case class NextRobotForActionDefined(playerName: String, weights: Map[String, (Int, Double, Double)]) extends EventLog
+case class NextRobotForActionDefined(playerName: String) extends EventLog
 case class RobotAction(playerName: String, action: Action) extends EventLog
 case class RobotPositionTransition(playerName: String, from: Position, to: Position) extends EventLog
 case class RobotDirectionTransition(playerName: String, from: Direction, to: Direction) extends EventLog
 case class RobotMovementBlocked(playerName: String, position: Position, direction: Direction) extends EventLog
 case class RobotReset(playerName: String, from: Robot, to: Robot) extends EventLog
 
-case class PlayerFinished(playerName: String, rank: Int, cycle: Int) extends EventLog
+case class PlayerFinished(playerName: String, stats: FinishedStatistic) extends EventLog
 case object AllPlayersFinished extends EventLog
 
 case object AllPlayerDefinedActions extends EventLog

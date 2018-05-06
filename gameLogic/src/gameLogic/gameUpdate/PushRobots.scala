@@ -3,14 +3,14 @@ package gameUpdate
 
 object PushRobots {
 
-  def apply(position: Position, direction: Direction, robots: Robots): Logged[Robots] =
-    robots.find(_._2.position == position) match {
-      case Some((player, robot)) =>
-        val nextPos  = robot.position.move(direction)
+  def apply(position: Position, direction: Direction, gameRunning: GameRunning): Logged[GameRunning] =
+    gameRunning.players.find(_.robot.position == position) match {
+      case Some(player) =>
+        val nextPos = player.robot.position.move(direction)
         for {
-          pushedRobots <- PushRobots(position.move(direction), direction, robots)
-          nextRobotState <- robot.copy(position = nextPos).log(RobotPositionTransition(player, robot.position, nextPos))
-        } yield pushedRobots + (player -> nextRobotState)
-      case None => Logged.pure(robots)
+          pushedRobots <- PushRobots(position.move(direction), direction, gameRunning)
+          nextRobotState <- player.robot.copy(position = nextPos).log(RobotPositionTransition(player.name, player.robot.position, nextPos))
+        } yield gameRunning.copy(players = gameRunning.players.map(p => if (p.name == player.name) p.copy(robot = p.robot.copy(position = nextPos)) else p))
+      case None => Logged.pure(gameRunning)
     }
 }

@@ -1,6 +1,6 @@
 var _ = require('lodash')
 
-function animations(oldGameState, newGameState, events) {
+function animations(oldGameState, events) {
     if (oldGameState.GameRunning) {
         var animations = []
         var players = oldGameState.GameRunning.players
@@ -9,29 +9,27 @@ function animations(oldGameState, newGameState, events) {
             var keyframes = []
             var player = players[i]
 
-            var oldRobot = oldGameState.GameRunning.robots[player]
-
-            var rot = directionToRotation(oldRobot.direction)
-            var x = oldRobot.position.x
-            var y = oldRobot.position.y
-            var finished = oldRobot.finished
+            var rot = directionToRotation(player.robot.direction)
+            var x = player.robot.position.x
+            var y = player.robot.position.y
+            var finished = !!player.finished
 
             keyframes.push(keyframe(x, y, rot, finished, 0))
             for (var j = 0; j < events.length; j++) {
                 var offset = j / (1 + events.length)
-                if (events[j].RobotPositionTransition && events[j].RobotPositionTransition.playerName === player) {
+                if (events[j].RobotPositionTransition && events[j].RobotPositionTransition.playerName === player.name) {
                     x = events[j].RobotPositionTransition.to.x
                     y = events[j].RobotPositionTransition.to.y
                     keyframes.push(keyframe(x, y, rot, finished, offset))
-                } else if (events[j].RobotDirectionTransition && events[j].RobotDirectionTransition.playerName === player) {
+                } else if (events[j].RobotDirectionTransition && events[j].RobotDirectionTransition.playerName === player.name) {
                     rot = nearestRotation(rot, events[j].RobotDirectionTransition.to)
                     keyframes.push(keyframe(x, y, rot, finished, offset))
-                }else if(events[j].RobotReset && events[j].RobotReset.playerName === player){
+                }else if(events[j].RobotReset && events[j].RobotReset.playerName === player.name){
                     x = events[j].RobotReset.to.position.x
                     y = events[j].RobotReset.to.position.y
                     rot = nearestRotation(rot, events[j].RobotReset.to.direction)
                     keyframes.push(keyframe(x, y, rot, finished, offset))
-                } else if (events[j].PlayerFinished && events[j].PlayerFinished.playerName === player) {
+                } else if (events[j].PlayerFinished && events[j].PlayerFinished.playerName === player.name) {
                     finished = true
                     keyframes.push(keyframe(x, y, rot, finished, offset))
                 }

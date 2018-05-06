@@ -1,19 +1,17 @@
 package gameLogic
 package gameUpdate
 
-import gameLogic.action._
-
 object Cycle{
   def apply(gameState: GameState): Logged[GameState] = gameState match {
-    case g: GameRunning if g.players.forall(player => g.robotActions.isDefinedAt(player) || g.finishedPlayers.exists(_.playerName == player)) =>
+    case g: GameRunning if g.players.forall(player => player.finished.isDefined || player.actions.size == Constants.actionsPerCycle) =>
       for {
         _ <- ().log(AllPlayerDefinedActions)
         afterPlayerActions <- execAllActions(g)
         afterEffects <- ScenarioEffects.afterCycle(afterPlayerActions)
         nextState <- afterEffects match {
-          case running if running.players.forall(player => running.finishedPlayers.exists(_.playerName == player)) =>
-            GameFinished(running.finishedPlayers, scenario = running.scenario, robots = running.robots).log(AllPlayersFinished)
-          case running => afterEffects.asInstanceOf[GameRunning].copy(cycle = g.cycle + 1).log(PlayerActionsExecuted(g.cycle + 1))
+          case running if running.players.forall(_.finished.isDefined) =>
+            GameFinished(running.players, scenario = running.scenario).log(AllPlayersFinished)
+          case running => afterEffects.copy(cycle = g.cycle + 1).log(PlayerActionsExecuted(g.cycle + 1))
         }
       } yield nextState
 
@@ -33,7 +31,7 @@ object Cycle{
     } yield nextState
   }
 
-  private def calcNextPlayer(gameState: GameRunning): Logged[Option[String]] = {
+  private def calcNextPlayer(gameState: GameRunning): Logged[Option[Player]] = {
     val beacon = gameState.scenario.beaconPosition
 
     def distance(position: Position): Double = {
@@ -48,55 +46,52 @@ object Cycle{
       Math.atan2(dx, dy)
     }
 
-    def emptiedSlots(actions: Option[Seq[Action]]): Int = Constants.actionsPerCycle - actions.fold(0)(_.size)
-
-    def nextPlayerWeight(player: String): (Int, Double, Double) = {
-      val position = gameState.robots(player).position
-      (emptiedSlots(gameState.robotActions.get(player)), distance(position), angle(position))
+    def nextPlayerWeight(player: Player): (Int, Double, Double) = {
+      val position = player.robot.position
+      (Constants.actionsPerCycle - player.actions.size, distance(position), angle(position))
     }
 
-    if (gameState.robotActions.forall(_._2.isEmpty)) {
+    if (gameState.players.forall(_.actions.isEmpty)) {
        None.log()
     } else {
       val p = gameState.players.minBy(nextPlayerWeight)
-      Some(p).log(NextRobotForActionDefined(p, gameState.players.map(player => player -> nextPlayerWeight(player)).toMap))
+      Some(p).log(NextRobotForActionDefined(p.name))
     }
   }
 
-  private def applyAction(game: GameRunning, player: String): Logged[GameRunning] = {
-    val actions = game.robotActions(player)
-    val action = actions.head
+  private def applyAction(game: GameRunning, player: Player): Logged[GameRunning] = {
+    val action = player.actions.head
     for {
-      robot <- game.robots(player).log(RobotAction(player, action))
-      afterAction <- (action match {
+      robot <- player.robot.log(RobotAction(player.name, action))
+      afterAction <- action match {
         case turn: TurnAction => turnAction(player, robot, turn, game)
         case move: MoveAction => moveAction(player, robot, move, game)
-      }).map(_.copy(robotActions = (game.robotActions + (player -> actions.tail)).filter(_._2.nonEmpty)))
-      afterEffects <- ScenarioEffects.afterAction(afterAction)
+      }
+      afterDroppedAction = afterAction.copy(players = afterAction.players.map(p => if(p.name == player.name) p.copy(actions = p.actions.tail) else p))
+      afterEffects <- ScenarioEffects.afterAction(afterDroppedAction)
     } yield afterEffects
   }
 
-  private def turnAction(player: String, robot: Robot, action: TurnAction, game: GameRunning): Logged[GameRunning] = {
+  private def turnAction(player: Player, robot: Robot, action: TurnAction, game: GameRunning): Logged[GameRunning] = {
     val nextDirection = action match {
       case TurnLeft => robot.direction.left
       case TurnRight => robot.direction.right
     }
     for {
-      nextRobotState <- robot.copy(direction = nextDirection).log(RobotDirectionTransition(player, robot.direction, nextDirection))
-    } yield game.copy(robots = game.robots.updated(player, nextRobotState))
+      nextRobotState <- robot.copy(direction = nextDirection).log(RobotDirectionTransition(player.name, robot.direction, nextDirection))
+    } yield game.copy(players = game.players.map(p => if(p.name == player.name) p.copy(robot = nextRobotState) else p))
   }
 
-  private def moveAction(player: String, robot: Robot, action: MoveAction, game: GameRunning): Logged[GameRunning] = {
+  private def moveAction(player: Player, robot: Robot, action: MoveAction, game: GameRunning): Logged[GameRunning] = {
     val direction = action match {
       case MoveForward => robot.direction
       case MoveBackward => robot.direction.back
     }
-    for {
-      updatedRobots <- if (movementIsAllowed(game, robot.position, direction))
-        PushRobots(robot.position, direction, game.robots)
-      else
-        game.robots.log(RobotMovementBlocked(player, robot.position, direction))
-    } yield game.copy(robots = updatedRobots)
+
+    if (movementIsAllowed(game, robot.position, direction))
+      PushRobots(robot.position, direction, game)
+    else
+      game.log(RobotMovementBlocked(player.name, robot.position, direction))
   }
 
 
@@ -113,7 +108,7 @@ object Cycle{
       false
     else if (direction == Left && rightWalls.contains(position.move(Left)))
       false
-    else if (game.robots.exists(_._2.position == position.move(direction)))
+    else if (game.players.exists(_.robot.position == position.move(direction)))
       movementIsAllowed(game, position.move(direction), direction)
     else
       true

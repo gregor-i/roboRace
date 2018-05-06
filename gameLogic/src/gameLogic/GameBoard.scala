@@ -1,11 +1,11 @@
 package gameLogic
 
-case class Position(x: Int, y: Int){
-  def move(dir: Direction):Position = dir match {
-    case Up => Position(x, y-1)
-    case Down => Position(x, y+1)
-    case Right => Position(x+1, y)
-    case Left => Position(x-1, y)
+case class Position(x: Int, y: Int) {
+  def move(dir: Direction): Position = dir match {
+    case Up => Position(x, y - 1)
+    case Down => Position(x, y + 1)
+    case Right => Position(x + 1, y)
+    case Left => Position(x - 1, y)
   }
 }
 

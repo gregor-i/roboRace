@@ -1,6 +1,5 @@
 package gameLogic
 
-import gameLogic.action.MoveForward
 import gameLogic.gameUpdate._
 import org.scalatest.{FunSuite, Matchers}
 
@@ -15,23 +14,21 @@ class GameSpec extends FunSuite with Matchers {
     StartGame
   )
 
-  private val cycle0State = GameRunning(cycle = 0,
-    players = Seq("player 1", "player 2"),
-    robotActions = Map.empty,
-    scenario = scenario,
-    robots = Map("player 1" -> Robot(Position(1, 8), Up, false), "player 2" -> Robot(Position(5, 8), Up, false)),
-    finishedPlayers = Seq.empty)
+  private val cycle0State = GameRunning(cycle = 0, scenario = scenario,
+    players = Seq(
+      Player(index = 0, name = "player 1", robot = Robot(Position(1, 8), Up, false), actions = Seq.empty, finished = None),
+      Player(index = 1, name = "player 2", robot = Robot(Position(5, 8), Up, false), actions = Seq.empty, finished = None)
+    ))
 
   private val bothMoveForwardActions = for {
     player <- Seq("player 1", "player 2")
   } yield DefineNextAction(player, 0, Seq.fill(Constants.actionsPerCycle)(MoveForward))
 
-  private val cycle1State = GameRunning(cycle = 1,
-    players = Seq("player 1", "player 2"),
-    robotActions = Map.empty,
-    scenario = scenario,
-    robots = Map("player 1" -> Robot(Position(1, 3), Up, false), "player 2" -> Robot(Position(5, 3), Up, false)),
-    finishedPlayers = Seq.empty)
+  private val cycle1State = GameRunning(cycle = 1, scenario = scenario,
+    players = Seq(
+      Player(index = 0, name = "player 1", robot = Robot(Position(1, 3), Up, false), actions = Seq.empty, finished = None),
+      Player(index = 1, name = "player 2", robot = Robot(Position(5, 3), Up, false), actions = Seq.empty, finished = None)
+    ))
 
   test("start the game") {
     val loggedState = acceptAllCommands(GameNotDefined)(startGameActions)

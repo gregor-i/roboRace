@@ -1,8 +1,6 @@
 package gameLogic
 package gameUpdate
 
-import gameLogic.action.Action
-
 sealed trait CommandResponse
 case class CommandRejected(reason: RejectionReason, command:Command) extends CommandResponse
 case class CommandAccepted(newState: GameState) extends CommandResponse
@@ -45,21 +43,19 @@ case object StartGame extends FoldingCommand {
     case g if g.playerNames.isEmpty => rejected(NoPlayersRegistered)
     case g => accepted(GameRunning(
       cycle = 0,
-      players = g.playerNames,
-      finishedPlayers = Seq.empty,
-      scenario = g.scenario,
-      robots = g.playerNames.zipWithIndex.map { case (name, index) => name -> g.scenario.initialRobots(index) }.toMap,
-      robotActions = Map.empty))
+      players = for((name, index) <- g.playerNames.zipWithIndex)
+        yield Player(index, name, g.scenario.initialRobots(index), Seq.empty, None),
+      scenario = g.scenario))
   }
 }
 
 case class DefineNextAction(player: String, cycle: Int, actions: Seq[Action]) extends FoldingCommand {
   override def ifRunning: GameRunning => R = {
     case g if g.cycle != cycle => rejected(WrongCycle)
-    case g if !g.players.contains(player) => rejected(PlayerNotFound)
+    case g if !g.players.exists(_.name == player) => rejected(PlayerNotFound)
     case g if actions.size != Constants.actionsPerCycle => rejected(InvalidActionCount)
     case g => accepted(
-      g.copy(robotActions = g.robotActions + (player -> actions))
-    )
+      g.copy(players = g.players.map(p => if(p.name == player) p.copy(actions = actions) else p)
+    ))
   }
 }

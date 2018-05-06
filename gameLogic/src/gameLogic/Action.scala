@@ -1,4 +1,4 @@
-package gameLogic.action
+package gameLogic
 
 sealed trait Action
 

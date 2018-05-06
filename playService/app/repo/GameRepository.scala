@@ -2,17 +2,14 @@ package repo
 
 import java.io.FileWriter
 
-import com.google.inject.ImplementedBy
 import gameLogic.GameState
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
-import javax.inject.Singleton
 
 import scala.io.Source
 import scala.util.Try
 
-@ImplementedBy(classOf[MemoryGameRepository])
 trait GameRepository {
   def get(id: String): Option[GameState]
   def list(): Seq[(String, GameState)]
@@ -21,7 +18,6 @@ trait GameRepository {
 }
 
 
-@Singleton
 class MemoryGameRepository extends GameRepository {
   def get(id: String): Option[GameState] = synchronized(cache.get(id))
   def list(): Seq[(String, GameState)] = synchronized(cache.toSeq)
@@ -31,7 +27,6 @@ class MemoryGameRepository extends GameRepository {
   private[this] var cache: Map[String, GameState] = Map.empty
 }
 
-@Singleton
 class FileGameRepository extends GameRepository{
   def get(id: String): Option[GameState] = synchronized(read().get(id))
   def list(): Seq[(String, GameState)] = synchronized(read().toSeq)

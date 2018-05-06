@@ -18007,7 +18007,7 @@ function Lobby(element, player) {
             const data = JSON.parse(event.data)
             const newGameState = data.state
             const events = data.events
-            state.animations = animations.animations(state.selectedGameState, newGameState, events)
+            state.animations = animations.animations(state.selectedGameState, events)
             if(state.animations)
                 animations.playAnimations(state.animations)
             state.selectedGameState = newGameState
@@ -18048,7 +18048,7 @@ function Lobby(element, player) {
     return this
 }
 
-document.addEventListener('DOMContentLoaded', function (event) {
+document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('robo-race')
     var player = localStorage.getItem('playerName')
     new Lobby(container, player)
@@ -18086,7 +18086,7 @@ module.exports = {
 },{}],17:[function(require,module,exports){
 var _ = require('lodash')
 
-function animations(oldGameState, newGameState, events) {
+function animations(oldGameState, events) {
     if (oldGameState.GameRunning) {
         var animations = []
         var players = oldGameState.GameRunning.players
@@ -18095,29 +18095,27 @@ function animations(oldGameState, newGameState, events) {
             var keyframes = []
             var player = players[i]
 
-            var oldRobot = oldGameState.GameRunning.robots[player]
-
-            var rot = directionToRotation(oldRobot.direction)
-            var x = oldRobot.position.x
-            var y = oldRobot.position.y
-            var finished = oldRobot.finished
+            var rot = directionToRotation(player.robot.direction)
+            var x = player.robot.position.x
+            var y = player.robot.position.y
+            var finished = !!player.finished
 
             keyframes.push(keyframe(x, y, rot, finished, 0))
             for (var j = 0; j < events.length; j++) {
                 var offset = j / (1 + events.length)
-                if (events[j].RobotPositionTransition && events[j].RobotPositionTransition.playerName === player) {
+                if (events[j].RobotPositionTransition && events[j].RobotPositionTransition.playerName === player.name) {
                     x = events[j].RobotPositionTransition.to.x
                     y = events[j].RobotPositionTransition.to.y
                     keyframes.push(keyframe(x, y, rot, finished, offset))
-                } else if (events[j].RobotDirectionTransition && events[j].RobotDirectionTransition.playerName === player) {
+                } else if (events[j].RobotDirectionTransition && events[j].RobotDirectionTransition.playerName === player.name) {
                     rot = nearestRotation(rot, events[j].RobotDirectionTransition.to)
                     keyframes.push(keyframe(x, y, rot, finished, offset))
-                }else if(events[j].RobotReset && events[j].RobotReset.playerName === player){
+                }else if(events[j].RobotReset && events[j].RobotReset.playerName === player.name){
                     x = events[j].RobotReset.to.position.x
                     y = events[j].RobotReset.to.position.y
                     rot = nearestRotation(rot, events[j].RobotReset.to.direction)
                     keyframes.push(keyframe(x, y, rot, finished, offset))
-                } else if (events[j].PlayerFinished && events[j].PlayerFinished.playerName === player) {
+                } else if (events[j].PlayerFinished && events[j].PlayerFinished.playerName === player.name) {
                     finished = true
                     keyframes.push(keyframe(x, y, rot, finished, offset))
                 }
@@ -18231,7 +18229,7 @@ function render(state, game, actionHandler) {
                     renderBoard(gameRunning),
                     renderRobots(gameRunning)
                 ]),
-                gameRunning.players.includes(state.player) ?
+                gameRunning.players.find(function(player){return player.name === state.player}) ?
                     renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler) :
                     'Observer mode',
                 button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
@@ -18330,20 +18328,20 @@ function renderCell(game, row, column) {
 
 
 function renderRobots(game) {
-    var robots = Object.keys(game.robots).map(function (player, index) {
-        var robot = game.robots[player]
+    var robots = game.players.map(function (player) {
+        var robot = player.robot
         var x = robot.position.x * 50
         var y = robot.position.y * 50
         var rot = directionToRotation(robot.direction)
-        return h('robot.robot' + (index % 6 + 1),
+        return h('robot.robot' + (player.index % 6 + 1),
             {
                 style: {
                     transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)',
-                    opacity: robot.finished ? '0' : '1',
+                    opacity: player.finished ? '0' : '1',
                 },
                 props: {
-                    title: player + " - " + Object.keys(robot.direction)[0],
-                    id: 'robot_' + (index % 6 + 1),
+                    title: JSON.stringify(player),
+                    id: 'robot_' + (player.index % 6 + 1),
                     x: x,
                     y: y,
                     rot: rot + ''
