@@ -44,18 +44,20 @@ case object StartGame extends FoldingCommand {
     case g => accepted(GameRunning(
       cycle = 0,
       players = for((name, index) <- g.playerNames.zipWithIndex)
-        yield Player(index, name, g.scenario.initialRobots(index), Seq.empty, None),
+        yield Player(index, name, g.scenario.initialRobots(index), Seq.empty, None, DealOptions()),
       scenario = g.scenario))
   }
 }
 
-case class DefineNextAction(player: String, cycle: Int, actions: Seq[Action]) extends FoldingCommand {
+case class DefineNextAction(player: String, cycle: Int, actions: Seq[Int]) extends FoldingCommand {
   override def ifRunning: GameRunning => R = {
     case g if g.cycle != cycle => rejected(WrongCycle)
     case g if !g.players.exists(_.name == player) => rejected(PlayerNotFound)
-    case g if actions.size != Constants.actionsPerCycle => rejected(InvalidActionCount)
+    case g if actions.size != Constants.actionsPerCycle ||
+      actions.distinct.size != Constants.actionsPerCycle ||
+      actions.forall(i => 0 > i || i > Constants.actionOptionsPerCycle) => rejected(InvalidActionChoice)
     case g => accepted(
-      g.copy(players = g.players.map(p => if(p.name == player) p.copy(actions = actions) else p)
-    ))
+      g.copy(players = g.players.map(p => if(p.name == player) p.copy(actions = actions.map(p.possibleActions)) else p))
+    )
   }
 }

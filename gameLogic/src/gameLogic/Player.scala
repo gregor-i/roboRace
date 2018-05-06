@@ -4,6 +4,7 @@ case class Player(index: Int,
                   name: String,
                   robot: Robot,
                   actions: Seq[Action],
-                  finished: Option[FinishedStatistic])
+                  finished: Option[FinishedStatistic],
+                  possibleActions: Seq[Action])
 
 case class FinishedStatistic(rank: Int, cycle: Int)

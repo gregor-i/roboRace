@@ -14,10 +14,12 @@ class GameSpec extends FunSuite with Matchers {
     StartGame
   )
 
+  val options = DealOptions()
+
   private val cycle0State = GameRunning(cycle = 0, scenario = scenario,
     players = Seq(
-      Player(index = 0, name = "player 1", robot = Robot(Position(1, 8), Up, false), actions = Seq.empty, finished = None),
-      Player(index = 1, name = "player 2", robot = Robot(Position(5, 8), Up, false), actions = Seq.empty, finished = None)
+      Player(index = 0, name = "player 1", robot = Robot(Position(1, 8), Up), actions = Seq.empty, finished = None, options),
+      Player(index = 1, name = "player 2", robot = Robot(Position(5, 8), Up), actions = Seq.empty, finished = None, options)
     ))
 
   private val bothMoveForwardActions = for {
@@ -26,8 +28,8 @@ class GameSpec extends FunSuite with Matchers {
 
   private val cycle1State = GameRunning(cycle = 1, scenario = scenario,
     players = Seq(
-      Player(index = 0, name = "player 1", robot = Robot(Position(1, 3), Up, false), actions = Seq.empty, finished = None),
-      Player(index = 1, name = "player 2", robot = Robot(Position(5, 3), Up, false), actions = Seq.empty, finished = None)
+      Player(index = 0, name = "player 1", robot = Robot(Position(1, 3), Up), actions = Seq.empty, finished = None, options),
+      Player(index = 1, name = "player 2", robot = Robot(Position(5, 3), Up), actions = Seq.empty, finished = None, options)
     ))
 
   test("start the game") {

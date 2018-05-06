@@ -17904,11 +17904,8 @@ function actions(state, action) {
         if (!state.slots)
             state.slots = []
         var slot = action.defineAction.slot
-        state.slots[slot] = {}
-        state.slots[slot][action.defineAction.action] = {}
-        if (_.range(constants.numberOfActionsPerCycle).every(function (i) {
-                return state.slots[i];
-            }))
+        state.slots[slot] = action.defineAction.value
+        if (_.range(constants.numberOfActionsPerCycle).every(i => state.slots[i] >= 0))
             gameService.defineAction(state.selectedGame, state.player, action.defineAction.cycle, state.slots)
         return Promise.resolve(state)
     } else if(action.replayAnimations) {
@@ -18019,7 +18016,6 @@ function Lobby(element, player) {
             if(state.animations)
                 animations.playAnimations(state.animations)
             state.selectedGameState = newGameState
-            // console.log("game Events: ",events)
             if(events.find(function(event){
                 return !! event.PlayerActionsExecuted
             })) state.slots = []
@@ -18037,7 +18033,7 @@ function Lobby(element, player) {
                 state.games[data.GameCreated.id] = data.GameCreated.state
                 renderState(state)
             }else {
-                console.log("unhandled lobby event", data)
+                console.error("unhandled lobby event", data)
             }
         }
     }
@@ -18232,15 +18228,16 @@ var button = require('./button')
 function render(state, game, actionHandler) {
     if (game.GameRunning) {
         var gameRunning = game.GameRunning
+        var player = gameRunning.players.find(function(player){return player.name === state.player})
         return gameFrame('Game ' + state.selectedGame, [
                 renderPlayerList(game.GameRunning.players),
                 h('div.board', [
                     renderBoard(gameRunning),
                     renderRobots(gameRunning)
                 ]),
-                gameRunning.players.find(function(player){return player.name === state.player && !player.finished}) ?
-                    renderActionButtons(state, gameRunning.cycle, gameRunning.robotActions, actionHandler) :
-                    h('div', 'observer mode or target reached'),
+                !player ? h('div', 'observer mode') :
+                    (player.finished ? h('div', 'target reached') :
+                        renderActionButtons(state, gameRunning.cycle, player, actionHandler)),
                 button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
             ],
             actionHandler)
@@ -18381,33 +18378,41 @@ function directionToRotation(direction) {
         console.error("unkown direction", direction)
 }
 
-function renderActionButtons(state, cycle, robotActions, actionHandler) {
+function renderActionButtons(state, cycle, player, actionHandler) {
     var headerRow = h('tr', _.range(constants.numberOfActionsPerCycle).map(function (i) {
         return h('th', 'Action ' + (i + 1))
     }))
 
-    function actionRow(action) {
-        function actionButton(slot) {
-            var isEnabled = !!(_.get(state, ['slots', slot, action]))
-            return h('td',
-                    button.builder.primary(isEnabled)(actionHandler,
-                        {defineAction: {player: state.player, cycle, slot, action}},
-                        action))
-        }
-
-        return h('tr', _.range(constants.numberOfActionsPerCycle).map(actionButton))
+    function actionSelect(slot) {
+        const options = player.possibleActions.map((action, index) =>
+            h('option',
+                {
+                    props: {
+                        selected: state.slots[slot] === index,
+                        disabled: state.slots.includes(index) && state.slots[slot] !== index
+                    },
+                    style: {'font-weight': state.slots[slot] === index ? 'bold' : ''}
+                },
+                Object.keys(action)[0]))
+        options.unshift(h('option', 'unselected'))
+        return h('span.control',
+            h('select.select',
+                {
+                    class:{'is-primary': !(state.slots[slot] > 0)},
+                    on: {
+                        change: function (event) {
+                            actionHandler({defineAction: {value: event.target.selectedIndex - 1, slot, cycle}})
+                        }
+                    }
+                },
+                options
+            )
+        )
     }
 
-    return h('table', [
-        headerRow,
-        actionRow('MoveForward'),
-        actionRow('MoveTwiceForward'),
-        actionRow('MoveBackward'),
-        actionRow('TurnRight'),
-        actionRow('TurnLeft'),
-        actionRow('UTurn'),
-        actionRow('Sleep')
-    ])
+    var options = _.range(constants.numberOfActionsPerCycle).map(actionSelect)
+    options.unshift(h('h4', 'Actions: '))
+    return h('div', options)
 }
 
 module.exports = render

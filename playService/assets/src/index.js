@@ -41,7 +41,6 @@ function Lobby(element, player) {
             if(state.animations)
                 animations.playAnimations(state.animations)
             state.selectedGameState = newGameState
-            // console.log("game Events: ",events)
             if(events.find(function(event){
                 return !! event.PlayerActionsExecuted
             })) state.slots = []
@@ -59,7 +58,7 @@ function Lobby(element, player) {
                 state.games[data.GameCreated.id] = data.GameCreated.state
                 renderState(state)
             }else {
-                console.log("unhandled lobby event", data)
+                console.error("unhandled lobby event", data)
             }
         }
     }

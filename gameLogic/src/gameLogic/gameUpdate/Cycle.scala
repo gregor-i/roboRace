@@ -11,7 +11,8 @@ object Cycle{
         nextState <- afterEffects match {
           case running if running.players.forall(_.finished.isDefined) =>
             GameFinished(running.players, scenario = running.scenario).log(AllPlayersFinished)
-          case running => afterEffects.copy(cycle = g.cycle + 1).log(PlayerActionsExecuted(g.cycle + 1))
+          case running => afterEffects.copy(cycle = g.cycle + 1, players = afterEffects.players.map(_.copy(possibleActions = DealOptions())))
+            .log(PlayerActionsExecuted(g.cycle + 1))
         }
       } yield nextState
 
@@ -85,13 +86,14 @@ object Cycle{
 
   private def moveAction(player: Player, action: MoveAction, game: GameRunning): Logged[GameRunning] = {
     def move(direction: Direction, gameRunning: GameRunning): Logged[GameRunning] ={
-      if (movementIsAllowed(gameRunning, player.robot.position, direction)) {
+      val p = gameRunning.players.find(_.name == player.name).get
+      if (movementIsAllowed(gameRunning, p.robot.position, direction)) {
         for{
-          afterPush <- PushRobots(player.robot.position, player.robot.direction, gameRunning)
+          afterPush <- PushRobots(p.robot.position, direction, gameRunning)
           afterEffects <- ScenarioEffects.afterMoveAction(afterPush)
         } yield afterEffects
       }else{
-        gameRunning.log(RobotMovementBlocked(player.name, player.robot.position, player.robot.direction))
+        gameRunning.log(RobotMovementBlocked(p.name, p.robot.position, direction))
       }
     }
 

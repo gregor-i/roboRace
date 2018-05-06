@@ -53,11 +53,8 @@ function actions(state, action) {
         if (!state.slots)
             state.slots = []
         var slot = action.defineAction.slot
-        state.slots[slot] = {}
-        state.slots[slot][action.defineAction.action] = {}
-        if (_.range(constants.numberOfActionsPerCycle).every(function (i) {
-                return state.slots[i];
-            }))
+        state.slots[slot] = action.defineAction.value
+        if (_.range(constants.numberOfActionsPerCycle).every(i => state.slots[i] >= 0))
             gameService.defineAction(state.selectedGame, state.player, action.defineAction.cycle, state.slots)
         return Promise.resolve(state)
     } else if(action.replayAnimations) {
