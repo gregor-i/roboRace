@@ -44,6 +44,7 @@ function Lobby(element, player) {
             if(events.find(function(event){
                 return !! event.PlayerActionsExecuted
             })) state.slots = []
+            state.logs = state.logs.concat(events)
             renderState(state)
         }
     }
@@ -70,7 +71,8 @@ function Lobby(element, player) {
             selectedGame: undefined,
             eventSource: undefined,
             selectedGameState: undefined,
-            slots: []
+            slots: [],
+            logs:[]
         }, element)
     })
 

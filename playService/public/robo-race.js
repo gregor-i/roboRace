@@ -17867,7 +17867,7 @@ function actions(state, action) {
         if (oldEvents)
             oldEvents.close()
         const newEvents = gameService.updates(gameId)
-        const newState = Object.assign({}, state, {selectedGame: gameId, eventSource: newEvents, slots: []})
+        const newState = Object.assign({}, state, {selectedGame: gameId, eventSource: newEvents, slots: [], logs: []})
         return gameService.getState(gameId).then(function (gameState) {
             newState.selectedGameState = gameState
             return newState
@@ -17880,6 +17880,7 @@ function actions(state, action) {
         delete newState.selectedGame
         delete newState.eventSource
         delete newState.animations
+        delete newState.logs
         return Promise.resolve(newState)
     } else if (action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
@@ -17917,6 +17918,7 @@ function actions(state, action) {
 }
 
 module.exports = actions
+
 },{"./constants":13,"./game-service":14,"./lobby-service":16,"./ui/animations":17,"lodash":1}],13:[function(require,module,exports){
 module.exports = {
     numberOfActionsPerCycle: 5
@@ -18019,6 +18021,7 @@ function Lobby(element, player) {
             if(events.find(function(event){
                 return !! event.PlayerActionsExecuted
             })) state.slots = []
+            state.logs = state.logs.concat(events)
             renderState(state)
         }
     }
@@ -18045,7 +18048,8 @@ function Lobby(element, player) {
             selectedGame: undefined,
             eventSource: undefined,
             selectedGameState: undefined,
-            slots: []
+            slots: [],
+            logs:[]
         }, element)
     })
 
@@ -18240,6 +18244,7 @@ function render(state, game, actionHandler) {
                         renderActionButtons(state, g.cycle, player, actionHandler)),
                 button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
             ],
+            state.logs,
             actionHandler)
     } else if (game.GameNotStarted) {
         return gameFrame('Game ' + state.selectedGame,
@@ -18264,17 +18269,19 @@ function render(state, game, actionHandler) {
                         renderActionButtons(state, g.cycle, player, actionHandler)),
                 button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
             ],
+            state.logs,
             actionHandler)
     } else {
         return gameFrame('GameState ' + Object.keys(game)[0] + ' is currently not supported.', undefined, actionHandler)
     }
 }
 
-function gameFrame(title, content, actionHandler) {
+function gameFrame(title, content, logs, actionHandler) {
     return h('div', [
         h('h1', title),
         h('div', content),
-        button.builder.primary()(actionHandler, {leaveGame: true}, 'Back to Lobby')
+        button.builder.primary()(actionHandler, {leaveGame: true}, 'Back to Lobby'),
+        renderLog(logs)
     ])
 }
 
@@ -18424,6 +18431,13 @@ function renderActionButtons(state, cycle, player, actionHandler) {
     var options = _.range(constants.numberOfActionsPerCycle).map(actionSelect)
     options.unshift(h('h4', 'Actions: '))
     return h('div', options)
+}
+
+function renderLog(logs) {
+  return h('div', [
+    h('h4', 'Log: '),
+    h('div', logs.map(log => h('div', JSON.stringify(log))))
+  ])
 }
 
 module.exports = render

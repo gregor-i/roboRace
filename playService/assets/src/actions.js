@@ -16,7 +16,7 @@ function actions(state, action) {
         if (oldEvents)
             oldEvents.close()
         const newEvents = gameService.updates(gameId)
-        const newState = Object.assign({}, state, {selectedGame: gameId, eventSource: newEvents, slots: []})
+        const newState = Object.assign({}, state, {selectedGame: gameId, eventSource: newEvents, slots: [], logs: []})
         return gameService.getState(gameId).then(function (gameState) {
             newState.selectedGameState = gameState
             return newState
@@ -29,6 +29,7 @@ function actions(state, action) {
         delete newState.selectedGame
         delete newState.eventSource
         delete newState.animations
+        delete newState.logs
         return Promise.resolve(newState)
     } else if (action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
