@@ -18436,7 +18436,7 @@ function renderActionButtons(state, cycle, player, actionHandler) {
 function renderLog(logs) {
   return h('div', [
     h('h4', 'Log: '),
-    h('div', logs.map(log => h('div', JSON.stringify(log))))
+    h('div', logs && logs.map ? logs.map(log => h('div', JSON.stringify(log))) : [])
   ])
 }
 

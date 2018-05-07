@@ -40,7 +40,6 @@ object ScenarioEffects {
       case Some(player) =>
         val stats = FinishedStatistic(rank = game.players.count(_.finished.isDefined) + 1, cycle = game.cycle)
         val playerFinished = PlayerFinished(player.name, stats)
-        val remainingPlayers = game.players.filter(_ != player)
 
         game.copy(
           players = game.players.map(p => if (p.name == player.name) p.copy(finished = Some(stats)) else p)

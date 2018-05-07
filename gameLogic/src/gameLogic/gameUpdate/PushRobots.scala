@@ -10,7 +10,7 @@ object PushRobots {
         for {
           pushedRobots <- PushRobots(position.move(direction), direction, gameRunning)
           nextRobotState <- player.robot.copy(position = nextPos).log(RobotPositionTransition(player.name, player.robot.position, nextPos))
-        } yield gameRunning.copy(players = gameRunning.players.map(p => if (p.name == player.name) p.copy(robot = p.robot.copy(position = nextPos)) else p))
+        } yield pushedRobots.copy(players = gameRunning.players.map(p => if (p.name == player.name) p.copy(robot = nextRobotState) else p))
       case None => Logged.pure(gameRunning)
     }
 }
