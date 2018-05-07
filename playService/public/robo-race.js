@@ -18227,17 +18227,17 @@ var button = require('./button')
 
 function render(state, game, actionHandler) {
     if (game.GameRunning) {
-        var gameRunning = game.GameRunning
-        var player = gameRunning.players.find(function(player){return player.name === state.player})
+        var g = game.GameRunning
+        var player = g.players.find(function(player){return player.name === state.player})
         return gameFrame('Game ' + state.selectedGame, [
-                renderPlayerList(game.GameRunning.players),
+                renderPlayerList(g.players),
                 h('div.board', [
-                    renderBoard(gameRunning),
-                    renderRobots(gameRunning)
+                    renderBoard(g),
+                    renderRobots(g)
                 ]),
                 !player ? h('div', 'observer mode') :
                     (player.finished ? h('div', 'target reached') :
-                        renderActionButtons(state, gameRunning.cycle, player, actionHandler)),
+                        renderActionButtons(state, g.cycle, player, actionHandler)),
                 button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
             ],
             actionHandler)
@@ -18251,8 +18251,19 @@ function render(state, game, actionHandler) {
                 )
             ], actionHandler)
     } else if (game.GameFinished) {
-        return gameFrame('Game ' + state.selectedGame + ' is finished',
-            renderPlayerList(game.GameFinished.players),
+        var g = game.GameFinished
+        var player = g.players.find(function(player){return player.name === state.player})
+        return gameFrame('Game ' + state.selectedGame, [
+                renderPlayerList(g.players),
+                h('div.board', [
+                    renderBoard(g),
+                    renderRobots(g)
+                ]),
+                !player ? h('div', 'observer mode') :
+                    (player.finished ? h('div', 'target reached') :
+                        renderActionButtons(state, g.cycle, player, actionHandler)),
+                button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
+            ],
             actionHandler)
     } else {
         return gameFrame('GameState ' + Object.keys(game)[0] + ' is currently not supported.', undefined, actionHandler)
