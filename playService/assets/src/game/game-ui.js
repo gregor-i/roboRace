@@ -1,50 +1,39 @@
-var h = require('snabbdom/h').default
 var _ = require('lodash')
-var constants = require('../constants')
-var button = require('./button')
+var h = require('snabbdom/h').default
+var constants = require('../common/constants')
+var button = require('../common/button')
 
-function render(state, game, actionHandler) {
-    if (game.GameRunning) {
-        var g = game.GameRunning
-        var player = g.players.find(function(player){return player.name === state.player})
-        return gameFrame('Game ' + state.selectedGame, [
-                renderPlayerList(g.players),
-                h('div.board', [
-                    renderBoard(g),
-                    renderRobots(g)
-                ]),
-                !player ? h('div', 'observer mode') :
-                    (player.finished ? h('div', 'target reached') :
-                        renderActionButtons(state, g.cycle, player, actionHandler)),
-                button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
-            ],
-            actionHandler)
-    } else if (game.GameNotStarted) {
-        return gameFrame('Game ' + state.selectedGame,
+function render(state, actionHandler) {
+    var game = state.game
+    if (game.GameNotStarted) {
+        game = game.GameNotStarted
+        return gameFrame('Game ' + state.gameId,
             [
-                renderPlayerList(game.GameNotStarted.playerNames),
+                renderPlayerList(game.playerNames),
                 button.group(
-                    button.builder.primary().disable(game.GameNotStarted.playerNames.includes(state.player))(actionHandler, {joinGame: state.selectedGame}, 'Join Game'),
-                    button.builder.primary()(actionHandler, {startGame: state.selectedGame}, 'Start Game')
+                    button.builder.primary().disable(game.playerNames.includes(state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game'),
+                    button.primary(actionHandler, {startGame: state.gameId}, 'Start Game')
                 )
             ], actionHandler)
-    } else if (game.GameFinished) {
-        var g = game.GameFinished
-        var player = g.players.find(function(player){return player.name === state.player})
-        return gameFrame('Game ' + state.selectedGame, [
-                renderPlayerList(g.players),
+    } else if (game.GameRunning || game.GameFinished) {
+        game = game.GameRunning || game.GameFinished
+        const player = game.players.find(function (player) {
+            return player.name === state.player
+        })
+        return gameFrame('Game ' + state.gameId, [
+                renderPlayerList(game.players),
                 h('div.board', [
-                    renderBoard(g),
-                    renderRobots(g)
+                    renderBoard(game),
+                    renderRobots(game)
                 ]),
                 !player ? h('div', 'observer mode') :
                     (player.finished ? h('div', 'target reached') :
-                        renderActionButtons(state, g.cycle, player, actionHandler)),
-                button.builder.disable(!state.animations)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
+                        renderActionButtons(state, game.cycle, player, actionHandler)),
+                button.builder.disable(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
             ],
             actionHandler)
     } else {
-        return gameFrame('GameState ' + Object.keys(game)[0] + ' is currently not supported.', undefined, actionHandler)
+        return gameFrame('GameState \'undefined\' is currently not supported.', undefined, actionHandler)
     }
 }
 
@@ -52,7 +41,7 @@ function gameFrame(title, content, actionHandler) {
     return h('div', [
         h('h1', title),
         h('div', content),
-        button.builder.primary()(actionHandler, {leaveGame: true}, 'Back to Lobby')
+        button.primary(actionHandler, {leaveGame: true}, 'Back to Lobby')
     ])
 }
 
@@ -73,7 +62,7 @@ function renderPlayerList(players) {
 
     return h('div', [
         h('h4', 'Players: '),
-        h('table',rows)
+        h('table', rows)
     ])
 }
 
@@ -94,13 +83,13 @@ function renderCell(game, row, column) {
         return pos.x === column && pos.y === row
     }
 
-    const isWallRight = !! game.scenario.walls.find(function(wall){
+    const isWallRight = !!game.scenario.walls.find(function (wall) {
         return wall.direction.Right && positionEqual(wall.position)
     })
-    const isWallDown = !! game.scenario.walls.find(function(wall){
+    const isWallDown = !!game.scenario.walls.find(function (wall) {
         return wall.direction.Down && positionEqual(wall.position)
     })
-    const isPit = !!game.scenario.pits.find(function(pit){
+    const isPit = !!game.scenario.pits.find(function (pit) {
         return positionEqual(pit)
     })
 
@@ -108,11 +97,11 @@ function renderCell(game, row, column) {
     const isTarget = positionEqual(game.scenario.targetPosition)
 
     var desc
-    if(isTarget)
+    if (isTarget)
         desc = 'Target'
-    else if(isBeacon)
+    else if (isBeacon)
         desc = 'Beacon'
-    else if(isPit)
+    else if (isPit)
         desc = 'Pit'
     else
         desc = 'normal Field'
@@ -123,7 +112,7 @@ function renderCell(game, row, column) {
             'wall-right': isWallRight,
             'beacon-cell': isBeacon,
             'target-cell': isTarget,
-            'pit' : isPit
+            'pit': isPit
         },
         props: {title: `${column}, ${row} => ${desc}`}
     }, '')
@@ -168,10 +157,6 @@ function directionToRotation(direction) {
 }
 
 function renderActionButtons(state, cycle, player, actionHandler) {
-    var headerRow = h('tr', _.range(constants.numberOfActionsPerCycle).map(function (i) {
-        return h('th', 'Action ' + (i + 1))
-    }))
-
     function actionSelect(slot) {
         const options = player.possibleActions.map((action, index) =>
             h('option',
@@ -187,7 +172,7 @@ function renderActionButtons(state, cycle, player, actionHandler) {
         return h('span.control',
             h('select.select',
                 {
-                    class:{'is-primary': !(state.slots[slot] > 0)},
+                    class: {'is-primary': !(state.slots[slot] > 0)},
                     on: {
                         change: function (event) {
                             actionHandler({defineAction: {value: event.target.selectedIndex - 1, slot, cycle}})

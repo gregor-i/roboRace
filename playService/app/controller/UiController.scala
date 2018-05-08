@@ -8,8 +8,12 @@ import play.api.mvc.InjectedController
 
 class UiController() extends InjectedController with Circe {
 
-  def index() = Action(
-    Ok(views.html.RoboRace())
+  def lobby() = Action(
+    Ok(views.html.RoboRace(""))
+  )
+
+  def game(id: String) = Action(
+    Ok(views.html.RoboRace(id))
   )
 
   def defaultScenario() = Action {

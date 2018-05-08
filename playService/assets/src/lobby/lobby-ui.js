@@ -1,5 +1,5 @@
 var h = require('snabbdom/h').default
-var button = require('./button')
+var button = require('../common/button')
 
 function render(state, actionHandler) {
     return h('div', [
