@@ -18,6 +18,9 @@ function builder(props) {
     f.info = function (bool) {
         return f.addProperty({class: {'is-info': bool === undefined ? true : bool}})
     }
+    f.link = function (bool) {
+        return f.addProperty({class: {'is-link': bool === undefined ? true : bool}})
+    }
     f.disable = function (bool) {
         return f.addProperty({props: {disabled: bool === undefined ? true : bool}})
     }
@@ -36,5 +39,6 @@ function group() {
 module.exports = {
     group: group,
     builder: builder(),
-    primary: builder().primary(true)
+    primary: builder().primary(true),
+    link: builder().link(true)
 }

@@ -17869,6 +17869,9 @@ function builder(props) {
     f.info = function (bool) {
         return f.addProperty({class: {'is-info': bool === undefined ? true : bool}})
     }
+    f.link = function (bool) {
+        return f.addProperty({class: {'is-link': bool === undefined ? true : bool}})
+    }
     f.disable = function (bool) {
         return f.addProperty({props: {disabled: bool === undefined ? true : bool}})
     }
@@ -17887,7 +17890,8 @@ function group() {
 module.exports = {
     group: group,
     builder: builder(),
-    primary: builder().primary(true)
+    primary: builder().primary(true),
+    link: builder().link(true)
 }
 
 },{"lodash":1,"snabbdom/h":2}],13:[function(require,module,exports){
@@ -18078,45 +18082,49 @@ var constants = require('../common/constants')
 var button = require('../common/button')
 
 function render(state, actionHandler) {
-    var game = state.game
-    if (game.GameNotStarted) {
-        game = game.GameNotStarted
+    if (state.game.GameNotStarted) {
+        const game = state.game.GameNotStarted
+        return gameFrame('Game ' + state.gameId,
+            renderPlayerList(game.playerNames),
+            [backToLobbyButton(actionHandler), joinGameButton(state, game, actionHandler), startGameButton(state.gameId, actionHandler)])
+    } else if (state.game.GameRunning || state.game.GameFinished) {
+        const game = state.game.GameRunning || state.game.GameFinished
         return gameFrame('Game ' + state.gameId,
             [
-                renderPlayerList(game.playerNames),
-                button.group(
-                    button.builder.primary().disable(game.playerNames.includes(state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game'),
-                    button.primary(actionHandler, {startGame: state.gameId}, 'Start Game')
-                )
-            ], actionHandler)
-    } else if (game.GameRunning || game.GameFinished) {
-        game = game.GameRunning || game.GameFinished
-        const player = game.players.find(function (player) {
-            return player.name === state.player
-        })
-        return gameFrame('Game ' + state.gameId, [
                 renderPlayerList(game.players),
                 h('div.board', [
-                    renderBoard(game),
-                    renderRobots(game)
+                    renderBoard(game.scenario),
+                    renderRobots(game.players)
                 ]),
-                !player ? h('div', 'observer mode') :
-                    (player.finished ? h('div', 'target reached') :
-                        renderActionButtons(state, game.cycle, player, actionHandler)),
-                button.builder.disable(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations'),
+                renderActionButtons(state, game, actionHandler),
                 renderLog(state.logs)
             ],
-            actionHandler)
+            [backToLobbyButton(actionHandler), animationsButton(state.animations, actionHandler)])
     } else {
-        return gameFrame('GameState \'undefined\' is currently not supported.', undefined, actionHandler)
+        return gameFrame('GameState \'undefined\' is currently not supported.', undefined, [backToLobbyButton(actionHandler)])
     }
 }
 
-function gameFrame(title, content, actionHandler) {
+function backToLobbyButton(actionHandler) {
+    return button.link(actionHandler, {leaveGame: true}, 'Back to Lobby')
+}
+
+function animationsButton(animations, actionHandler){
+    return button.builder.disable(!animations || animations.length === 0)(actionHandler, {replayAnimations: animations}, 'Replay Animations')
+}
+
+function joinGameButton(state, game, actionHandler){
+    return button.builder.primary().disable(game.playerNames.includes(state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game')
+}
+
+function startGameButton(gameId, actionHandler){
+    return button.primary(actionHandler, {startGame: gameId}, 'Start Game')
+}
+
+function gameFrame(title, content, headerButtons) {
     return h('div', [
-        h('h1', title),
-        h('div', content),
-        button.primary(actionHandler, {leaveGame: true}, 'Back to Lobby')
+        h('div', [h('h1', title), button.group(headerButtons)]),
+        h('div', content)
     ])
 }
 
@@ -18141,35 +18149,35 @@ function renderPlayerList(players) {
     ])
 }
 
-function renderBoard(game) {
-    return h('board', _.range(game.scenario.height).map(function (r) {
-        return renderRow(game, r)
+function renderBoard(scenario) {
+    return h('board', _.range(scenario.height).map(function (r) {
+        return renderRow(scenario, r)
     }))
 }
 
-function renderRow(game, row) {
-    return h('row', _.range(game.scenario.width).map(function (c) {
-        return renderCell(game, row, c)
+function renderRow(scenario, row) {
+    return h('row', _.range(scenario.width).map(function (c) {
+        return renderCell(scenario, row, c)
     }))
 }
 
-function renderCell(game, row, column) {
+function renderCell(scenario, row, column) {
     function positionEqual(pos) {
         return pos.x === column && pos.y === row
     }
 
-    const isWallRight = !!game.scenario.walls.find(function (wall) {
+    const isWallRight = !!scenario.walls.find(function (wall) {
         return wall.direction.Right && positionEqual(wall.position)
     })
-    const isWallDown = !!game.scenario.walls.find(function (wall) {
+    const isWallDown = !!scenario.walls.find(function (wall) {
         return wall.direction.Down && positionEqual(wall.position)
     })
-    const isPit = !!game.scenario.pits.find(function (pit) {
+    const isPit = !!scenario.pits.find(function (pit) {
         return positionEqual(pit)
     })
 
-    const isBeacon = false //positionEqual(game.scenario.beaconPosition)
-    const isTarget = positionEqual(game.scenario.targetPosition)
+    const isBeacon = false //positionEqual(scenario.beaconPosition)
+    const isTarget = positionEqual(scenario.targetPosition)
 
     var desc
     if (isTarget)
@@ -18194,8 +18202,8 @@ function renderCell(game, row, column) {
 }
 
 
-function renderRobots(game) {
-    var robots = game.players.map(function (player) {
+function renderRobots(players) {
+    return h('div', players.map(function (player) {
         var robot = player.robot
         var x = robot.position.x * 50
         var y = robot.position.y * 50
@@ -18214,8 +18222,7 @@ function renderRobots(game) {
                     rot: rot + ''
                 }
             });
-    })
-    return h('div', robots)
+    }))
 }
 
 function directionToRotation(direction) {
@@ -18231,26 +18238,40 @@ function directionToRotation(direction) {
         console.error("unkown direction", direction)
 }
 
-function renderActionButtons(state, cycle, player, actionHandler) {
+function renderActionButtons(state, game, actionHandler) {
+    const player = game.players.find(function (player) {
+        return player.name === state.player
+    })
+    const slots = state.slots
+
+    const text = !player ? 'observer mode' : (player.finished ? 'target reached' : 'action bar')
+
     function actionSelect(slot) {
-        const options = player.possibleActions.map((action, index) =>
+        const options = player ? player.possibleActions.map((action, index) =>
             h('option',
                 {
                     props: {
-                        selected: state.slots[slot] === index,
-                        disabled: state.slots.includes(index) && state.slots[slot] !== index
+                        selected: slots[slot] === index,
+                        disabled: slots.includes(index) && slots[slot] !== index
                     },
-                    style: {'font-weight': state.slots[slot] === index ? 'bold' : ''}
+                    class: {selectedOption: slots[slot] === index}
                 },
-                Object.keys(action)[0]))
+                Object.keys(action)[0])) : []
+
+
         options.unshift(h('option', 'unselected'))
         return h('span.control',
             h('select.select',
                 {
-                    class: {'is-primary': !(state.slots[slot] > 0)},
+                    props:{
+                      disabled : !player || player.finished
+                    },
+                    class: {
+                        selectedOption: slots[slot] !== undefined && slots[slot] !== -1
+                    },
                     on: {
                         change: function (event) {
-                            actionHandler({defineAction: {value: event.target.selectedIndex - 1, slot, cycle}})
+                            actionHandler({defineAction: {value: event.target.selectedIndex - 1, slot, cycle: game.cycle}})
                         }
                     }
                 },
@@ -18259,9 +18280,7 @@ function renderActionButtons(state, cycle, player, actionHandler) {
         )
     }
 
-    var options = _.range(constants.numberOfActionsPerCycle).map(actionSelect)
-    options.unshift(h('h4', 'Actions: '))
-    return h('div', options)
+    return h('div.control-panel', [h('div', text), h('div', _.range(constants.numberOfActionsPerCycle).map(actionSelect))])
 }
 
 function renderLog(logs) {

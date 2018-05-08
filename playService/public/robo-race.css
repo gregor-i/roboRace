@@ -93,3 +93,35 @@ robot {
 .robot6 {
     background-image: url("/assets/gem6.png");
 }
+
+.control-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: lightgrey;
+    padding: 30px;
+    text-align: center;
+    border-top: 1px black solid;
+}
+
+.control-panel span {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.control-panel select {
+    width: 120px;
+}
+
+.control-panel option.selectedOption {
+    font-weight: bold;
+}
+
+.control-panel select{
+    border: 1px red solid;
+}
+
+.control-panel select.selectedOption {
+    border: 1px #00d1b2 solid;
+}
