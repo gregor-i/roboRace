@@ -24,7 +24,7 @@ object ScenarioEffects {
         val index = player.index
         val initial = game.scenario.initialRobots(index)
         for {
-          clearedInitial <- PushRobots(initial.position, initial.direction, game)
+          clearedInitial <- MoveRobots.pushRobots(initial.position, initial.direction, game)
           resettedFallen <- clearedInitial.copy(players = clearedInitial.players.map(p => if (p.name == player.name) p.copy(robot = initial, actions = Seq.empty) else p)).log(RobotReset(player.name, player.robot, initial))
           recursion <- fallenRobots(resettedFallen)
         } yield recursion
