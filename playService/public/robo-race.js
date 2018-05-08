@@ -18103,7 +18103,8 @@ function render(state, actionHandler) {
                 !player ? h('div', 'observer mode') :
                     (player.finished ? h('div', 'target reached') :
                         renderActionButtons(state, game.cycle, player, actionHandler)),
-                button.builder.disable(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
+                button.builder.disable(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations'),
+                renderLog(state.logs)
             ],
             actionHandler)
     } else {
@@ -18263,6 +18264,13 @@ function renderActionButtons(state, cycle, player, actionHandler) {
     return h('div', options)
 }
 
+function renderLog(logs) {
+    return h('div', [
+        h('h4', 'Log: '),
+        h('div', logs && logs.length ? logs.map(log => h('div', JSON.stringify(log))) : [])
+    ])
+}
+
 module.exports = render
 
 },{"../common/button":12,"../common/constants":13,"lodash":1,"snabbdom/h":2}],18:[function(require,module,exports){
@@ -18306,6 +18314,7 @@ function Game(element, player, gameId){
             if(state.animations)
                 animations.playAnimations(state.animations)
             state.game = newGameState
+            state.logs = state.logs.concat(events)
             if(events.find(function(event){
                     return !! event.PlayerActionsExecuted
                 })) state.slots = []

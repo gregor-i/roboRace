@@ -29,7 +29,8 @@ function render(state, actionHandler) {
                 !player ? h('div', 'observer mode') :
                     (player.finished ? h('div', 'target reached') :
                         renderActionButtons(state, game.cycle, player, actionHandler)),
-                button.builder.disable(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations')
+                button.builder.disable(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations'),
+                renderLog(state.logs)
             ],
             actionHandler)
     } else {
@@ -187,6 +188,13 @@ function renderActionButtons(state, cycle, player, actionHandler) {
     var options = _.range(constants.numberOfActionsPerCycle).map(actionSelect)
     options.unshift(h('h4', 'Actions: '))
     return h('div', options)
+}
+
+function renderLog(logs) {
+    return h('div', [
+        h('h4', 'Log: '),
+        h('div', logs && logs.length ? logs.map(log => h('div', JSON.stringify(log))) : [])
+    ])
 }
 
 module.exports = render

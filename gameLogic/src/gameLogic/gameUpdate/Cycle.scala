@@ -66,7 +66,7 @@ object Cycle{
       robot <- player.robot.log(RobotAction(player.name, action))
       afterAction <- action match {
         case turn: TurnAction => turnAction(player, turn, game)
-        case move: MoveAction => moveAction(player, move, game)
+        case move: MoveAction => MoveRobots(player, move, game)
         case Sleep => sleepAction(player, game)
       }
       afterRemovedAction = afterAction.copy(players = afterAction.players.map(p => if (p.name == player.name) p.copy(actions = p.actions.drop(1)) else p))
@@ -84,49 +84,5 @@ object Cycle{
     } yield game.copy(players = game.players.map(p => if(p.name == player.name) p.copy(robot = nextRobotState) else p))
   }
 
-  private def moveAction(player: Player, action: MoveAction, game: GameRunning): Logged[GameRunning] = {
-    def move(direction: Direction, gameRunning: GameRunning): Logged[GameRunning] ={
-      val p = gameRunning.players.find(_.name == player.name).get
-      if (movementIsAllowed(gameRunning, p.robot.position, direction)) {
-        for{
-          afterPush <- PushRobots(p.robot.position, direction, gameRunning)
-          afterEffects <- ScenarioEffects.afterMoveAction(afterPush)
-        } yield afterEffects
-      }else{
-        gameRunning.log(RobotMovementBlocked(p.name, p.robot.position, direction))
-      }
-    }
-
-    action match {
-      case MoveForward => move(player.robot.direction, game)
-      case MoveBackward => move(player.robot.direction.back, game)
-      case MoveTwiceForward =>
-        for{
-          after1Move <- move(player.robot.direction, game)
-          after2Move <- move(player.robot.direction, after1Move)
-        } yield after2Move
-    }
-  }
-
   private def sleepAction(player: Player, game: GameRunning): Logged[GameRunning] = Logged.pure(game)
-
-  private def movementIsAllowed(game: GameRunning, position: Position, direction: Direction): Boolean = {
-    val downWalls = game.scenario.walls.filter(_.direction == Down).map(_.position)
-    val rightWalls = game.scenario.walls.filter(_.direction == Right).map(_.position)
-//    if (game.scenario.beaconPosition == position.move(direction))
-//      false
-    if (direction == Down && downWalls.contains(position))
-      false
-    else if (direction == Right && rightWalls.contains(position))
-      false
-    else if (direction == Up && downWalls.contains(position.move(Up)))
-      false
-    else if (direction == Left && rightWalls.contains(position.move(Left)))
-      false
-    else if (game.players.exists(_.robot.position == position.move(direction)))
-      movementIsAllowed(game, position.move(direction), direction)
-    else
-      true
-  }
-
 }
