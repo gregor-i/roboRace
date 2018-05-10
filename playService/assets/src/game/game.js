@@ -51,7 +51,8 @@ function Game(element, player, gameId){
             player, gameId, game,
             eventSource: gameService.updates(gameId),
             slots: [],
-            logs: []
+            logs: [],
+            modal: 'none'
         }, element)
     })
 

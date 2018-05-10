@@ -26,6 +26,9 @@ function actions(state, action) {
     } else if (action.replayAnimations) {
         if (state.animations && state.animations.length !== 0)
             animations.playAnimations(state.animations)
+    } else if (action.setModal){
+        state.modal = action.setModal
+        return Promise.resolve(state)
     } else {
         console.error("unknown action", action)
     }

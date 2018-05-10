@@ -17899,6 +17899,20 @@ module.exports = {
     numberOfActionsPerCycle: 5
 }
 },{}],14:[function(require,module,exports){
+var h = require('snabbdom/h').default
+
+function modal(content, onClose) {
+        return h('div.modal.is-active', [
+            h('div.modal-background', onClose ? {on: {click: onClose}}: null),
+            h('div.modal-content', [
+                h('div.box.content', content)
+            ]),
+             onClose ? h('button.modal-close.is-large', {on: {click: onClose}}) : null
+        ])
+}
+
+module.exports = modal
+},{"snabbdom/h":2}],15:[function(require,module,exports){
 var _ = require('lodash')
 
 function animations(oldGameState, events) {
@@ -17989,7 +18003,7 @@ function directionToRotation(direction) {
 }
 
 module.exports = {animations, playAnimations}
-},{"lodash":1}],15:[function(require,module,exports){
+},{"lodash":1}],16:[function(require,module,exports){
 var _ = require('lodash')
 var gameService = require('./game-service')
 var animations = require('./animations')
@@ -18018,13 +18032,16 @@ function actions(state, action) {
     } else if (action.replayAnimations) {
         if (state.animations && state.animations.length !== 0)
             animations.playAnimations(state.animations)
+    } else if (action.setModal){
+        state.modal = action.setModal
+        return Promise.resolve(state)
     } else {
         console.error("unknown action", action)
     }
 }
 
 module.exports = actions
-},{"../common/constants":13,"./animations":14,"./game-service":16,"lodash":1}],16:[function(require,module,exports){
+},{"../common/constants":13,"./animations":15,"./game-service":17,"lodash":1}],17:[function(require,module,exports){
 function getState(gameId) {
     return fetch("/api/games/" + gameId)
         .then(parseJson)
@@ -18075,34 +18092,53 @@ module.exports = {
     updates
 }
 
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var _ = require('lodash')
 var h = require('snabbdom/h').default
 var constants = require('../common/constants')
 var button = require('../common/button')
+var modal = require('../common/modal')
 
 function render(state, actionHandler) {
+    var m = null
+    if(state.modal === 'log')
+        m = modal(renderLog(state.logs), [actionHandler, {setModal: 'none'}])
+    else if(state.modal === 'playerList')
+        m = modal(renderPlayerList(state), [actionHandler, {setModal: 'none'}])
+
     if (state.game.GameNotStarted) {
         const game = state.game.GameNotStarted
         return gameFrame('Game ' + state.gameId,
-            renderPlayerList(game.playerNames),
+            m,
+            renderPlayerList(state),
+            undefined,
             [backToLobbyButton(actionHandler), joinGameButton(state, game, actionHandler), startGameButton(state.gameId, actionHandler)])
     } else if (state.game.GameRunning || state.game.GameFinished) {
         const game = state.game.GameRunning || state.game.GameFinished
         return gameFrame('Game ' + state.gameId,
+            m,
+            h('div.board', [
+                renderBoard(game.scenario),
+                renderRobots(game.players)
+            ]),
+            renderActionButtons(state, game, actionHandler),
             [
-                renderPlayerList(game.players),
-                h('div.board', [
-                    renderBoard(game.scenario),
-                    renderRobots(game.players)
-                ]),
-                renderActionButtons(state, game, actionHandler),
-                renderLog(state.logs)
-            ],
-            [backToLobbyButton(actionHandler), animationsButton(state.animations, actionHandler)])
+                backToLobbyButton(actionHandler),
+                animationsButton(state.animations, actionHandler),
+                logsButton(actionHandler),
+                playListButton(actionHandler)
+            ])
     } else {
-        return gameFrame('GameState \'undefined\' is currently not supported.', undefined, [backToLobbyButton(actionHandler)])
+        return gameFrame('GameState \'undefined\' is currently not supported.', m, undefined, undefined, [backToLobbyButton(actionHandler)])
     }
+}
+
+function logsButton(actionHandler){
+    return button.builder(actionHandler, {setModal: 'log'}, 'Logs')
+}
+
+function playListButton(actionHandler){
+    return button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
 }
 
 function backToLobbyButton(actionHandler) {
@@ -18121,14 +18157,24 @@ function startGameButton(gameId, actionHandler){
     return button.primary(actionHandler, {startGame: gameId}, 'Start Game')
 }
 
-function gameFrame(title, content, headerButtons) {
-    return h('div', [
-        h('div', [h('h1', title), button.group(headerButtons)]),
-        h('div', content)
+function gameFrame(title, modal, body, footer, headerButtons) {
+    return h('div.frame', [
+        modal,
+        h('div.content.frame-header', [h('h1', title), button.group(headerButtons)]),
+        h('div.content.frame-body', body),
+        h('div.content.frame-footer', footer)
     ])
 }
 
-function renderPlayerList(players) {
+function renderPlayerList(state) {
+    var players
+    if (state.game.GameNotStarted)
+        players = state.game.GameNotStarted.playerNames
+    else if(state.game.GameRunning)
+        players = state.game.GameRunning.players
+    else if(state.game.GameFinished)
+        players = state.game.GameFinished.players
+
     var rows = players.map(function (player, index) {
         return h('tr', [
             h('td', h('img', {
@@ -18260,8 +18306,8 @@ function renderActionButtons(state, game, actionHandler) {
 
 
         options.unshift(h('option', 'unselected'))
-        return h('span.control',
-            h('select.select',
+        return h('span',
+            h('select',
                 {
                     props:{
                       disabled : !player || player.finished
@@ -18292,7 +18338,7 @@ function renderLog(logs) {
 
 module.exports = render
 
-},{"../common/button":12,"../common/constants":13,"lodash":1,"snabbdom/h":2}],18:[function(require,module,exports){
+},{"../common/button":12,"../common/constants":13,"../common/modal":14,"lodash":1,"snabbdom/h":2}],19:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18346,7 +18392,8 @@ function Game(element, player, gameId){
             player, gameId, game,
             eventSource: gameService.updates(gameId),
             slots: [],
-            logs: []
+            logs: [],
+            modal: 'none'
         }, element)
     })
 
@@ -18354,7 +18401,7 @@ function Game(element, player, gameId){
 }
 
 module.exports = Game
-},{"./animations":14,"./game-actions":15,"./game-service":16,"./game-ui":17,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],19:[function(require,module,exports){
+},{"./animations":15,"./game-actions":16,"./game-service":17,"./game-ui":18,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],20:[function(require,module,exports){
 var Lobby = require('./lobby/lobby')
 var Game = require('./game/game')
 
@@ -18368,7 +18415,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Lobby(container, player)
 })
 
-},{"./game/game":18,"./lobby/lobby":23}],20:[function(require,module,exports){
+},{"./game/game":19,"./lobby/lobby":24}],21:[function(require,module,exports){
 var _ = require('lodash')
 var lobbyService = require('./lobby-service')
 
@@ -18392,7 +18439,7 @@ function actions(state, action) {
 }
 
 module.exports = actions
-},{"./lobby-service":21,"lodash":1}],21:[function(require,module,exports){
+},{"./lobby-service":22,"lodash":1}],22:[function(require,module,exports){
 function getAllGames() {
   return fetch("/api/games")
       .then(parseJson)
@@ -18421,12 +18468,13 @@ module.exports = {
   updates
 }
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var h = require('snabbdom/h').default
 var button = require('../common/button')
+var modal = require('../common/modal')
 
 function render(state, actionHandler) {
-    return h('div', [
+    return h('div.content', [
             renderLoginModal(state.player, actionHandler),
             h('h1', 'Game Lobby:'),
             renderGameTable(state, state.games, actionHandler),
@@ -18473,28 +18521,22 @@ function renderLoginModal(player, actionHandler) {
     }
 
     if (!player) {
-        return h('div.modal.is-active', [
-            h('div.modal-background'),
-            h('div.modal-content', [
-                h('div.box.column.is-4.is-offset-4', [
-                    h('h3', 'Login'),
-                    h('input.input.is-primary', {
-                            props: {
-                                placeholder: 'Name',
-                                id: 'player-name-input'
-                            },
-                            on: {
-                                keydown: function (event) {
-                                    if (event.key === 'Enter')
-                                        submit()
-                                }
-                            }
+        return modal([
+            h('h3', 'Login'),
+            h('input.input.is-primary', {
+                    props: {
+                        placeholder: 'Name',
+                        id: 'player-name-input'
+                    },
+                    on: {
+                        keydown: function (event) {
+                            if (event.key === 'Enter')
+                                submit()
                         }
-                    ),
-                    h('a.button.is-primary', {on: {click: submit}}, 'Enter')
-                ])
-            ]),
-            h('button.modal-close.is-large')
+                    }
+                }
+            ),
+            h('a.button.is-primary', {on: {click: submit}}, 'Enter')
         ])
     } else {
         return undefined
@@ -18502,7 +18544,7 @@ function renderLoginModal(player, actionHandler) {
 }
 
 module.exports = render
-},{"../common/button":12,"snabbdom/h":2}],23:[function(require,module,exports){
+},{"../common/button":12,"../common/modal":14,"snabbdom/h":2}],24:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18556,4 +18598,4 @@ function Lobby(element, player) {
 }
 
 module.exports = Lobby
-},{"./lobby-actions":20,"./lobby-service":21,"./lobby-ui":22,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[19]);
+},{"./lobby-actions":21,"./lobby-service":22,"./lobby-ui":23,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[20]);

@@ -1,8 +1,9 @@
 var h = require('snabbdom/h').default
 var button = require('../common/button')
+var modal = require('../common/modal')
 
 function render(state, actionHandler) {
-    return h('div', [
+    return h('div.content', [
             renderLoginModal(state.player, actionHandler),
             h('h1', 'Game Lobby:'),
             renderGameTable(state, state.games, actionHandler),
@@ -49,28 +50,22 @@ function renderLoginModal(player, actionHandler) {
     }
 
     if (!player) {
-        return h('div.modal.is-active', [
-            h('div.modal-background'),
-            h('div.modal-content', [
-                h('div.box.column.is-4.is-offset-4', [
-                    h('h3', 'Login'),
-                    h('input.input.is-primary', {
-                            props: {
-                                placeholder: 'Name',
-                                id: 'player-name-input'
-                            },
-                            on: {
-                                keydown: function (event) {
-                                    if (event.key === 'Enter')
-                                        submit()
-                                }
-                            }
+        return modal([
+            h('h3', 'Login'),
+            h('input.input.is-primary', {
+                    props: {
+                        placeholder: 'Name',
+                        id: 'player-name-input'
+                    },
+                    on: {
+                        keydown: function (event) {
+                            if (event.key === 'Enter')
+                                submit()
                         }
-                    ),
-                    h('a.button.is-primary', {on: {click: submit}}, 'Enter')
-                ])
-            ]),
-            h('button.modal-close.is-large')
+                    }
+                }
+            ),
+            h('a.button.is-primary', {on: {click: submit}}, 'Enter')
         ])
     } else {
         return undefined
