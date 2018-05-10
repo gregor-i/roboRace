@@ -1,17 +1,17 @@
 var h = require('snabbdom/h').default
 var button = require('../common/button')
 var modal = require('../common/modal')
+var frame = require('../common/frame')
 
 function render(state, actionHandler) {
-    return h('div.content', [
-            renderLoginModal(state.player, actionHandler),
-            h('h1', 'Game Lobby:'),
-            renderGameTable(state, state.games, actionHandler),
-            button.group(
-                button.builder.primary()(actionHandler, {createGame: true}, 'New Game'),
-                button.builder.info()(actionHandler, {reloadGameList: true}, 'Reload')
-            )
-        ]
+    return frame([h('h1', 'Game Lobby:'), button.group(
+        button.builder.primary()(actionHandler, {createGame: true}, 'New Game'),
+        button.builder(actionHandler, {reloadGameList: true}, 'Refresh'),
+        button.builder(actionHandler, {resetUserName: true}, 'Logout')
+        )],
+        renderGameTable(state, state.games, actionHandler),
+        undefined,
+        renderLoginModal(state.player, actionHandler)
     )
 }
 

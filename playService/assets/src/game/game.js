@@ -54,6 +54,8 @@ function Game(element, player, gameId){
             logs: [],
             modal: 'none'
         }, element)
+    }).catch(function () {
+        document.location = '/'
     })
 
     return this

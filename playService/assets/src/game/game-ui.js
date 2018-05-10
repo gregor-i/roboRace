@@ -3,6 +3,7 @@ var h = require('snabbdom/h').default
 var constants = require('../common/constants')
 var button = require('../common/button')
 var modal = require('../common/modal')
+var frame = require('../common/frame')
 
 function render(state, actionHandler) {
     var m = null
@@ -13,29 +14,40 @@ function render(state, actionHandler) {
 
     if (state.game.GameStarting) {
         const game = state.game.GameStarting
-        return gameFrame('Game ' + state.gameId,
-            m,
+        return frame(header('Game ' + state.gameId, [
+                backToLobbyButton(actionHandler),
+                joinGameButton(state, game, actionHandler),
+                readyButton(state, game, actionHandler)
+            ]),
             renderPlayerList(state),
             undefined,
-            [backToLobbyButton(actionHandler), joinGameButton(state, game, actionHandler), readyButton(state.gameId, actionHandler)])
+            m)
     } else if (state.game.GameRunning || state.game.GameFinished) {
         const game = state.game.GameRunning || state.game.GameFinished
-        return gameFrame('Game ' + state.gameId,
-            m,
+        return frame(header('Game ' + state.gameId, [
+                backToLobbyButton(actionHandler),
+                animationsButton(state.animations, actionHandler),
+                logsButton(actionHandler),
+                playerListButton(actionHandler)
+            ]),
             h('div.board', [
                 renderBoard(game.scenario),
                 renderRobots(game.players)
             ]),
             renderActionButtons(state, game, actionHandler),
-            [
-                backToLobbyButton(actionHandler),
-                animationsButton(state.animations, actionHandler),
-                logsButton(actionHandler),
-                playerListButton(actionHandler)
-            ])
+            m)
     } else {
-        return gameFrame('GameState \'undefined\' is currently not supported.', m, undefined, undefined, [backToLobbyButton(actionHandler)])
+        return frame(header('GameState \'undefined\' is currently not supported.', [
+                backToLobbyButton(actionHandler),
+            ]),
+            undefined,
+            undefined,
+            m)
     }
+}
+
+function header(title, buttons){
+    return [h('h1', title), button.group(buttons)]
 }
 
 function logsButton(actionHandler) {
@@ -58,17 +70,8 @@ function joinGameButton(state, game, actionHandler) {
     return button.builder.primary().disable(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game')
 }
 
-function readyButton(gameId, actionHandler) {
-    return button.primary(actionHandler, {readyForGame: gameId}, 'Ready for Game')
-}
-
-function gameFrame(title, modal, body, footer, headerButtons) {
-    return h('div.frame', [
-        modal,
-        h('div.content.frame-header', [h('h1', title), button.group(headerButtons)]),
-        h('div.content.frame-body', body),
-        h('div.content.frame-footer', footer)
-    ])
+function readyButton(state, game, actionHandler) {
+    return button.builder.disable(_.get(game.players.find(player => player.name === state.player), 'ready')).primary()(actionHandler, {readyForGame: state.gameId}, 'Ready')
 }
 
 function renderPlayerList(state) {
@@ -86,14 +89,12 @@ function renderPlayerList(state) {
                 props: {src: '/assets/gem' + (index + 1) + '.png'},
                 style: {'max-width': '20px', 'max-height': '20px'}
             })),
-            h('td', (index + 1)),
-            h('td', player.name || player),
-            h('td', player.ready ? 'ready' : 'waiting'),
-            h('td', player.finished ? player.finished.rank : ''),
+            h('td', player.name),
+            h('td', player.finished ? 'finished as ' + player.finished.rank : (player.ready || _.get(player.actions, 'length', 0)  ? 'ready' : '')),
         ])
     })
 
-    rows.unshift(h('tr', [h('th', 'icon'), h('th', 'index'), h('th', 'name'), h('th', 'ready'), h('th', 'finished as')]))
+    rows.unshift(h('tr', [h('th', ''), h('th', 'name'), h('th', 'state')]))
 
     return h('div', [
         h('h4', 'Players: '),
@@ -211,7 +212,7 @@ function renderActionButtons(state, game, actionHandler) {
                 Object.keys(action)[0])) : []
 
 
-        options.unshift(h('option', (slot+1) +' unselected'))
+        options.unshift(h('option', (slot + 1) + ' unselected'))
         return h('select',
             {
                 props: {

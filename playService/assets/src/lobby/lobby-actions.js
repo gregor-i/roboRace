@@ -11,10 +11,14 @@ function actions(state, action) {
     } else if (action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
         return Promise.resolve(Object.assign({}, state, {player: action.definePlayerName}))
-    }else if(action.reloadGameList){
-        return lobbyService.getAllGames().then(function(gameList){
-            return Object.assign({}, state, {games:gameList})
+    }else if(action.reloadGameList) {
+        return lobbyService.getAllGames().then(function (gameList) {
+            return Object.assign({}, state, {games: gameList})
         })
+    }else if(action.resetUserName){
+        localStorage.removeItem('playerName')
+        delete state.player
+        return Promise.resolve(state)
     } else {
         console.error("unknown action", action)
     }

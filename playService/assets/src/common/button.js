@@ -3,7 +3,7 @@ var _ = require('lodash')
 
 function builder(props) {
     var f = function (actionHandler, action, text) {
-        return h('button.button', _.merge({}, props, {on: {click: [actionHandler, action]}}), text)
+        return h('button.button.is-small', _.merge({}, props, {on: {click: [actionHandler, action]}}), text)
     }
     f.addProperty = function (p) {
         return builder(_.merge({}, props, p))

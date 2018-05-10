@@ -17854,7 +17854,7 @@ var _ = require('lodash')
 
 function builder(props) {
     var f = function (actionHandler, action, text) {
-        return h('button.button', _.merge({}, props, {on: {click: [actionHandler, action]}}), text)
+        return h('button.button.is-small', _.merge({}, props, {on: {click: [actionHandler, action]}}), text)
     }
     f.addProperty = function (p) {
         return builder(_.merge({}, props, p))
@@ -17901,6 +17901,19 @@ module.exports = {
 },{}],14:[function(require,module,exports){
 var h = require('snabbdom/h').default
 
+function frame(header, body, footer, modal) {
+    return h('div.frame', [
+        modal,
+        h('div.content.frame-header', header),
+        h('div.content.frame-body', body),
+        h('div.content.frame-footer', footer)
+    ])
+}
+
+module.exports = frame
+},{"snabbdom/h":2}],15:[function(require,module,exports){
+var h = require('snabbdom/h').default
+
 function modal(content, onClose) {
         return h('div.modal.is-active', [
             h('div.modal-background', onClose ? {on: {click: onClose}}: {}),
@@ -17912,7 +17925,7 @@ function modal(content, onClose) {
 }
 
 module.exports = modal
-},{"snabbdom/h":2}],15:[function(require,module,exports){
+},{"snabbdom/h":2}],16:[function(require,module,exports){
 var _ = require('lodash')
 
 function animations(oldGameState, events) {
@@ -18003,7 +18016,7 @@ function directionToRotation(direction) {
 }
 
 module.exports = {animations, playAnimations}
-},{"lodash":1}],16:[function(require,module,exports){
+},{"lodash":1}],17:[function(require,module,exports){
 var _ = require('lodash')
 var gameService = require('./game-service')
 var animations = require('./animations')
@@ -18041,7 +18054,7 @@ function actions(state, action) {
 }
 
 module.exports = actions
-},{"../common/constants":13,"./animations":15,"./game-service":17,"lodash":1}],17:[function(require,module,exports){
+},{"../common/constants":13,"./animations":16,"./game-service":18,"lodash":1}],18:[function(require,module,exports){
 function getState(gameId) {
     return fetch("/api/games/" + gameId)
         .then(parseJson)
@@ -18092,12 +18105,13 @@ module.exports = {
     updates
 }
 
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var _ = require('lodash')
 var h = require('snabbdom/h').default
 var constants = require('../common/constants')
 var button = require('../common/button')
 var modal = require('../common/modal')
+var frame = require('../common/frame')
 
 function render(state, actionHandler) {
     var m = null
@@ -18108,29 +18122,40 @@ function render(state, actionHandler) {
 
     if (state.game.GameStarting) {
         const game = state.game.GameStarting
-        return gameFrame('Game ' + state.gameId,
-            m,
+        return frame(header('Game ' + state.gameId, [
+                backToLobbyButton(actionHandler),
+                joinGameButton(state, game, actionHandler),
+                readyButton(state, game, actionHandler)
+            ]),
             renderPlayerList(state),
             undefined,
-            [backToLobbyButton(actionHandler), joinGameButton(state, game, actionHandler), readyButton(state.gameId, actionHandler)])
+            m)
     } else if (state.game.GameRunning || state.game.GameFinished) {
         const game = state.game.GameRunning || state.game.GameFinished
-        return gameFrame('Game ' + state.gameId,
-            m,
+        return frame(header('Game ' + state.gameId, [
+                backToLobbyButton(actionHandler),
+                animationsButton(state.animations, actionHandler),
+                logsButton(actionHandler),
+                playerListButton(actionHandler)
+            ]),
             h('div.board', [
                 renderBoard(game.scenario),
                 renderRobots(game.players)
             ]),
             renderActionButtons(state, game, actionHandler),
-            [
-                backToLobbyButton(actionHandler),
-                animationsButton(state.animations, actionHandler),
-                logsButton(actionHandler),
-                playerListButton(actionHandler)
-            ])
+            m)
     } else {
-        return gameFrame('GameState \'undefined\' is currently not supported.', m, undefined, undefined, [backToLobbyButton(actionHandler)])
+        return frame(header('GameState \'undefined\' is currently not supported.', [
+                backToLobbyButton(actionHandler),
+            ]),
+            undefined,
+            undefined,
+            m)
     }
+}
+
+function header(title, buttons){
+    return [h('h1', title), button.group(buttons)]
 }
 
 function logsButton(actionHandler) {
@@ -18153,17 +18178,8 @@ function joinGameButton(state, game, actionHandler) {
     return button.builder.primary().disable(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game')
 }
 
-function readyButton(gameId, actionHandler) {
-    return button.primary(actionHandler, {readyForGame: gameId}, 'Ready for Game')
-}
-
-function gameFrame(title, modal, body, footer, headerButtons) {
-    return h('div.frame', [
-        modal,
-        h('div.content.frame-header', [h('h1', title), button.group(headerButtons)]),
-        h('div.content.frame-body', body),
-        h('div.content.frame-footer', footer)
-    ])
+function readyButton(state, game, actionHandler) {
+    return button.builder.disable(_.get(game.players.find(player => player.name === state.player), 'ready')).primary()(actionHandler, {readyForGame: state.gameId}, 'Ready')
 }
 
 function renderPlayerList(state) {
@@ -18181,14 +18197,12 @@ function renderPlayerList(state) {
                 props: {src: '/assets/gem' + (index + 1) + '.png'},
                 style: {'max-width': '20px', 'max-height': '20px'}
             })),
-            h('td', (index + 1)),
-            h('td', player.name || player),
-            h('td', player.ready ? 'ready' : 'waiting'),
-            h('td', player.finished ? player.finished.rank : ''),
+            h('td', player.name),
+            h('td', player.finished ? 'finished as ' + player.finished.rank : (player.ready || _.get(player.actions, 'length', 0)  ? 'ready' : '')),
         ])
     })
 
-    rows.unshift(h('tr', [h('th', 'icon'), h('th', 'index'), h('th', 'name'), h('th', 'ready'), h('th', 'finished as')]))
+    rows.unshift(h('tr', [h('th', ''), h('th', 'name'), h('th', 'state')]))
 
     return h('div', [
         h('h4', 'Players: '),
@@ -18306,7 +18320,7 @@ function renderActionButtons(state, game, actionHandler) {
                 Object.keys(action)[0])) : []
 
 
-        options.unshift(h('option', (slot+1) +' unselected'))
+        options.unshift(h('option', (slot + 1) + ' unselected'))
         return h('select',
             {
                 props: {
@@ -18337,7 +18351,7 @@ function renderLog(logs) {
 
 module.exports = render
 
-},{"../common/button":12,"../common/constants":13,"../common/modal":14,"lodash":1,"snabbdom/h":2}],19:[function(require,module,exports){
+},{"../common/button":12,"../common/constants":13,"../common/frame":14,"../common/modal":15,"lodash":1,"snabbdom/h":2}],20:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18394,13 +18408,15 @@ function Game(element, player, gameId){
             logs: [],
             modal: 'none'
         }, element)
+    }).catch(function () {
+        document.location = '/'
     })
 
     return this
 }
 
 module.exports = Game
-},{"./animations":15,"./game-actions":16,"./game-service":17,"./game-ui":18,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],20:[function(require,module,exports){
+},{"./animations":16,"./game-actions":17,"./game-service":18,"./game-ui":19,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],21:[function(require,module,exports){
 var Lobby = require('./lobby/lobby')
 var Game = require('./game/game')
 
@@ -18414,7 +18430,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Lobby(container, player)
 })
 
-},{"./game/game":19,"./lobby/lobby":24}],21:[function(require,module,exports){
+},{"./game/game":20,"./lobby/lobby":25}],22:[function(require,module,exports){
 var _ = require('lodash')
 var lobbyService = require('./lobby-service')
 
@@ -18428,17 +18444,21 @@ function actions(state, action) {
     } else if (action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
         return Promise.resolve(Object.assign({}, state, {player: action.definePlayerName}))
-    }else if(action.reloadGameList){
-        return lobbyService.getAllGames().then(function(gameList){
-            return Object.assign({}, state, {games:gameList})
+    }else if(action.reloadGameList) {
+        return lobbyService.getAllGames().then(function (gameList) {
+            return Object.assign({}, state, {games: gameList})
         })
+    }else if(action.resetUserName){
+        localStorage.removeItem('playerName')
+        delete state.player
+        return Promise.resolve(state)
     } else {
         console.error("unknown action", action)
     }
 }
 
 module.exports = actions
-},{"./lobby-service":22,"lodash":1}],22:[function(require,module,exports){
+},{"./lobby-service":23,"lodash":1}],23:[function(require,module,exports){
 function getAllGames() {
   return fetch("/api/games")
       .then(parseJson)
@@ -18467,21 +18487,21 @@ module.exports = {
   updates
 }
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var h = require('snabbdom/h').default
 var button = require('../common/button')
 var modal = require('../common/modal')
+var frame = require('../common/frame')
 
 function render(state, actionHandler) {
-    return h('div.content', [
-            renderLoginModal(state.player, actionHandler),
-            h('h1', 'Game Lobby:'),
-            renderGameTable(state, state.games, actionHandler),
-            button.group(
-                button.builder.primary()(actionHandler, {createGame: true}, 'New Game'),
-                button.builder.info()(actionHandler, {reloadGameList: true}, 'Reload')
-            )
-        ]
+    return frame([h('h1', 'Game Lobby:'), button.group(
+        button.builder.primary()(actionHandler, {createGame: true}, 'New Game'),
+        button.builder(actionHandler, {reloadGameList: true}, 'Refresh'),
+        button.builder(actionHandler, {resetUserName: true}, 'Logout')
+        )],
+        renderGameTable(state, state.games, actionHandler),
+        undefined,
+        renderLoginModal(state.player, actionHandler)
     )
 }
 
@@ -18543,7 +18563,7 @@ function renderLoginModal(player, actionHandler) {
 }
 
 module.exports = render
-},{"../common/button":12,"../common/modal":14,"snabbdom/h":2}],24:[function(require,module,exports){
+},{"../common/button":12,"../common/frame":14,"../common/modal":15,"snabbdom/h":2}],25:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18597,4 +18617,4 @@ function Lobby(element, player) {
 }
 
 module.exports = Lobby
-},{"./lobby-actions":21,"./lobby-service":22,"./lobby-ui":23,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[20]);
+},{"./lobby-actions":22,"./lobby-service":23,"./lobby-ui":24,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[21]);
