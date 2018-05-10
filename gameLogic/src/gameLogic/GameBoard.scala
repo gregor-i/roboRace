@@ -7,6 +7,7 @@ case class Position(x: Int, y: Int) {
     case Right => Position(x + 1, y)
     case Left => Position(x - 1, y)
   }
+  override def toString() = s"($x, $y)"
 }
 
 sealed trait Direction{

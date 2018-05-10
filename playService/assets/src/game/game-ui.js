@@ -6,9 +6,9 @@ var modal = require('../common/modal')
 
 function render(state, actionHandler) {
     var m = null
-    if(state.modal === 'log')
+    if (state.modal === 'log')
         m = modal(renderLog(state.logs), [actionHandler, {setModal: 'none'}])
-    else if(state.modal === 'playerList')
+    else if (state.modal === 'playerList')
         m = modal(renderPlayerList(state), [actionHandler, {setModal: 'none'}])
 
     if (state.game.GameStarting) {
@@ -38,11 +38,11 @@ function render(state, actionHandler) {
     }
 }
 
-function logsButton(actionHandler){
+function logsButton(actionHandler) {
     return button.builder(actionHandler, {setModal: 'log'}, 'Logs')
 }
 
-function playerListButton(actionHandler){
+function playerListButton(actionHandler) {
     return button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
 }
 
@@ -50,15 +50,15 @@ function backToLobbyButton(actionHandler) {
     return button.link(actionHandler, {leaveGame: true}, 'Back to Lobby')
 }
 
-function animationsButton(animations, actionHandler){
+function animationsButton(animations, actionHandler) {
     return button.builder.disable(!animations || animations.length === 0)(actionHandler, {replayAnimations: animations}, 'Replay Animations')
 }
 
-function joinGameButton(state, game, actionHandler){
+function joinGameButton(state, game, actionHandler) {
     return button.builder.primary().disable(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game')
 }
 
-function readyButton(gameId, actionHandler){
+function readyButton(gameId, actionHandler) {
     return button.primary(actionHandler, {readyForGame: gameId}, 'Ready for Game')
 }
 
@@ -75,9 +75,9 @@ function renderPlayerList(state) {
     var players = []
     if (state.game.GameStarting)
         players = state.game.GameStarting.players
-    else if(state.game.GameRunning)
+    else if (state.game.GameRunning)
         players = state.game.GameRunning.players
-    else if(state.game.GameFinished)
+    else if (state.game.GameFinished)
         players = state.game.GameFinished.players
 
     var rows = players.map(function (player, index) {
@@ -211,34 +211,32 @@ function renderActionButtons(state, game, actionHandler) {
                 Object.keys(action)[0])) : []
 
 
-        options.unshift(h('option', 'unselected'))
-        return h('span',
-            h('select',
-                {
-                    props:{
-                      disabled : !player || player.finished
-                    },
-                    class: {
-                        selectedOption: slots[slot] !== undefined && slots[slot] !== -1
-                    },
-                    on: {
-                        change: function (event) {
-                            actionHandler({defineAction: {value: event.target.selectedIndex - 1, slot, cycle: game.cycle}})
-                        }
-                    }
+        options.unshift(h('option', (slot+1) +' unselected'))
+        return h('select',
+            {
+                props: {
+                    disabled: !player || player.finished
                 },
-                options
-            )
+                class: {
+                    selectedOption: slots[slot] !== undefined && slots[slot] !== -1
+                },
+                on: {
+                    change: function (event) {
+                        actionHandler({defineAction: {value: event.target.selectedIndex - 1, slot, cycle: game.cycle}})
+                    }
+                }
+            },
+            options
         )
     }
 
-    return h('div.control-panel', [h('div', text), h('div', _.range(constants.numberOfActionsPerCycle).map(actionSelect))])
+    return h('div.control-panel', [h('div.text', text), h('div', _.range(constants.numberOfActionsPerCycle).map(actionSelect))])
 }
 
 function renderLog(logs) {
     return h('div', [
         h('h4', 'Log: '),
-        h('div', logs && logs.length ? logs.map(log => h('div', JSON.stringify(log))) : [])
+        h('div', logs && logs.length ? logs.map(log => h('div', log)) : [])
     ])
 }
 

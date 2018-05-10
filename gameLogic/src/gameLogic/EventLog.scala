@@ -1,28 +1,19 @@
 package gameLogic
 
-import gameLogic.gameUpdate.Command
+sealed abstract class EventLog(val text: String)
 
-sealed trait EventLog
-case class CommandProcessed(command: Command) extends EventLog
+case class GameStarted() extends EventLog("Game Started")
 
-case class GameStateTransition(oldState: GameState, newState: GameState) extends EventLog
+case class NextRobotForActionDefined(playerName: String) extends EventLog(s"'$playerName' is next.")
+case class RobotAction(playerName: String, action: Action) extends EventLog(s"'$playerName' does '$action'")
+case class RobotPositionTransition(playerName: String, from: Position, to: Position) extends EventLog(s"'$playerName' moves from $from to $to")
+case class RobotDirectionTransition(playerName: String, from: Direction, to: Direction) extends EventLog(s"'$playerName' turns from $from to $to")
+case class RobotMovementBlocked(playerName: String, position: Position, direction: Direction) extends EventLog(s"The movement of '$playerName' is blocked")
+case class RobotReset(playerName: String, from: Robot, to: Robot) extends EventLog(s"'$playerName' fell from the board and was reseted")
+case class PlayerFinished(playerName: String, stats: FinishedStatistic) extends EventLog(s"'$playerName' reached the targes as number ${stats.rank}")
 
-case class GameScenarioDefined(scenario: GameScenario) extends EventLog
-
-case class GameStarted() extends EventLog
-
-case class NextRobotForActionDefined(playerName: String) extends EventLog
-case class RobotAction(playerName: String, action: Action) extends EventLog
-case class RobotPositionTransition(playerName: String, from: Position, to: Position) extends EventLog
-case class RobotDirectionTransition(playerName: String, from: Direction, to: Direction) extends EventLog
-case class RobotMovementBlocked(playerName: String, position: Position, direction: Direction) extends EventLog
-case class RobotReset(playerName: String, from: Robot, to: Robot) extends EventLog
-
-case class PlayerFinished(playerName: String, stats: FinishedStatistic) extends EventLog
-case object AllPlayersFinished extends EventLog
-
-case object AllPlayerDefinedActions extends EventLog
-case class PlayerActionsExecuted(nextCycle: Int) extends EventLog
+case class StartNextCycle(cycle: Int) extends EventLog("starting next cycle")
+case object AllPlayersFinished extends EventLog("All players reached the target")
 
 sealed trait RejectionReason
 case object PlayerAlreadyRegistered extends RejectionReason

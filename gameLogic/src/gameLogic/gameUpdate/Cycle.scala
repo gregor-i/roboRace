@@ -11,14 +11,13 @@ object Cycle{
 
     case g: GameRunning if g.players.forall(player => player.finished.isDefined || player.actions.size == Constants.actionsPerCycle) =>
       for {
-        _ <- ().log(AllPlayerDefinedActions)
         afterPlayerActions <- execAllActions(g)
         afterEffects <- ScenarioEffects.afterCycle(afterPlayerActions)
         nextState <- afterEffects match {
           case running if running.players.forall(_.finished.isDefined) =>
             GameFinished(running.players, scenario = running.scenario).log(AllPlayersFinished)
           case running => afterEffects.copy(cycle = g.cycle + 1, players = afterEffects.players.map(_.copy(possibleActions = DealOptions())))
-            .log(PlayerActionsExecuted(g.cycle + 1))
+            .log(StartNextCycle(g.cycle + 1))
         }
       } yield nextState
 

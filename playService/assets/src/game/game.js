@@ -38,9 +38,9 @@ function Game(element, player, gameId){
             if(state.animations)
                 animations.playAnimations(state.animations)
             state.game = newGameState
-            state.logs = state.logs.concat(events)
+            state.logs = state.logs.concat(data.textLog)
             if(events.find(function(event){
-                    return !! event.PlayerActionsExecuted
+                    return !! event.StartNextCycle
                 })) state.slots = []
             renderState(state)
         }

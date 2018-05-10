@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import gameLogic.gameUpdate._
+import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
@@ -34,7 +35,13 @@ class GameController @Inject()(repo: GameRepository)
         val command = request.body
         Processor(gameState, command) { loggedState =>
           repo.save(id, loggedState.state)
-          Source.single(loggedState.asJson.noSpaces).runWith(SinkSourceCache.sink(id))
+          Source.single(
+            Json.obj(
+              "state" -> loggedState.state.asJson,
+              "events" -> loggedState.events.asJson,
+              "textLog" -> loggedState.events.map(_.text).asJson
+            ).noSpaces)
+            .runWith(SinkSourceCache.sink(id))
           Ok(loggedState.asJson)
         } { rejected =>
           BadRequest(rejected.reason.asJson)
