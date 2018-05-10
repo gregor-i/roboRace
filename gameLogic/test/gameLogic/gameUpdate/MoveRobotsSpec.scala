@@ -13,8 +13,8 @@ class MoveRobotsSpec extends FunSuite with Matchers {
         1 -> Robot(Position(6, 6), Up)
       ), Seq.empty, Seq.empty),
     Seq(
-      Player(0, "1", Robot(Position(0, 0), Right), Seq.empty, None, Seq.empty),
-      Player(1, "2", Robot(Position(1, 0), Right), Seq.empty, None, Seq.empty))
+      RunningPlayer(0, "1", Robot(Position(0, 0), Right), Seq.empty, None, Seq.empty),
+      RunningPlayer(1, "2", Robot(Position(1, 0), Right), Seq.empty, None, Seq.empty))
   )
 
 

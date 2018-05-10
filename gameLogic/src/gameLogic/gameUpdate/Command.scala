@@ -11,10 +11,10 @@ sealed trait Command {
 }
 
 sealed trait FoldingCommand extends Command {
-  def apply(gameState: GameState): R = gameState.fold(ifNotDefined)(ifNotStarted)(ifRunning)(ifFinished)
+  def apply(gameState: GameState): R = gameState.fold(ifInitial)(ifStarting)(ifRunning)(ifFinished)
 
-  def ifNotDefined: GameNotDefined.type => R = _ => rejected(WrongState)
-  def ifNotStarted: GameNotStarted => R = _ => rejected(WrongState)
+  def ifInitial: InitialGame.type => R = _ => rejected(WrongState)
+  def ifStarting: GameStarting => R = _ => rejected(WrongState)
   def ifRunning: GameRunning => R = _ => rejected(WrongState)
   def ifFinished: GameFinished => R = _ => rejected(WrongState)
 
@@ -23,29 +23,25 @@ sealed trait FoldingCommand extends Command {
 }
 
 case class DefineScenario(scenario: GameScenario) extends FoldingCommand{
-  override def ifNotDefined: GameNotDefined.type => R =
-    _ => accepted(GameNotStarted(scenario, Nil))
+  override def ifInitial: InitialGame.type => R =
+    _ => accepted(GameStarting(scenario, Nil))
 }
 
 case class RegisterForGame(playerName: String) extends FoldingCommand {
-  override def ifNotStarted: GameNotStarted => R = {
-    case g if g.playerNames.contains(playerName) =>
+  override def ifStarting: GameStarting => R = {
+    case g if g.players.exists(_.name == playerName) =>
       rejected(PlayerAlreadyRegistered)
-    case g if g.playerNames.size >= g.scenario.initialRobots.size =>
+    case g if g.players.size >= g.scenario.initialRobots.size =>
       rejected(TooMuchPlayersRegistered)
     case g =>
-      accepted(g.copy(playerNames = g.playerNames :+ playerName))
+      accepted(g.copy(players = g.players :+ StartingPlayer(g.players.size, playerName, false)))
   }
 }
 
-case object StartGame extends FoldingCommand {
-  override def ifNotStarted: GameNotStarted => R = {
-    case g if g.playerNames.isEmpty => rejected(NoPlayersRegistered)
-    case g => accepted(GameRunning(
-      cycle = 0,
-      players = for((name, index) <- g.playerNames.zipWithIndex)
-        yield Player(index, name, g.scenario.initialRobots(index), Seq.empty, None, DealOptions()),
-      scenario = g.scenario))
+case class ReadyForGame(playerName: String) extends FoldingCommand {
+  override def ifStarting: GameStarting => R = {
+    case g if !g.players.exists(_.name == playerName) => rejected(PlayerNotFound)
+    case g => accepted(g.copy(players = g.players.map(player => if(player.name == playerName) player.copy(ready = true) else player)))
   }
 }
 

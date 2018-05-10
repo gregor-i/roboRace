@@ -3,6 +3,12 @@ package gameUpdate
 
 object Cycle{
   def apply(gameState: GameState): Logged[GameState] = gameState match {
+    case g: GameStarting if g.players.forall(_.ready) =>
+      GameRunning(
+        cycle = 0,
+        players = g.players.map(player => RunningPlayer(player.index, player.name, g.scenario.initialRobots(player.index), Seq.empty, None, DealOptions())),
+        scenario = g.scenario).log(GameStarted())
+
     case g: GameRunning if g.players.forall(player => player.finished.isDefined || player.actions.size == Constants.actionsPerCycle) =>
       for {
         _ <- ().log(AllPlayerDefinedActions)
@@ -32,7 +38,7 @@ object Cycle{
     } yield nextState
   }
 
-  private def calcNextPlayer(gameState: GameRunning): Logged[Option[Player]] = {
+  private def calcNextPlayer(gameState: GameRunning): Logged[Option[RunningPlayer]] = {
     val beacon = gameState.scenario.beaconPosition
 
     def distance(position: Position): Double = {
@@ -47,7 +53,7 @@ object Cycle{
       Math.atan2(dx, dy)
     }
 
-    def nextPlayerWeight(player: Player): (Int, Double, Double) = {
+    def nextPlayerWeight(player: RunningPlayer): (Int, Double, Double) = {
       val position = player.robot.position
       (Constants.actionsPerCycle - player.actions.size, distance(position), angle(position))
     }
@@ -60,7 +66,7 @@ object Cycle{
     }
   }
 
-  private def applyAction(game: GameRunning, player: Player): Logged[GameRunning] = {
+  private def applyAction(game: GameRunning, player: RunningPlayer): Logged[GameRunning] = {
     val action = player.actions.head
     for {
       robot <- player.robot.log(RobotAction(player.name, action))
@@ -73,7 +79,7 @@ object Cycle{
     } yield afterRemovedAction
   }
 
-  private def turnAction(player: Player, action: TurnAction, game: GameRunning): Logged[GameRunning] = {
+  private def turnAction(player: RunningPlayer, action: TurnAction, game: GameRunning): Logged[GameRunning] = {
     val nextDirection = action match {
       case TurnLeft => player.robot.direction.left
       case TurnRight => player.robot.direction.right
@@ -84,5 +90,5 @@ object Cycle{
     } yield game.copy(players = game.players.map(p => if(p.name == player.name) p.copy(robot = nextRobotState) else p))
   }
 
-  private def sleepAction(player: Player, game: GameRunning): Logged[GameRunning] = Logged.pure(game)
+  private def sleepAction(player: RunningPlayer, game: GameRunning): Logged[GameRunning] = Logged.pure(game)
 }

@@ -16,11 +16,11 @@ function defineAction(gameId, player, cycle, actions) {
 }
 
 function joinGame(gameId, playerName) {
-    return sendCommand(gameId, {RegisterForGame: {playerName: playerName}})
+    return sendCommand(gameId, {RegisterForGame: {playerName}})
 }
 
-function startGame(gameId){
-    return sendCommand(gameId, {StartGame: {}})
+function readyForGame(gameId, playerName){
+    return sendCommand(gameId, {ReadyForGame: {playerName}})
 }
 
 function defineGame(gameId) {
@@ -43,7 +43,7 @@ module.exports = {
     getState,
     defineAction,
     defineGame,
-    startGame,
+    readyForGame,
     joinGame,
     updates
 }

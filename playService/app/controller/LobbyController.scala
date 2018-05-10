@@ -5,7 +5,7 @@ import java.util.UUID
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import gameLogic.{GameNotStarted, GameScenario}
+import gameLogic.{GameStarting, GameScenario}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.Inject
@@ -29,7 +29,7 @@ class LobbyController @Inject()(gameRepo: GameRepository)
 
   def create() = Action {
     val id = UUID.randomUUID().toString.take(8)
-    val gameState = GameNotStarted(GameScenario.default, Seq.empty)
+    val gameState = GameStarting(GameScenario.default, Seq.empty)
     gameRepo.save(id, gameState)
     Source.single((GameCreated(id, gameState.stateDescription):LobbyEvent).asJson.noSpaces).runWith(sink)
     NoContent

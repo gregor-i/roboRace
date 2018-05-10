@@ -1,12 +1,12 @@
 package gameLogic
 
 sealed trait GameState {
-  def fold[A](ifNotDefined: GameNotDefined.type => A)
-             (ifNotStarted: GameNotStarted => A)
+  def fold[A](ifInitial: InitialGame.type => A)
+             (ifStarting: GameStarting => A)
              (ifRunning: GameRunning => A)
              (ifFinished: GameFinished => A): A = this match {
-    case g: GameNotDefined.type => ifNotDefined(g)
-    case g: GameNotStarted => ifNotStarted(g)
+    case g: InitialGame.type => ifInitial(g)
+    case g: GameStarting => ifStarting(g)
     case g: GameRunning => ifRunning(g)
     case g: GameFinished => ifFinished(g)
   }
@@ -14,14 +14,14 @@ sealed trait GameState {
   def stateDescription: String = getClass.getSimpleName.filter(_ != '$')
 }
 
-case object GameNotDefined extends GameState
+case object InitialGame extends GameState
 
-case class GameNotStarted(scenario: GameScenario,
-                          playerNames: Seq[String]) extends GameState
+case class GameStarting(scenario: GameScenario,
+                        players: Seq[StartingPlayer]) extends GameState
 
 case class GameRunning(cycle: Int,
                        scenario: GameScenario,
-                       players: Seq[Player]) extends GameState
+                       players: Seq[RunningPlayer]) extends GameState
 
-case class GameFinished(players: Seq[Player],
+case class GameFinished(players: Seq[RunningPlayer],
                         scenario: GameScenario) extends GameState

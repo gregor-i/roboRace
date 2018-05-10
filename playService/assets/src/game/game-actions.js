@@ -12,8 +12,8 @@ function actions(state, action) {
     else if (action.joinGame)
         return gameService.joinGame(action.joinGame, state.player)
             .then(_.constant(state))
-    else if (action.startGame)
-        return gameService.startGame(action.startGame)
+    else if (action.readyForGame)
+        return gameService.readyForGame(action.readyForGame, state.player)
             .then(_.constant(state))
     else if (action.defineAction) {
         if (!state.slots)

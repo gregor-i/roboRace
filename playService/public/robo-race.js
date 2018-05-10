@@ -17903,7 +17903,7 @@ var h = require('snabbdom/h').default
 
 function modal(content, onClose) {
         return h('div.modal.is-active', [
-            h('div.modal-background', onClose ? {on: {click: onClose}}: null),
+            h('div.modal-background', onClose ? {on: {click: onClose}}: {}),
             h('div.modal-content', [
                 h('div.box.content', content)
             ]),
@@ -18018,8 +18018,8 @@ function actions(state, action) {
     else if (action.joinGame)
         return gameService.joinGame(action.joinGame, state.player)
             .then(_.constant(state))
-    else if (action.startGame)
-        return gameService.startGame(action.startGame)
+    else if (action.readyForGame)
+        return gameService.readyForGame(action.readyForGame, state.player)
             .then(_.constant(state))
     else if (action.defineAction) {
         if (!state.slots)
@@ -18060,11 +18060,11 @@ function defineAction(gameId, player, cycle, actions) {
 }
 
 function joinGame(gameId, playerName) {
-    return sendCommand(gameId, {RegisterForGame: {playerName: playerName}})
+    return sendCommand(gameId, {RegisterForGame: {playerName}})
 }
 
-function startGame(gameId){
-    return sendCommand(gameId, {StartGame: {}})
+function readyForGame(gameId, playerName){
+    return sendCommand(gameId, {ReadyForGame: {playerName}})
 }
 
 function defineGame(gameId) {
@@ -18087,7 +18087,7 @@ module.exports = {
     getState,
     defineAction,
     defineGame,
-    startGame,
+    readyForGame,
     joinGame,
     updates
 }
@@ -18106,13 +18106,13 @@ function render(state, actionHandler) {
     else if(state.modal === 'playerList')
         m = modal(renderPlayerList(state), [actionHandler, {setModal: 'none'}])
 
-    if (state.game.GameNotStarted) {
-        const game = state.game.GameNotStarted
+    if (state.game.GameStarting) {
+        const game = state.game.GameStarting
         return gameFrame('Game ' + state.gameId,
             m,
             renderPlayerList(state),
             undefined,
-            [backToLobbyButton(actionHandler), joinGameButton(state, game, actionHandler), startGameButton(state.gameId, actionHandler)])
+            [backToLobbyButton(actionHandler), joinGameButton(state, game, actionHandler), readyButton(state.gameId, actionHandler)])
     } else if (state.game.GameRunning || state.game.GameFinished) {
         const game = state.game.GameRunning || state.game.GameFinished
         return gameFrame('Game ' + state.gameId,
@@ -18126,7 +18126,7 @@ function render(state, actionHandler) {
                 backToLobbyButton(actionHandler),
                 animationsButton(state.animations, actionHandler),
                 logsButton(actionHandler),
-                playListButton(actionHandler)
+                playerListButton(actionHandler)
             ])
     } else {
         return gameFrame('GameState \'undefined\' is currently not supported.', m, undefined, undefined, [backToLobbyButton(actionHandler)])
@@ -18137,7 +18137,7 @@ function logsButton(actionHandler){
     return button.builder(actionHandler, {setModal: 'log'}, 'Logs')
 }
 
-function playListButton(actionHandler){
+function playerListButton(actionHandler){
     return button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
 }
 
@@ -18150,11 +18150,11 @@ function animationsButton(animations, actionHandler){
 }
 
 function joinGameButton(state, game, actionHandler){
-    return button.builder.primary().disable(game.playerNames.includes(state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game')
+    return button.builder.primary().disable(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game')
 }
 
-function startGameButton(gameId, actionHandler){
-    return button.primary(actionHandler, {startGame: gameId}, 'Start Game')
+function readyButton(gameId, actionHandler){
+    return button.primary(actionHandler, {readyForGame: gameId}, 'Ready for Game')
 }
 
 function gameFrame(title, modal, body, footer, headerButtons) {
@@ -18167,9 +18167,9 @@ function gameFrame(title, modal, body, footer, headerButtons) {
 }
 
 function renderPlayerList(state) {
-    var players
-    if (state.game.GameNotStarted)
-        players = state.game.GameNotStarted.playerNames
+    var players = []
+    if (state.game.GameStarting)
+        players = state.game.GameStarting.players
     else if(state.game.GameRunning)
         players = state.game.GameRunning.players
     else if(state.game.GameFinished)
@@ -18183,11 +18183,12 @@ function renderPlayerList(state) {
             })),
             h('td', (index + 1)),
             h('td', player.name || player),
-            h('td', player.finished ? player.finished.rank : '')
+            h('td', player.ready ? 'ready' : 'waiting'),
+            h('td', player.finished ? player.finished.rank : ''),
         ])
     })
 
-    rows.unshift(h('tr', [h('th', 'icon'), h('th', 'index'), h('th', 'name'), h('th', 'finished as')]))
+    rows.unshift(h('tr', [h('th', 'icon'), h('th', 'index'), h('th', 'name'), h('th', 'ready'), h('th', 'finished as')]))
 
     return h('div', [
         h('h4', 'Players: '),
