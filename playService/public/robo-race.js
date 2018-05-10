@@ -17904,9 +17904,9 @@ var h = require('snabbdom/h').default
 function frame(header, body, footer, modal) {
     return h('div.frame', [
         modal,
-        h('div.content.frame-header', header),
-        h('div.content.frame-body', body),
-        h('div.content.frame-footer', footer)
+        h('div.frame-header', h('div.content', header)),
+        h('div.frame-body', body),
+        h('div.frame-footer', h('div.content', footer))
     ])
 }
 
@@ -18138,10 +18138,7 @@ function render(state, actionHandler) {
                 logsButton(actionHandler),
                 playerListButton(actionHandler)
             ]),
-            h('div.board', [
-                renderBoard(game.scenario),
-                renderRobots(game.players)
-            ]),
+            renderCanvas(state, game),
             renderActionButtons(state, game, actionHandler),
             m)
     } else {
@@ -18208,6 +18205,37 @@ function renderPlayerList(state) {
         h('h4', 'Players: '),
         h('table', rows)
     ])
+}
+
+function renderCanvas(state, game) {
+    return h('canvas.game-view', {
+        hook: {
+            insert: function(node){
+                console.log("insert hook", node)
+                var canvas = node.elm
+                var ctx = canvas.getContext("2d")
+
+                var width = canvas.width
+                var height = canvas.height
+
+                var scenario = game.scenario
+
+                window.canvas = canvas
+                window.ctx = ctx
+
+                var rect = canvas.parentNode.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+
+                ctx.fillStyle = "lightgrey";
+
+                for(var y = 0; y<scenario.height; y++)
+                    for(var x = 0; x<scenario.width; x++){
+                        ctx.fillRect(55*x, 55*y, 50, 50);
+                    }
+            }
+        }
+    })
 }
 
 function renderBoard(scenario) {

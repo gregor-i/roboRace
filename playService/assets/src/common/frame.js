@@ -3,9 +3,9 @@ var h = require('snabbdom/h').default
 function frame(header, body, footer, modal) {
     return h('div.frame', [
         modal,
-        h('div.content.frame-header', header),
-        h('div.content.frame-body', body),
-        h('div.content.frame-footer', footer)
+        h('div.frame-header', h('div.content', header)),
+        h('div.frame-body', body),
+        h('div.frame-footer', h('div.content', footer))
     ])
 }
 
