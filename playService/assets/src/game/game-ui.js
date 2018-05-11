@@ -55,7 +55,7 @@ function render(state, actionHandler) {
 }
 
 function header(title, buttons){
-    return [h('h1', title), button.group(buttons)]
+    return button.group(buttons)
 }
 
 function logsButton(actionHandler) {
