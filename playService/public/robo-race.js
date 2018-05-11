@@ -18339,7 +18339,6 @@ function renderActionButtons(state, game, actionHandler) {
     })
     const slots = state.slots
 
-    const text = !player ? 'observer mode' : (player.finished ? 'target reached' : 'action bar')
 
     function actionSelect(slot) {
         const options = player ? player.possibleActions.map((action, index) =>
@@ -18373,7 +18372,13 @@ function renderActionButtons(state, game, actionHandler) {
         )
     }
 
-    return h('div.control-panel', [h('div.text', text), h('div', _.range(constants.numberOfActionsPerCycle).map(actionSelect))])
+    if(! player) {
+        return h('div.control-panel', h('div.text', 'observer mode'))
+    }else if(player.finished){
+        return h('div.control-panel', h('div.text', 'target reached'))
+    }else {
+        return h('div.control-panel', _.range(constants.numberOfActionsPerCycle).map(actionSelect))
+    }
 }
 
 function renderLog(logs) {
