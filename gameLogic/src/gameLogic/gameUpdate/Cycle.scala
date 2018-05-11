@@ -3,7 +3,7 @@ package gameUpdate
 
 object Cycle{
   def apply(gameState: GameState): Logged[GameState] = gameState match {
-    case g: GameStarting if g.players.forall(_.ready) =>
+    case g: GameStarting if g.players.forall(_.ready) && g.players.nonEmpty =>
       GameRunning(
         cycle = 0,
         players = g.players.map(player => RunningPlayer(player.index, player.name, g.scenario.initialRobots(player.index), Seq.empty, None, DealOptions())),

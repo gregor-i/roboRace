@@ -17926,6 +17926,28 @@ function modal(content, onClose) {
 
 module.exports = modal
 },{"snabbdom/h":2}],16:[function(require,module,exports){
+function loadAllScenarios() {
+    return fetch("/api/scenarios")
+        .then(parseJson)
+}
+
+function postScenario(scenario) {
+    return fetch("/api/scenarios", {
+        method: "POST",
+        body: JSON.stringify(scenario)
+    })
+}
+
+function parseJson(resp) {
+    return resp.json()
+}
+
+module.exports = {
+    loadAllScenarios,
+    postScenario
+}
+
+},{}],17:[function(require,module,exports){
 var _ = require('lodash')
 
 function animations(oldGameState, events) {
@@ -18016,23 +18038,24 @@ function directionToRotation(direction) {
 }
 
 module.exports = {animations, playAnimations}
-},{"lodash":1}],17:[function(require,module,exports){
+},{"lodash":1}],18:[function(require,module,exports){
 var _ = require('lodash')
 var gameService = require('./game-service')
 var animations = require('./animations')
 var constants = require('../common/constants')
 
 function actions(state, action) {
-    if (action.leaveGame) {
+    console.log(action)
+    if (action.leaveGame)
         window.location.href = "/"
-    } else if (action.defineScenario)
-        return gameService.defineGame(action.defineScenario)
-            .then(_.constant(state))
     else if (action.joinGame)
         return gameService.joinGame(action.joinGame, state.player)
             .then(_.constant(state))
     else if (action.readyForGame)
         return gameService.readyForGame(action.readyForGame, state.player)
+            .then(_.constant(state))
+    else if (action.selectScenario)
+        return gameService.defineScenario(state.gameId, action.selectScenario)
             .then(_.constant(state))
     else if (action.defineAction) {
         if (!state.slots)
@@ -18045,7 +18068,7 @@ function actions(state, action) {
     } else if (action.replayAnimations) {
         if (state.animations && state.animations.length !== 0)
             animations.playAnimations(state.animations)
-    } else if (action.setModal){
+    } else if (action.setModal) {
         state.modal = action.setModal
         return Promise.resolve(state)
     } else {
@@ -18054,7 +18077,7 @@ function actions(state, action) {
 }
 
 module.exports = actions
-},{"../common/constants":13,"./animations":16,"./game-service":18,"lodash":1}],18:[function(require,module,exports){
+},{"../common/constants":13,"./animations":17,"./game-service":19,"lodash":1}],19:[function(require,module,exports){
 function getState(gameId) {
     return fetch("/api/games/" + gameId)
         .then(parseJson)
@@ -18080,12 +18103,8 @@ function readyForGame(gameId, playerName){
     return sendCommand(gameId, {ReadyForGame: {playerName}})
 }
 
-function defineGame(gameId) {
-    return fetch("/default-scenario")
-        .then(parseJson)
-        .then(function (scenario) {
-            return sendCommand(gameId, {DefineScenario: {scenario: scenario}})
-        })
+function defineScenario(gameId, scenario) {
+    return sendCommand(gameId, {DefineScenario: {scenario: scenario}})
 }
 
 function updates(gameId) {
@@ -18099,13 +18118,13 @@ function parseJson(resp) {
 module.exports = {
     getState,
     defineAction,
-    defineGame,
+    defineScenario,
     readyForGame,
     joinGame,
     updates
 }
 
-},{}],19:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var _ = require('lodash')
 var h = require('snabbdom/h').default
 var constants = require('../common/constants')
@@ -18120,7 +18139,15 @@ function render(state, actionHandler) {
     else if (state.modal === 'playerList')
         m = modal(renderPlayerList(state), [actionHandler, {setModal: 'none'}])
 
-    if (state.game.GameStarting) {
+    if(state.game.InitialGame) {
+        const game = state.game.InitialGame
+        return frame(header('Initial Game', [
+                backToLobbyButton(actionHandler),
+            ]),
+            Object.keys(state.scenarios).map(key => renderScenarioPreview(key, state.scenarios[key], actionHandler)),
+            undefined,
+            m)
+    }else if (state.game.GameStarting) {
         const game = state.game.GameStarting
         return frame(header('Game ' + state.gameId, [
                 backToLobbyButton(actionHandler),
@@ -18140,7 +18167,7 @@ function render(state, actionHandler) {
             ]),
             h('div.board', [
                 renderBoard(game.scenario),
-                renderRobots(game.players)
+                renderPlayerRobots(game.players)
             ]),
             renderActionButtons(state, game, actionHandler),
             m)
@@ -18210,15 +18237,22 @@ function renderPlayerList(state) {
     ])
 }
 
-function renderBoard(scenario) {
-    return h('board', _.range(scenario.height).map(function (r) {
-        return renderRow(scenario, r)
-    }))
+function renderScenarioPreview(name, scenario, actionHandler){
+    var board = renderBoard(scenario)
+    var robots = scenario.initialRobots.map((robot, index) => renderRobot(index, robot, false))
+    robots.unshift(board)
+    return h('article.media', h('div.media-content', [
+        h('h4', name),
+        h('div.board', robots),
+        button.primary(actionHandler, {selectScenario: scenario}, 'Select this Scenario')
+    ]))
 }
 
-function renderRow(scenario, row) {
-    return h('row', _.range(scenario.width).map(function (c) {
-        return renderCell(scenario, row, c)
+function renderBoard(scenario) {
+    return h('board', _.range(scenario.height).map(function (r) {
+        return h('row', _.range(scenario.width).map(function (c) {
+            return renderCell(scenario, r, c)
+        }))
     }))
 }
 
@@ -18262,27 +18296,27 @@ function renderCell(scenario, row, column) {
     }, '')
 }
 
+function renderRobot(index, robot, finished) {
+    var x = robot.position.x * 50
+    var y = robot.position.y * 50
+    var rot = directionToRotation(robot.direction)
 
-function renderRobots(players) {
+    return h('robot.robot' + (index % 6 + 1),
+        {
+            style: {
+                transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)',
+                opacity: finished ? '0' : '1',
+            },
+            props: {
+                id: 'robot_' + (index % 6 + 1)
+            }
+        });
+}
+
+
+function renderPlayerRobots(players) {
     return h('div', players.map(function (player) {
-        var robot = player.robot
-        var x = robot.position.x * 50
-        var y = robot.position.y * 50
-        var rot = directionToRotation(robot.direction)
-        return h('robot.robot' + (player.index % 6 + 1),
-            {
-                style: {
-                    transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)',
-                    opacity: player.finished ? '0' : '1',
-                },
-                props: {
-                    title: JSON.stringify(player),
-                    id: 'robot_' + (player.index % 6 + 1),
-                    x: x,
-                    y: y,
-                    rot: rot + ''
-                }
-            });
+        return renderRobot(player.index, player.robot, player.finished)
     }))
 }
 
@@ -18351,7 +18385,7 @@ function renderLog(logs) {
 
 module.exports = render
 
-},{"../common/button":12,"../common/constants":13,"../common/frame":14,"../common/modal":15,"lodash":1,"snabbdom/h":2}],20:[function(require,module,exports){
+},{"../common/button":12,"../common/constants":13,"../common/frame":14,"../common/modal":15,"lodash":1,"snabbdom/h":2}],21:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18362,6 +18396,7 @@ var patch = snabbdom.init([
 
 var gameUi = require('./game-ui')
 var gameService = require('./game-service')
+var editorService = require('../editor/editor-service')
 var actions = require('./game-actions')
 var animations = require('./animations')
 
@@ -18400,23 +18435,27 @@ function Game(element, player, gameId){
         }
     }
 
-    gameService.getState(gameId).then(function (game) {
-        renderState({
-            player, gameId, game,
-            eventSource: gameService.updates(gameId),
-            slots: [],
-            logs: [],
-            modal: 'none'
-        }, element)
-    }).catch(function () {
-        document.location = '/'
+    editorService.loadAllScenarios().then(function (scenarios) {
+        return gameService.getState(gameId).then(function (game) {
+            renderState({
+                player, gameId, game,
+                eventSource: gameService.updates(gameId),
+                slots: [],
+                logs: [],
+                modal: 'none',
+                scenarios: scenarios
+            }, element)
+        })
+    }).catch(function (ex) {
+        console.error(currentState, ex)
+        // document.location = '/'
     })
 
     return this
 }
 
 module.exports = Game
-},{"./animations":16,"./game-actions":17,"./game-service":18,"./game-ui":19,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],21:[function(require,module,exports){
+},{"../editor/editor-service":16,"./animations":17,"./game-actions":18,"./game-service":19,"./game-ui":20,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],22:[function(require,module,exports){
 var Lobby = require('./lobby/lobby')
 var Game = require('./game/game')
 
@@ -18430,7 +18469,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Lobby(container, player)
 })
 
-},{"./game/game":20,"./lobby/lobby":25}],22:[function(require,module,exports){
+},{"./game/game":21,"./lobby/lobby":26}],23:[function(require,module,exports){
 var _ = require('lodash')
 var lobbyService = require('./lobby-service')
 
@@ -18458,7 +18497,7 @@ function actions(state, action) {
 }
 
 module.exports = actions
-},{"./lobby-service":23,"lodash":1}],23:[function(require,module,exports){
+},{"./lobby-service":24,"lodash":1}],24:[function(require,module,exports){
 function getAllGames() {
   return fetch("/api/games")
       .then(parseJson)
@@ -18487,7 +18526,7 @@ module.exports = {
   updates
 }
 
-},{}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 var h = require('snabbdom/h').default
 var button = require('../common/button')
 var modal = require('../common/modal')
@@ -18563,7 +18602,7 @@ function renderLoginModal(player, actionHandler) {
 }
 
 module.exports = render
-},{"../common/button":12,"../common/frame":14,"../common/modal":15,"snabbdom/h":2}],25:[function(require,module,exports){
+},{"../common/button":12,"../common/frame":14,"../common/modal":15,"snabbdom/h":2}],26:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18617,4 +18656,4 @@ function Lobby(element, player) {
 }
 
 module.exports = Lobby
-},{"./lobby-actions":22,"./lobby-service":23,"./lobby-ui":24,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[21]);
+},{"./lobby-actions":23,"./lobby-service":24,"./lobby-ui":25,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[22]);

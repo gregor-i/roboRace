@@ -23,12 +23,8 @@ function readyForGame(gameId, playerName){
     return sendCommand(gameId, {ReadyForGame: {playerName}})
 }
 
-function defineGame(gameId) {
-    return fetch("/default-scenario")
-        .then(parseJson)
-        .then(function (scenario) {
-            return sendCommand(gameId, {DefineScenario: {scenario: scenario}})
-        })
+function defineScenario(gameId, scenario) {
+    return sendCommand(gameId, {DefineScenario: {scenario: scenario}})
 }
 
 function updates(gameId) {
@@ -42,7 +38,7 @@ function parseJson(resp) {
 module.exports = {
     getState,
     defineAction,
-    defineGame,
+    defineScenario,
     readyForGame,
     joinGame,
     updates

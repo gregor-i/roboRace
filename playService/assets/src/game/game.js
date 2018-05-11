@@ -8,6 +8,7 @@ var patch = snabbdom.init([
 
 var gameUi = require('./game-ui')
 var gameService = require('./game-service')
+var editorService = require('../editor/editor-service')
 var actions = require('./game-actions')
 var animations = require('./animations')
 
@@ -46,16 +47,20 @@ function Game(element, player, gameId){
         }
     }
 
-    gameService.getState(gameId).then(function (game) {
-        renderState({
-            player, gameId, game,
-            eventSource: gameService.updates(gameId),
-            slots: [],
-            logs: [],
-            modal: 'none'
-        }, element)
-    }).catch(function () {
-        document.location = '/'
+    editorService.loadAllScenarios().then(function (scenarios) {
+        return gameService.getState(gameId).then(function (game) {
+            renderState({
+                player, gameId, game,
+                eventSource: gameService.updates(gameId),
+                slots: [],
+                logs: [],
+                modal: 'none',
+                scenarios: scenarios
+            }, element)
+        })
+    }).catch(function (ex) {
+        console.error(currentState, ex)
+        // document.location = '/'
     })
 
     return this

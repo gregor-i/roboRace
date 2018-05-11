@@ -2,11 +2,11 @@ name := "roboRace"
 
 scalaVersion := "2.12.4"
 
-cancelable in ThisBuild := true
-
 lazy val playService = project.in(file("playService"))
   .enablePlugins(PlayScala)
-  .settings(libraryDependencies += guice,
+  .settings(
+    libraryDependencies += guice,
+    libraryDependencies += ws,
     libraryDependencies += "com.dripower" %% "play-circe" % "2609.0"
   )
   .dependsOn(gameLogic)
