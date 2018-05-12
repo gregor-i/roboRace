@@ -4,9 +4,7 @@ import monocle.Optional
 import monocle.macros.Lenses
 import util.OptionalWhere
 
-sealed trait GameState {
-  def stateDescription: String = getClass.getSimpleName.filter(_ != '$')
-}
+sealed trait GameState
 
 case object InitialGame extends GameState
 
