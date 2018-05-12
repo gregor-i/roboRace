@@ -1,27 +1,32 @@
 package gameLogic
 
-sealed trait GameState {
-  def fold[A](ifInitial: InitialGame.type => A)
-             (ifStarting: GameStarting => A)
-             (ifRunning: GameRunning => A)
-             (ifFinished: GameFinished => A): A = this match {
-    case g: InitialGame.type => ifInitial(g)
-    case g: GameStarting => ifStarting(g)
-    case g: GameRunning => ifRunning(g)
-    case g: GameFinished => ifFinished(g)
-  }
+import monocle.Optional
+import monocle.macros.Lenses
+import util.OptionalWhere
 
+sealed trait GameState {
   def stateDescription: String = getClass.getSimpleName.filter(_ != '$')
 }
 
 case object InitialGame extends GameState
 
+@Lenses
 case class GameStarting(scenario: GameScenario,
-                        players: Seq[StartingPlayer]) extends GameState
+                        players: List[StartingPlayer]) extends GameState
 
+object GameStarting{
+  def player(name: String): Optional[GameStarting, StartingPlayer] = players.composeOptional(OptionalWhere.where(_.name == name))
+}
+
+@Lenses
 case class GameRunning(cycle: Int,
                        scenario: GameScenario,
-                       players: Seq[RunningPlayer]) extends GameState
+                       players: List[RunningPlayer]) extends GameState
 
-case class GameFinished(players: Seq[RunningPlayer],
+object GameRunning{
+  def player(name: String): Optional[GameRunning, RunningPlayer] = players.composeOptional(OptionalWhere.where(_.name == name))
+}
+
+@Lenses
+case class GameFinished(players: List[RunningPlayer],
                         scenario: GameScenario) extends GameState

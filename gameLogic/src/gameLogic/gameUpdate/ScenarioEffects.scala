@@ -1,6 +1,6 @@
 package gameLogic.gameUpdate
 
-import gameLogic.{FinishedStatistic, GameRunning, Logged, PlayerFinished, RobotReset}
+import gameLogic.{FinishedStatistic, GameRunning, Logged, PlayerFinished, RobotReset, RunningPlayer}
 
 object ScenarioEffects {
 
@@ -25,7 +25,7 @@ object ScenarioEffects {
         val initial = game.scenario.initialRobots(index)
         for {
           clearedInitial <- MoveRobots.pushRobots(initial.position, initial.direction, game)
-          resettedFallen <- clearedInitial.copy(players = clearedInitial.players.map(p => if (p.name == player.name) p.copy(robot = initial, actions = Seq.empty) else p)).log(RobotReset(player.name, player.robot, initial))
+          resettedFallen <- Events.reset(player, initial)(clearedInitial)
           recursion <- fallenRobots(resettedFallen)
         } yield recursion
 
@@ -41,9 +41,10 @@ object ScenarioEffects {
         val stats = FinishedStatistic(rank = game.players.count(_.finished.isDefined) + 1, cycle = game.cycle)
         val playerFinished = PlayerFinished(player.name, stats)
 
-        game.copy(
-          players = game.players.map(p => if (p.name == player.name) p.copy(finished = Some(stats)) else p)
-        ).log(playerFinished)
+        (GameRunning.player(player.name) composeLens RunningPlayer.finished)
+          .set(Some(stats))
+          .apply(game)
+          .log(playerFinished)
     }
   }
 }

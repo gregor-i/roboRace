@@ -4,7 +4,6 @@ var animations = require('./animations')
 var constants = require('../common/constants')
 
 function actions(state, action) {
-    console.log(action)
     if (action.leaveGame)
         window.location.href = "/"
     else if (action.joinGame)

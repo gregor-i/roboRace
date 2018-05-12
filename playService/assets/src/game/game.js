@@ -41,7 +41,7 @@ function Game(element, player, gameId){
             state.game = newGameState
             state.logs = state.logs.concat(data.textLog)
             if(events.find(function(event){
-                    return !! event.StartNextCycle
+                    return !! event.StartNextCycle || !! event.AllPlayersFinished
                 })) state.slots = []
             renderState(state)
         }

@@ -7,6 +7,8 @@ sealed trait MoveAction extends Action
 
 case object MoveForward extends MoveAction
 case object MoveBackward extends MoveAction
+case object StepRight extends MoveAction
+case object StepLeft extends MoveAction
 case object MoveTwiceForward extends MoveAction
 
 case object TurnRight extends TurnAction
@@ -19,10 +21,12 @@ object Action{
   implicit val ordering: Ordering[Action] = Ordering.Int.on{
     case MoveForward => 1
     case MoveTwiceForward => 2
-    case MoveBackward => 3
-    case TurnRight => 4
-    case TurnLeft => 5
-    case UTurn => 6
-    case Sleep => 7
+    case StepRight => 3
+    case StepLeft => 4
+    case MoveBackward => 5
+    case TurnRight => 6
+    case TurnLeft => 7
+    case UTurn => 8
+    case Sleep => 9
   }
 }

@@ -17966,13 +17966,13 @@ function animations(oldGameState, events) {
 
             keyframes.push(keyframe(x, y, rot, finished, 0))
             for (var j = 0; j < events.length; j++) {
-                var offset = j / (1 + events.length)
-                if (events[j].RobotPositionTransition && events[j].RobotPositionTransition.playerName === player.name) {
-                    x = events[j].RobotPositionTransition.to.x
-                    y = events[j].RobotPositionTransition.to.y
+                var offset = (j+1) / (2 + events.length)
+                if (events[j].RobotMoves && events[j].RobotMoves.playerName === player.name) {
+                    x = events[j].RobotMoves.to.x
+                    y = events[j].RobotMoves.to.y
                     keyframes.push(keyframe(x, y, rot, finished, offset))
-                } else if (events[j].RobotDirectionTransition && events[j].RobotDirectionTransition.playerName === player.name) {
-                    rot = nearestRotation(rot, events[j].RobotDirectionTransition.to)
+                } else if (events[j].RobotTurns && events[j].RobotTurns.playerName === player.name) {
+                    rot = nearestRotation(rot, events[j].RobotTurns.to)
                     keyframes.push(keyframe(x, y, rot, finished, offset))
                 }else if(events[j].RobotReset && events[j].RobotReset.playerName === player.name){
                     x = events[j].RobotReset.to.position.x
@@ -18045,7 +18045,6 @@ var animations = require('./animations')
 var constants = require('../common/constants')
 
 function actions(state, action) {
-    console.log(action)
     if (action.leaveGame)
         window.location.href = "/"
     else if (action.joinGame)
@@ -18434,7 +18433,7 @@ function Game(element, player, gameId){
             state.game = newGameState
             state.logs = state.logs.concat(data.textLog)
             if(events.find(function(event){
-                    return !! event.StartNextCycle
+                    return !! event.StartNextCycle || !! event.AllPlayersFinished
                 })) state.slots = []
             renderState(state)
         }
