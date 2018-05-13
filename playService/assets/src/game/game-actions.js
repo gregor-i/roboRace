@@ -4,16 +4,16 @@ var animations = require('./animations')
 var constants = require('../common/constants')
 
 function actions(state, action) {
-    if (action.leaveGame) {
+    if (action.leaveGame)
         window.location.href = "/"
-    } else if (action.defineScenario)
-        return gameService.defineGame(action.defineScenario)
-            .then(_.constant(state))
     else if (action.joinGame)
         return gameService.joinGame(action.joinGame, state.player)
             .then(_.constant(state))
     else if (action.readyForGame)
         return gameService.readyForGame(action.readyForGame, state.player)
+            .then(_.constant(state))
+    else if (action.selectScenario)
+        return gameService.defineScenario(state.gameId, action.selectScenario)
             .then(_.constant(state))
     else if (action.defineAction) {
         if (!state.slots)
@@ -26,7 +26,7 @@ function actions(state, action) {
     } else if (action.replayAnimations) {
         if (state.animations && state.animations.length !== 0)
             animations.playAnimations(state.animations)
-    } else if (action.setModal){
+    } else if (action.setModal) {
         state.modal = action.setModal
         return Promise.resolve(state)
     } else {

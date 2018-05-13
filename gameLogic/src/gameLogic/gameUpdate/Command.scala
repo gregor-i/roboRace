@@ -1,59 +1,60 @@
 package gameLogic
 package gameUpdate
 
+sealed trait Command extends (GameState => CommandResponse) {
+  def apply(gameState: GameState): CommandResponse = gameState match {
+    case InitialGame => ifInitial
+    case g: GameStarting => ifStarting(g)
+    case g: GameRunning => ifRunning(g)
+    case g: GameFinished => ifFinished(g)
+  }
+
+  def ifInitial: CommandResponse = CommandRejected(WrongState)
+  def ifStarting: GameStarting => CommandResponse = _ => CommandRejected(WrongState)
+  def ifRunning: GameRunning => CommandResponse = _ => CommandRejected(WrongState)
+  def ifFinished: GameFinished => CommandResponse = _ => CommandRejected(WrongState)
+}
+
 sealed trait CommandResponse
-case class CommandRejected(reason: RejectionReason, command:Command) extends CommandResponse
+case class CommandRejected(reason: RejectionReason) extends CommandResponse
 case class CommandAccepted(newState: GameState) extends CommandResponse
 
-sealed trait Command {
-  type R = CommandResponse
-  def apply(gameState: GameState): R
+case class DefineScenario(scenario: GameScenario) extends Command {
+  override def ifInitial: CommandResponse =
+    CommandAccepted(GameStarting(scenario, Nil))
 }
 
-sealed trait FoldingCommand extends Command {
-  def apply(gameState: GameState): R = gameState.fold(ifInitial)(ifStarting)(ifRunning)(ifFinished)
-
-  def ifInitial: InitialGame.type => R = _ => rejected(WrongState)
-  def ifStarting: GameStarting => R = _ => rejected(WrongState)
-  def ifRunning: GameRunning => R = _ => rejected(WrongState)
-  def ifFinished: GameFinished => R = _ => rejected(WrongState)
-
-  final def rejected(rejectionReason: RejectionReason): R = CommandRejected(rejectionReason, this)
-  final def accepted(s: GameState): R = CommandAccepted(s)
-}
-
-case class DefineScenario(scenario: GameScenario) extends FoldingCommand{
-  override def ifInitial: InitialGame.type => R =
-    _ => accepted(GameStarting(scenario, Nil))
-}
-
-case class RegisterForGame(playerName: String) extends FoldingCommand {
-  override def ifStarting: GameStarting => R = {
+case class RegisterForGame(playerName: String) extends Command {
+  override def ifStarting: GameStarting => CommandResponse = {
     case g if g.players.exists(_.name == playerName) =>
-      rejected(PlayerAlreadyRegistered)
+      CommandRejected(PlayerAlreadyRegistered)
     case g if g.players.size >= g.scenario.initialRobots.size =>
-      rejected(TooMuchPlayersRegistered)
+      CommandRejected(TooMuchPlayersRegistered)
     case g =>
-      accepted(g.copy(players = g.players :+ StartingPlayer(g.players.size, playerName, false)))
+      CommandAccepted(GameStarting.players.modify(players => players :+ StartingPlayer(players.size, playerName, false))(g))
   }
 }
 
-case class ReadyForGame(playerName: String) extends FoldingCommand {
-  override def ifStarting: GameStarting => R = {
-    case g if !g.players.exists(_.name == playerName) => rejected(PlayerNotFound)
-    case g => accepted(g.copy(players = g.players.map(player => if(player.name == playerName) player.copy(ready = true) else player)))
+case class ReadyForGame(playerName: String) extends Command {
+  override def ifStarting: GameStarting => CommandResponse = {
+    case g if !g.players.exists(_.name == playerName) =>
+      CommandRejected(PlayerNotFound)
+    case g =>
+      CommandAccepted((GameStarting.player(playerName) composeLens StartingPlayer.ready).set(true)(g))
   }
 }
 
-case class DefineNextAction(player: String, cycle: Int, actions: Seq[Int]) extends FoldingCommand {
-  override def ifRunning: GameRunning => R = {
-    case g if g.cycle != cycle => rejected(WrongCycle)
-    case g if !g.players.exists(_.name == player) => rejected(PlayerNotFound)
+case class DefineNextAction(player: String, cycle: Int, actions: Seq[Int]) extends Command {
+  override def ifRunning: GameRunning => CommandResponse = {
+    case g if g.cycle != cycle =>
+      CommandRejected(WrongCycle)
+    case g if !g.players.exists(_.name == player) =>
+      CommandRejected(PlayerNotFound)
     case g if actions.size != Constants.actionsPerCycle ||
       actions.distinct.size != Constants.actionsPerCycle ||
-      actions.forall(i => 0 > i || i > Constants.actionOptionsPerCycle) => rejected(InvalidActionChoice)
-    case g => accepted(
-      g.copy(players = g.players.map(p => if(p.name == player) p.copy(actions = actions.map(p.possibleActions)) else p))
-    )
+      actions.forall(i => 0 > i || i > Constants.actionOptionsPerCycle) =>
+      CommandRejected(InvalidActionChoice)
+    case g =>
+      CommandAccepted(GameRunning.player(player).modify(p => p.copy(actions = actions.map(p.possibleActions)))(g))
   }
 }

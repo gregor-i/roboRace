@@ -1,11 +1,11 @@
 package gameLogic.gameUpdate
 
-import gameLogic.{Action, Constants, MoveBackward, MoveForward, MoveTwiceForward, Sleep, TurnLeft, TurnRight, UTurn}
+import gameLogic.{Action, Constants, MoveBackward, MoveForward, MoveTwiceForward, Sleep, StepLeft, StepRight, TurnLeft, TurnRight, UTurn}
 
 import scala.util.Random
 
 object DealOptions {
-  def apply(): Seq[Action] = Seq.fill(Constants.actionOptionsPerCycle)(choose(random.nextInt(sum))).sorted
+  def apply(): List[Action] = List.fill(Constants.actionOptionsPerCycle)(choose(random.nextInt(sum))).sorted
 
   private val random = new Random()
 
@@ -20,10 +20,12 @@ object DealOptions {
     throw new AssertionError()
   }
 
-  val weights: Seq[(Action, Int)] = Seq(
+  val weights: List[(Action, Int)] = List(
     MoveForward -> 70,
     MoveBackward -> 20,
     MoveTwiceForward -> 5,
+    StepRight -> 5,
+    StepLeft -> 5,
     TurnRight -> 30,
     TurnLeft -> 30,
     UTurn -> 3,

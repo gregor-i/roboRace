@@ -8,7 +8,7 @@ trait TestData {
   val s = GameScenario.default
 
   def startingStateHelper(readyStates: Boolean*) = GameStarting(s,
-    for ((ready, index) <- readyStates.zipWithIndex)
-      yield StartingPlayer(index, index.toString, ready)
+    (for ((ready, index) <- readyStates.zipWithIndex)
+      yield StartingPlayer(index, index.toString, ready)).toList
   )
 }

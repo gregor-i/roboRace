@@ -22,7 +22,7 @@ class CommandSpec extends FunSuite with Matchers with TestData {
   }
 
   test("RegisterForGame: reject players if there are to many") {
-    val filledGame = starting.copy(scenario = s.copy(initialRobots = Map.empty))
+    val filledGame = starting.copy(scenario = s.copy(initialRobots = List.empty))
     RegisterForGame(p1).apply(filledGame).rejectedReason shouldBe TooMuchPlayersRegistered
   }
 

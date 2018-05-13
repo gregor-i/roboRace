@@ -9,7 +9,7 @@ function render(state, actionHandler) {
         button.builder(actionHandler, {reloadGameList: true}, 'Refresh'),
         button.builder(actionHandler, {resetUserName: true}, 'Logout')
         )],
-        renderGameTable(state, state.games, actionHandler),
+        h('div.content', renderGameTable(state, state.games, actionHandler)),
         undefined,
         renderLoginModal(state.player, actionHandler)
     )

@@ -112,6 +112,10 @@ body{
 
 .frame-header {
     background-color: grey;
+<<<<<<< HEAD
+=======
+    padding: 0.5em;
+>>>>>>> master
     flex-shrink: 0;
     padding: 1em;
 }
@@ -119,14 +123,22 @@ body{
 .frame-body{
     flex-grow: 1;
     overflow: auto;
+<<<<<<< HEAD
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     padding: 1em;
+=======
+    padding: 0.5em;
+>>>>>>> master
 }
 
 .frame-footer{
     background-color: grey;
+<<<<<<< HEAD
+=======
+    padding: 0.5em;
+>>>>>>> master
     flex-shrink: 0;
     padding: 1em;
 }

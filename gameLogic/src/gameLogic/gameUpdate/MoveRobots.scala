@@ -11,13 +11,15 @@ object MoveRobots {
           afterEffects <- ScenarioEffects.afterMoveAction(afterPush)
         } yield afterEffects
       }else{
-        gameRunning.log(RobotMovementBlocked(p.name, p.robot.position, direction))
+        gameRunning.log(MovementBlocked(p.name, p.robot.position, direction))
       }
     }
 
     action match {
       case MoveForward => move(player.robot.direction, game)
       case MoveBackward => move(player.robot.direction.back, game)
+      case StepRight => move(player.robot.direction.right, game)
+      case StepLeft => move(player.robot.direction.left, game)
       case MoveTwiceForward =>
         for{
           after1Move <- move(player.robot.direction, game)
@@ -32,9 +34,9 @@ object MoveRobots {
       case Some(player) =>
         val nextPos = player.robot.position.move(direction)
         for {
-          pushedRobots <- pushRobots(position.move(direction), direction, gameRunning)
-          nextRobotState <- player.robot.copy(position = nextPos).log(RobotPositionTransition(player.name, player.robot.position, nextPos))
-        } yield pushedRobots.copy(players = pushedRobots.players.map(p => if (p.name == player.name) p.copy(robot = nextRobotState) else p))
+          rec <- pushRobots(position.move(direction), direction, gameRunning)
+          nextState <- Events.move(player, nextPos)(rec)
+        } yield nextState
       case None => Logged.pure(gameRunning)
     }
 

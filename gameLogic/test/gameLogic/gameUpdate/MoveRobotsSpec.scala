@@ -8,13 +8,13 @@ class MoveRobotsSpec extends FunSuite with Matchers {
     GameScenario(10, 10,
       Position(9, 9),
       Position(9, 8),
-      Map(
-        0 -> Robot(Position(5, 5), Up),
-        1 -> Robot(Position(6, 6), Up)
-      ), Seq.empty, Seq.empty),
-    Seq(
-      RunningPlayer(0, "1", Robot(Position(0, 0), Right), Seq.empty, None, Seq.empty),
-      RunningPlayer(1, "2", Robot(Position(1, 0), Right), Seq.empty, None, Seq.empty))
+      List(
+        Robot(Position(5, 5), Up),
+        Robot(Position(6, 6), Up)
+      ), List.empty, List.empty),
+    List(
+      RunningPlayer(0, "1", Robot(Position(0, 0), Right), List.empty, None, List.empty),
+      RunningPlayer(1, "2", Robot(Position(1, 0), Right), List.empty, None, List.empty))
   )
 
 
@@ -31,7 +31,7 @@ class MoveRobotsSpec extends FunSuite with Matchers {
   }
 
   test("don't push through walls"){
-    val c0WithWall = c0.copy(scenario = c0.scenario.copy(walls = Seq(Wall(Position(1, 0), Right))))
+    val c0WithWall = c0.copy(scenario = c0.scenario.copy(walls = List(Wall(Position(1, 0), Right))))
     MoveRobots(c0.players(0), MoveForward, c0WithWall).state shouldBe c0WithWall
     MoveRobots(c0.players(1), MoveForward, c0WithWall).state shouldBe c0WithWall
   }
@@ -49,7 +49,7 @@ class MoveRobotsSpec extends FunSuite with Matchers {
   }
 
   test("move twice with a barrier on the way"){
-    val c0WithWall = c0.copy(scenario = c0.scenario.copy(walls = Seq(Wall(Position(2, 0), Right))))
+    val c0WithWall = c0.copy(scenario = c0.scenario.copy(walls = List(Wall(Position(2, 0), Right))))
     val newState = MoveRobots(c0.players(1), MoveTwiceForward, c0WithWall).state
     newState.players(0) shouldBe c0.players(0)
     newState.players(1).robot.position shouldBe Position(2, 0)
