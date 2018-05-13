@@ -4,6 +4,7 @@ var constants = require('../common/constants')
 var button = require('../common/button')
 var modal = require('../common/modal')
 var frame = require('../common/frame')
+var images = require('../common/images')
 
 function render(state, actionHandler) {
     var m = null
@@ -38,7 +39,7 @@ function render(state, actionHandler) {
                 logsButton(actionHandler),
                 playerListButton(actionHandler)
             ]),
-            renderCanvas(state, game),
+            renderCanvas(state, game.scenario, game.players),
             renderActionButtons(state, game, actionHandler),
             m)
     } else {
@@ -107,129 +108,103 @@ function renderPlayerList(state) {
     ])
 }
 
-function renderCanvas(state, game) {
+function renderCanvas(state, scenario, robotsOrPlayers) {
+    function drawCanvas(canvas){
+        const ctx = canvas.getContext("2d")
+
+        const rect = canvas.getBoundingClientRect()
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+
+        const tileWidth = rect.width/(scenario.width * 1.1 -0.1)
+        const tileHeight = rect.height/(scenario.height * 1.1 -0.1)
+
+        const tile = Math.min(tileHeight, tileWidth)
+        const wall = tile / 10
+
+        const offsetLeft = (canvas.width - (scenario.width * tile + (scenario.width - 1) * wall)) / 2
+        const offsetTop = (canvas.height - (scenario.height * tile + (scenario.height - 1) * wall)) / 2
+
+        function left(x){
+            return offsetLeft + (tile + wall) * x
+        }
+        function top(y){
+            return offsetTop + (tile + wall) * y
+        }
+
+        // scenario:
+        {
+            // tiles:
+            ctx.fillStyle = 'lightgrey'
+            for (let y = 0; y < scenario.height; y++)
+                for (let x = 0; x < scenario.width; x++)
+                    ctx.fillRect(left(x), top(y), tile, tile)
+
+            // walls:
+            ctx.fillStyle = 'black'
+            scenario.walls.forEach(function (w) {
+                if (w.direction.Right)
+                    ctx.fillRect(left(w.position.x) + tile, top(w.position.y), wall, tile)
+                else if (w.direction.Down)
+                    ctx.fillRect(left(w.position.x), top(w.position.y) + tile, tile, wall)
+            })
+
+            // target:
+            {
+                ctx.fillStyle = 'green'
+                ctx.fillRect(left(scenario.targetPosition.x), top(scenario.targetPosition.y), tile, tile)
+            }
+
+            // pits:
+            ctx.fillStyle = 'white'
+            scenario.pits.forEach(pit =>
+                ctx.fillRect(left(pit.x), top(pit.y), tile, tile)
+            )
+        }
+
+
+        // robots:
+        robotsOrPlayers.forEach((player) => {
+            ctx.save()
+            const robot = player.robot
+            ctx.translate(left(robot.position.x) + tile / 2, top(robot.position.y) + tile / 2)
+            console.log(directionToRotation(robot.direction))
+            ctx.rotate(directionToRotation(robot.direction))
+            ctx.drawImage(images.player(player.index), -tile / 2, -tile / 2, tile, tile)
+            ctx.restore()
+        })
+    }
+
+
     return h('canvas.game-view', {
-        hook: {
-            insert: function(node){
-                console.log("insert hook", node)
-                var canvas = node.elm
-                var ctx = canvas.getContext("2d")
-
-                var width = canvas.width
-                var height = canvas.height
-
-                var scenario = game.scenario
-
-                window.canvas = canvas
-                window.ctx = ctx
-
-                var rect = canvas.parentNode.getBoundingClientRect();
-                canvas.width = rect.width;
-                canvas.height = rect.height;
-
-                ctx.fillStyle = "lightgrey";
-
-                for(var y = 0; y<scenario.height; y++)
-                    for(var x = 0; x<scenario.width; x++){
-                        ctx.fillRect(55*x, 55*y, 50, 50);
-                    }
+            hook: {
+                postpatch: (oldVnode, newVnode) => drawCanvas(newVnode.elm),
+                insert: (node)  => {
+                    window.onresize = () => drawCanvas(node.elm)
+                    drawCanvas(node.elm)
+                },
+                destroy: () => window.onresize = undefined
             }
         }
-    })
+    )
 }
 
 function renderScenarioPreview(name, scenario, actionHandler){
-    var board = renderBoard(scenario)
-    var robots = scenario.initialRobots.map((robot, index) => renderRobot(index, robot, false))
-    robots.unshift(board)
     return h('article.media', h('div.media-content', [
         h('h4', name),
-        h('div.board', robots),
         button.primary(actionHandler, {selectScenario: scenario}, 'Select this Scenario')
     ]))
 }
 
-function renderBoard(scenario) {
-    return h('board', _.range(scenario.height).map(function (r) {
-        return h('row', _.range(scenario.width).map(function (c) {
-            return renderCell(scenario, r, c)
-        }))
-    }))
-}
-
-function renderCell(scenario, row, column) {
-    function positionEqual(pos) {
-        return pos.x === column && pos.y === row
-    }
-
-    const isWallRight = !!scenario.walls.find(function (wall) {
-        return wall.direction.Right && positionEqual(wall.position)
-    })
-    const isWallDown = !!scenario.walls.find(function (wall) {
-        return wall.direction.Down && positionEqual(wall.position)
-    })
-    const isPit = !!scenario.pits.find(function (pit) {
-        return positionEqual(pit)
-    })
-
-    const isBeacon = false //positionEqual(scenario.beaconPosition)
-    const isTarget = positionEqual(scenario.targetPosition)
-
-    var desc
-    if (isTarget)
-        desc = 'Target'
-    else if (isBeacon)
-        desc = 'Beacon'
-    else if (isPit)
-        desc = 'Pit'
-    else
-        desc = 'normal Field'
-
-    return h('cell', {
-        class: {
-            'wall-down': isWallDown,
-            'wall-right': isWallRight,
-            'beacon-cell': isBeacon,
-            'target-cell': isTarget,
-            'pit': isPit
-        },
-        props: {title: `${column}, ${row} => ${desc}`}
-    }, '')
-}
-
-function renderRobot(index, robot, finished) {
-    var x = robot.position.x * 50
-    var y = robot.position.y * 50
-    var rot = directionToRotation(robot.direction)
-
-    return h('robot.robot' + (index % 6 + 1),
-        {
-            style: {
-                transform: 'translate(' + x + 'px, ' + y + 'px) rotate(' + rot + 'deg)',
-                opacity: finished ? '0' : '1',
-            },
-            props: {
-                id: 'robot_' + (index % 6 + 1)
-            }
-        });
-}
-
-
-function renderPlayerRobots(players) {
-    return h('div', players.map(function (player) {
-        return renderRobot(player.index, player.robot, player.finished)
-    }))
-}
-
 function directionToRotation(direction) {
     if (direction.Up)
-        return "0"
+        return 0
     else if (direction.Right)
-        return "90"
+        return Math.PI/2
     else if (direction.Down)
-        return "180"
+        return Math.PI
     else if (direction.Left)
-        return "270"
+        return Math.PI/2+Math.PI
     else
         console.error("unkown direction", direction)
 }

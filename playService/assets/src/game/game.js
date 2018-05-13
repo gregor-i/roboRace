@@ -3,15 +3,13 @@ var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
     require('snabbdom/modules/props').default,
     require('snabbdom/modules/class').default,
-    require('snabbdom/modules/style').default,
-    require('snabbdom/modules/hoo').default
+    require('snabbdom/modules/style').default
 ])
 
 var gameUi = require('./game-ui')
 var gameService = require('./game-service')
 var editorService = require('../editor/editor-service')
 var actions = require('./game-actions')
-var animations = require('./animations')
 
 function Game(element, player, gameId){
     var node = element
@@ -36,14 +34,9 @@ function Game(element, player, gameId){
             const data = JSON.parse(event.data)
             const newGameState = data.state
             const events = data.events
-            state.animations = animations.animations(state.game, events)
-            if(state.animations)
-                animations.playAnimations(state.animations)
             state.game = newGameState
             state.logs = state.logs.concat(data.textLog)
-            if(events.find(function(event){
-                    return !! event.StartNextCycle || !! event.AllPlayersFinished
-                })) state.slots = []
+            if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) state.slots = []
             renderState(state)
         }
     }
@@ -58,10 +51,11 @@ function Game(element, player, gameId){
                 modal: 'none',
                 scenarios: scenarios
             }, element)
+        }).catch(function (ex) {
+            document.location = '/'
         })
     }).catch(function (ex) {
-        console.error(currentState, ex)
-        // document.location = '/'
+        document.location = '/'
     })
 
     return this

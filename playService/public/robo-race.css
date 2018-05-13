@@ -1,99 +1,3 @@
-div.board {
-    position: relative;
-}
-
-board {
-    border-collapse: collapse;
-    display: table;
-}
-
-board row {
-    display: table-row;
-}
-
-board row cell {
-    display: table-cell;
-    width: 50px;
-    height: 50px;
-    text-align: center;
-    font-size: 30px;
-    border-top: 0;
-    border-left: 0;
-    border-bottom: 5px solid white;
-    border-right: 5px solid white;
-    padding: 0;
-    background: #ccc;
-}
-
-.pit {
-    background: white;
-}
-
-cell.wall-down {
-    border-bottom: 5px solid #555;
-}
-
-cell.wall-right {
-    border-right: 5px solid #555;
-}
-
-.target-cell {
-    background: green;
-}
-
-.target-cell:before {
-    color: white;
-    content: "T";
-}
-
-.beacon-cell {
-    background: blue;
-}
-
-.beacon-cell:before {
-    color: white;
-    content: "B";
-}
-
-robot {
-    display: block;
-    position: absolute;
-    height: 50px;
-    width: 50px;
-
-    left: 0px;
-    top: 0px;
-    padding: 5px;
-
-    background-repeat: no-repeat;
-    background-size: 40px 40px;
-    background-origin: content-box;
-}
-
-.robot1 {
-    background-image: url("/assets/gem1.png");
-}
-
-.robot2 {
-    background-image: url("/assets/gem2.png");
-}
-
-.robot3 {
-    background-image: url("/assets/gem3.png");
-}
-
-.robot4 {
-    background-image: url("/assets/gem4.png");
-}
-
-.robot5 {
-    background-image: url("/assets/gem5.png");
-}
-
-.robot6 {
-    background-image: url("/assets/gem6.png");
-}
-
 body{
     width:100%;
     height: 100%;
@@ -112,35 +16,25 @@ body{
 
 .frame-header {
     background-color: grey;
-<<<<<<< HEAD
-=======
     padding: 0.5em;
->>>>>>> master
     flex-shrink: 0;
-    padding: 1em;
 }
 
 .frame-body{
     flex-grow: 1;
+    flex-shrink: 1;
     overflow: auto;
-<<<<<<< HEAD
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
-    padding: 1em;
-=======
     padding: 0.5em;
->>>>>>> master
 }
 
 .frame-footer{
     background-color: grey;
-<<<<<<< HEAD
-=======
     padding: 0.5em;
->>>>>>> master
+    flex-grow: 0;
     flex-shrink: 0;
-    padding: 1em;
 }
 
 .game-view{

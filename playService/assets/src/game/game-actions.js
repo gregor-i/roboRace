@@ -1,6 +1,6 @@
 var _ = require('lodash')
 var gameService = require('./game-service')
-var animations = require('./animations')
+// var animations = require('./animations')
 var constants = require('../common/constants')
 
 function actions(state, action) {
@@ -23,9 +23,9 @@ function actions(state, action) {
         if (_.range(constants.numberOfActionsPerCycle).every(i => state.slots[i] >= 0))
             gameService.defineAction(state.gameId, state.player, action.defineAction.cycle, state.slots)
         return Promise.resolve(state)
-    } else if (action.replayAnimations) {
-        if (state.animations && state.animations.length !== 0)
-            animations.playAnimations(state.animations)
+    // } else if (action.replayAnimations) {
+    //     if (state.animations && state.animations.length !== 0)
+    //         animations.playAnimations(state.animations)
     } else if (action.setModal) {
         state.modal = action.setModal
         return Promise.resolve(state)
