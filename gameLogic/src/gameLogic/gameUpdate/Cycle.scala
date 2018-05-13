@@ -56,9 +56,11 @@ object Cycle{
     }
   }
 
-  private def applyAction(game: GameRunning, player: RunningPlayer): Logged[GameRunning] =
+  private def applyAction(game: GameRunning, player: RunningPlayer): Logged[GameRunning] = {
+    val action = player.actions.head
     for {
-      afterAction <- player.actions.head match {
+      _ <- ().log(RobotAction(player.name, action))
+      afterAction <- action match {
         case TurnRight => Events.turn(player, player.robot.direction.right)(game)
         case TurnLeft => Events.turn(player, player.robot.direction.left)(game)
         case UTurn => Events.turn(player, player.robot.direction.back)(game)
@@ -68,4 +70,5 @@ object Cycle{
         case Sleep => Logged.pure(game)
       }
     } yield (GameRunning.player(player.name) composeLens RunningPlayer.actions).modify(_.drop(1))(afterAction)
+  }
 }

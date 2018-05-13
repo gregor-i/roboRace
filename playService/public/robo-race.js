@@ -17980,19 +17980,17 @@ var _ = require('lodash')
 var gameService = require('./game-service')
 // var animations = require('./animations')
 var constants = require('../common/constants')
+var gameBoard = require('./game-board')
 
 function actions(state, action) {
     if (action.leaveGame)
         window.location.href = "/"
     else if (action.joinGame)
-        return gameService.joinGame(action.joinGame, state.player)
-            .then(_.constant(state))
+        gameService.joinGame(action.joinGame, state.player)
     else if (action.readyForGame)
-        return gameService.readyForGame(action.readyForGame, state.player)
-            .then(_.constant(state))
+        gameService.readyForGame(action.readyForGame, state.player)
     else if (action.selectScenario)
-        return gameService.defineScenario(state.gameId, action.selectScenario)
-            .then(_.constant(state))
+        gameService.defineScenario(state.gameId, action.selectScenario)
     else if (action.defineAction) {
         if (!state.slots)
             state.slots = []
@@ -18001,9 +17999,9 @@ function actions(state, action) {
         if (_.range(constants.numberOfActionsPerCycle).every(i => state.slots[i] >= 0))
             gameService.defineAction(state.gameId, state.player, action.defineAction.cycle, state.slots)
         return Promise.resolve(state)
-    // } else if (action.replayAnimations) {
-    //     if (state.animations && state.animations.length !== 0)
-    //         animations.playAnimations(state.animations)
+    } else if (action.replayAnimations) {
+        state.animationStart = new Date()
+        return Promise.resolve(state)
     } else if (action.setModal) {
         state.modal = action.setModal
         return Promise.resolve(state)
@@ -18013,7 +18011,185 @@ function actions(state, action) {
 }
 
 module.exports = actions
-},{"../common/constants":13,"./game-service":19,"lodash":1}],19:[function(require,module,exports){
+},{"../common/constants":13,"./game-board":19,"./game-service":20,"lodash":1}],19:[function(require,module,exports){
+var _ = require('lodash')
+var h = require('snabbdom/h').default
+var images = require('../common/images')
+
+function Robot(index, x, y, rotation, alpha) {
+    return {index, x, y, rotation, alpha}
+}
+
+function robotFromPlayer(player) {
+    return Robot(player.index, player.robot.position.x, player.robot.position.y, directionToRotation(player.robot.direction), player.finished ? 0 : 1)
+}
+
+function interpolateRobots(r1, r2, t){
+    // https://gist.github.com/shaunlebron/8832585
+    function angleLerp(a0, a1, t) {
+        const da = (a1 - a0) % (Math.PI * 2);
+        return a0 + (2 * da % (Math.PI * 2) - da) * t;
+    }
+    return Robot(r1.index,
+        r1.x * (1 - t) + r2.x * t,
+        r1.y * (1 - t) + r2.y * t,
+        angleLerp(r1.rotation, r2.rotation, t),
+        r1.alpha * (1 - t) + r2.alpha * t)
+}
+
+function drawCanvas(canvas, scenario, robots) {
+    const ctx = canvas.getContext("2d")
+
+    const rect = canvas.getBoundingClientRect()
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+
+    const tileWidth = rect.width / (scenario.width * 1.1 - 0.1)
+    const tileHeight = rect.height / (scenario.height * 1.1 - 0.1)
+
+    const tile = Math.min(tileHeight, tileWidth)
+    const wall = tile / 10
+
+    const offsetLeft = (canvas.width - (scenario.width * tile + (scenario.width - 1) * wall)) / 2
+    const offsetTop = (canvas.height - (scenario.height * tile + (scenario.height - 1) * wall)) / 2
+
+    function left(x) {
+        return offsetLeft + (tile + wall) * x
+    }
+
+    function top(y) {
+        return offsetTop + (tile + wall) * y
+    }
+
+    // scenario:
+    {
+        // tiles:
+        ctx.fillStyle = 'lightgrey'
+        for (let y = 0; y < scenario.height; y++)
+            for (let x = 0; x < scenario.width; x++)
+                ctx.fillRect(left(x), top(y), tile, tile)
+
+        // walls:
+        ctx.fillStyle = 'black'
+        scenario.walls.forEach(function (w) {
+            if (w.direction.Right)
+                ctx.fillRect(left(w.position.x) + tile, top(w.position.y), wall, tile)
+            else if (w.direction.Down)
+                ctx.fillRect(left(w.position.x), top(w.position.y) + tile, tile, wall)
+        })
+
+        // target:
+        {
+            ctx.fillStyle = 'green'
+            ctx.fillRect(left(scenario.targetPosition.x), top(scenario.targetPosition.y), tile, tile)
+        }
+
+        // pits:
+        ctx.fillStyle = 'white'
+        scenario.pits.forEach(pit =>
+            ctx.fillRect(left(pit.x), top(pit.y), tile, tile)
+        )
+    }
+
+
+    // robots:
+    robots.forEach((robot) => {
+        ctx.save()
+        ctx.globalAlpha=robot.alpha;
+        ctx.translate(left(robot.x) + tile / 2, top(robot.y) + tile / 2)
+        ctx.rotate(robot.rotation)
+        ctx.drawImage(images.player(robot.index), -tile / 2, -tile / 2, tile, tile)
+        ctx.restore()
+    })
+}
+
+function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots) {
+    const frameDuration = 400
+    const now = new Date()
+    const passedMillis = now - startTime
+    const frameIndex = Math.floor(passedMillis / frameDuration)
+    const frameProgress = (passedMillis - frameDuration * frameIndex) / frameDuration
+
+    if (!frames || !frames[frameIndex] || !frames[frameIndex + 1]) {
+        drawCanvas(canvas, scenario, newStateRobots)
+    } else {
+        const currentFrame = frames[frameIndex]
+        const nextFrame = frames[frameIndex + 1]
+        const robots = currentFrame.map((robot, index) => interpolateRobots(robot, nextFrame[index], frameProgress))
+        drawCanvas(canvas, scenario, robots)
+        requestAnimationFrame(() => drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots))
+    }
+}
+
+
+function renderCanvas(state, scenario, robots) {
+    return h('canvas.game-view', {
+            hook: {
+                postpatch: (oldVnode, newVnode) => {
+                    drawAnimatedCanvas(newVnode.elm, state.animationStart, scenario, state.animations, robots)
+                },
+                insert: (node) => {
+                    console.log("insert", node)
+                    window.onresize = () => drawCanvas(node.elm, scenario, robots)
+                    drawCanvas(node.elm, scenario, robots)
+                },
+                destroy: () => window.onresize = undefined
+            }
+        }
+    )
+}
+
+function directionToRotation(direction) {
+    if (direction.Up)
+        return 0
+    else if (direction.Right)
+        return 0.5 * Math.PI
+    else if (direction.Down)
+        return Math.PI
+    else if (direction.Left)
+        return 1.5 * Math.PI
+    else
+        throw new Error("unknown direction")
+}
+
+function framesFromEvents(oldGameState, events) {
+    if (oldGameState.GameRunning) {
+        function indexByName(name){
+            return oldGameState.GameRunning.players.find((player) => player.name === name).index
+        }
+
+        let state = oldGameState.GameRunning.players.map(robotFromPlayer)
+        let frames = []
+
+        for (let j = 0; j < events.length; j++) {
+            if(events[j].RobotAction) {
+                frames.push(_.cloneDeep(state))
+            } else if (events[j].RobotMoves) {
+                let i = indexByName(events[j].RobotMoves.playerName)
+                state[i].x = events[j].RobotMoves.to.x
+                state[i].y = events[j].RobotMoves.to.y
+            } else if (events[j].RobotTurns) {
+                let i = indexByName(events[j].RobotTurns.playerName)
+                state[i].rotation = directionToRotation(events[j].RobotTurns.to)
+            }else if(events[j].RobotReset){
+                let i =  indexByName(events[j].RobotReset.playerName)
+                state[i].x = events[j].RobotReset.to.position.x
+                state[i].y = events[j].RobotReset.to.position.y
+                state[i].rotation = events[j].RobotReset.to.direction
+            } else if (events[j].PlayerFinished) {
+                let i =  indexByName(events[j].PlayerFinished.playerName)
+                state[i].alpha = 1.0
+            }
+        }
+        frames.push(_.cloneDeep(state))
+        return frames
+    }
+}
+
+module.exports = {
+    renderCanvas, robotFromPlayer, framesFromEvents
+}
+},{"../common/images":15,"lodash":1,"snabbdom/h":2}],20:[function(require,module,exports){
 function getState(gameId) {
     return fetch("/api/games/" + gameId)
         .then(parseJson)
@@ -18060,14 +18236,14 @@ module.exports = {
     updates
 }
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var _ = require('lodash')
 var h = require('snabbdom/h').default
 var constants = require('../common/constants')
 var button = require('../common/button')
 var modal = require('../common/modal')
 var frame = require('../common/frame')
-var images = require('../common/images')
+var gameBoard = require('./game-board')
 
 function render(state, actionHandler) {
     var m = null
@@ -18102,7 +18278,7 @@ function render(state, actionHandler) {
                 logsButton(actionHandler),
                 playerListButton(actionHandler)
             ]),
-            renderCanvas(state, game.scenario, game.players),
+            gameBoard.renderCanvas(state, game.scenario, game.players.map(gameBoard.robotFromPlayer)),
             renderActionButtons(state, game, actionHandler),
             m)
     } else {
@@ -18171,87 +18347,6 @@ function renderPlayerList(state) {
     ])
 }
 
-function renderCanvas(state, scenario, robotsOrPlayers) {
-    function drawCanvas(canvas){
-        const ctx = canvas.getContext("2d")
-
-        const rect = canvas.getBoundingClientRect()
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-
-        const tileWidth = rect.width/(scenario.width * 1.1 -0.1)
-        const tileHeight = rect.height/(scenario.height * 1.1 -0.1)
-
-        const tile = Math.min(tileHeight, tileWidth)
-        const wall = tile / 10
-
-        const offsetLeft = (canvas.width - (scenario.width * tile + (scenario.width - 1) * wall)) / 2
-        const offsetTop = (canvas.height - (scenario.height * tile + (scenario.height - 1) * wall)) / 2
-
-        function left(x){
-            return offsetLeft + (tile + wall) * x
-        }
-        function top(y){
-            return offsetTop + (tile + wall) * y
-        }
-
-        // scenario:
-        {
-            // tiles:
-            ctx.fillStyle = 'lightgrey'
-            for (let y = 0; y < scenario.height; y++)
-                for (let x = 0; x < scenario.width; x++)
-                    ctx.fillRect(left(x), top(y), tile, tile)
-
-            // walls:
-            ctx.fillStyle = 'black'
-            scenario.walls.forEach(function (w) {
-                if (w.direction.Right)
-                    ctx.fillRect(left(w.position.x) + tile, top(w.position.y), wall, tile)
-                else if (w.direction.Down)
-                    ctx.fillRect(left(w.position.x), top(w.position.y) + tile, tile, wall)
-            })
-
-            // target:
-            {
-                ctx.fillStyle = 'green'
-                ctx.fillRect(left(scenario.targetPosition.x), top(scenario.targetPosition.y), tile, tile)
-            }
-
-            // pits:
-            ctx.fillStyle = 'white'
-            scenario.pits.forEach(pit =>
-                ctx.fillRect(left(pit.x), top(pit.y), tile, tile)
-            )
-        }
-
-
-        // robots:
-        robotsOrPlayers.forEach((player) => {
-            ctx.save()
-            const robot = player.robot
-            ctx.translate(left(robot.position.x) + tile / 2, top(robot.position.y) + tile / 2)
-            console.log(directionToRotation(robot.direction))
-            ctx.rotate(directionToRotation(robot.direction))
-            ctx.drawImage(images.player(player.index), -tile / 2, -tile / 2, tile, tile)
-            ctx.restore()
-        })
-    }
-
-
-    return h('canvas.game-view', {
-            hook: {
-                postpatch: (oldVnode, newVnode) => drawCanvas(newVnode.elm),
-                insert: (node)  => {
-                    window.onresize = () => drawCanvas(node.elm)
-                    drawCanvas(node.elm)
-                },
-                destroy: () => window.onresize = undefined
-            }
-        }
-    )
-}
-
 function renderScenarioPreview(name, scenario, actionHandler){
     return h('article.media', h('div.media-content', [
         h('h4', name),
@@ -18259,37 +18354,19 @@ function renderScenarioPreview(name, scenario, actionHandler){
     ]))
 }
 
-function directionToRotation(direction) {
-    if (direction.Up)
-        return 0
-    else if (direction.Right)
-        return Math.PI/2
-    else if (direction.Down)
-        return Math.PI
-    else if (direction.Left)
-        return Math.PI/2+Math.PI
-    else
-        console.error("unkown direction", direction)
-}
-
 function renderActionButtons(state, game, actionHandler) {
-    const player = game.players.find(function (player) {
-        return player.name === state.player
-    })
-    const slots = state.slots
-
-
+    const player = game.players.find((player) => player.name === state.player)
     function actionSelect(slot) {
-        const options = player ? player.possibleActions.map((action, index) =>
+        const options = player.possibleActions.map((action, index) =>
             h('option',
                 {
                     props: {
-                        selected: slots[slot] === index,
-                        disabled: slots.includes(index) && slots[slot] !== index
+                        selected: state.slots[slot] === index,
+                        disabled: state.slots.includes(index) && state.slots[slot] !== index
                     },
-                    class: {selectedOption: slots[slot] === index}
+                    class: {selectedOption: state.slots[slot] === index}
                 },
-                Object.keys(action)[0])) : []
+                Object.keys(action)[0]))
 
 
         options.unshift(h('option', (slot + 1) + ' unselected'))
@@ -18299,7 +18376,7 @@ function renderActionButtons(state, game, actionHandler) {
                     disabled: !player || player.finished
                 },
                 class: {
-                    selectedOption: slots[slot] !== undefined && slots[slot] !== -1
+                    selectedOption: state.slots[slot] !== undefined && state.slots[slot] !== -1
                 },
                 on: {
                     change: function (event) {
@@ -18329,7 +18406,7 @@ function renderLog(logs) {
 
 module.exports = render
 
-},{"../common/button":12,"../common/constants":13,"../common/frame":14,"../common/images":15,"../common/modal":16,"lodash":1,"snabbdom/h":2}],21:[function(require,module,exports){
+},{"../common/button":12,"../common/constants":13,"../common/frame":14,"../common/modal":16,"./game-board":19,"lodash":1,"snabbdom/h":2}],22:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18342,6 +18419,7 @@ var gameUi = require('./game-ui')
 var gameService = require('./game-service')
 var editorService = require('../editor/editor-service')
 var actions = require('./game-actions')
+var gameBoard = require('./game-board')
 
 function Game(element, player, gameId){
     var node = element
@@ -18366,6 +18444,10 @@ function Game(element, player, gameId){
             const data = JSON.parse(event.data)
             const newGameState = data.state
             const events = data.events
+
+            state.animationStart = new Date()
+            state.animations = gameBoard.framesFromEvents(state.game, events)
+
             state.game = newGameState
             state.logs = state.logs.concat(data.textLog)
             if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) state.slots = []
@@ -18381,12 +18463,16 @@ function Game(element, player, gameId){
                 slots: [],
                 logs: [],
                 modal: 'none',
-                scenarios: scenarios
+                scenarios: scenarios,
+                animations: [],
+                animationStart: undefined
             }, element)
         }).catch(function (ex) {
+            console.error(ex)
             document.location = '/'
         })
     }).catch(function (ex) {
+        console.error(ex)
         document.location = '/'
     })
 
@@ -18394,7 +18480,7 @@ function Game(element, player, gameId){
 }
 
 module.exports = Game
-},{"../editor/editor-service":17,"./game-actions":18,"./game-service":19,"./game-ui":20,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],22:[function(require,module,exports){
+},{"../editor/editor-service":17,"./game-actions":18,"./game-board":19,"./game-service":20,"./game-ui":21,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],23:[function(require,module,exports){
 var Lobby = require('./lobby/lobby')
 var Game = require('./game/game')
 
@@ -18408,7 +18494,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Lobby(container, player)
 })
 
-},{"./game/game":21,"./lobby/lobby":26}],23:[function(require,module,exports){
+},{"./game/game":22,"./lobby/lobby":27}],24:[function(require,module,exports){
 var _ = require('lodash')
 var lobbyService = require('./lobby-service')
 
@@ -18436,7 +18522,7 @@ function actions(state, action) {
 }
 
 module.exports = actions
-},{"./lobby-service":24,"lodash":1}],24:[function(require,module,exports){
+},{"./lobby-service":25,"lodash":1}],25:[function(require,module,exports){
 function getAllGames() {
   return fetch("/api/games")
       .then(parseJson)
@@ -18465,7 +18551,7 @@ module.exports = {
   updates
 }
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 var h = require('snabbdom/h').default
 var button = require('../common/button')
 var modal = require('../common/modal')
@@ -18541,7 +18627,7 @@ function renderLoginModal(player, actionHandler) {
 }
 
 module.exports = render
-},{"../common/button":12,"../common/frame":14,"../common/modal":16,"snabbdom/h":2}],26:[function(require,module,exports){
+},{"../common/button":12,"../common/frame":14,"../common/modal":16,"snabbdom/h":2}],27:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18595,4 +18681,4 @@ function Lobby(element, player) {
 }
 
 module.exports = Lobby
-},{"./lobby-actions":23,"./lobby-service":24,"./lobby-ui":25,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[22]);
+},{"./lobby-actions":24,"./lobby-service":25,"./lobby-ui":26,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[23]);

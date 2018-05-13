@@ -4,7 +4,6 @@ sealed abstract class EventLog(val text: String)
 
 case class GameStarted() extends EventLog("Game Started")
 
-case class NextRobotForActionDefined(playerName: String) extends EventLog(s"'$playerName' is next.")
 case class RobotAction(playerName: String, action: Action) extends EventLog(s"'$playerName' does '$action'")
 case class RobotMoves(playerName: String, to: Position) extends EventLog(s"'$playerName' moves to $to")
 case class RobotTurns(playerName: String, to: Direction) extends EventLog(s"'$playerName' turns $to")

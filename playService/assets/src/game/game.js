@@ -10,6 +10,7 @@ var gameUi = require('./game-ui')
 var gameService = require('./game-service')
 var editorService = require('../editor/editor-service')
 var actions = require('./game-actions')
+var gameBoard = require('./game-board')
 
 function Game(element, player, gameId){
     var node = element
@@ -34,6 +35,10 @@ function Game(element, player, gameId){
             const data = JSON.parse(event.data)
             const newGameState = data.state
             const events = data.events
+
+            state.animationStart = new Date()
+            state.animations = gameBoard.framesFromEvents(state.game, events)
+
             state.game = newGameState
             state.logs = state.logs.concat(data.textLog)
             if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) state.slots = []
@@ -49,12 +54,16 @@ function Game(element, player, gameId){
                 slots: [],
                 logs: [],
                 modal: 'none',
-                scenarios: scenarios
+                scenarios: scenarios,
+                animations: [],
+                animationStart: undefined
             }, element)
         }).catch(function (ex) {
+            console.error(ex)
             document.location = '/'
         })
     }).catch(function (ex) {
+        console.error(ex)
         document.location = '/'
     })
 

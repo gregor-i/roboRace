@@ -4,7 +4,7 @@ var constants = require('../common/constants')
 var button = require('../common/button')
 var modal = require('../common/modal')
 var frame = require('../common/frame')
-var images = require('../common/images')
+var gameBoard = require('./game-board')
 
 function render(state, actionHandler) {
     var m = null
@@ -39,7 +39,7 @@ function render(state, actionHandler) {
                 logsButton(actionHandler),
                 playerListButton(actionHandler)
             ]),
-            renderCanvas(state, game.scenario, game.players),
+            gameBoard.renderCanvas(state, game.scenario, game.players.map(gameBoard.robotFromPlayer)),
             renderActionButtons(state, game, actionHandler),
             m)
     } else {
@@ -108,87 +108,6 @@ function renderPlayerList(state) {
     ])
 }
 
-function renderCanvas(state, scenario, robotsOrPlayers) {
-    function drawCanvas(canvas){
-        const ctx = canvas.getContext("2d")
-
-        const rect = canvas.getBoundingClientRect()
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-
-        const tileWidth = rect.width/(scenario.width * 1.1 -0.1)
-        const tileHeight = rect.height/(scenario.height * 1.1 -0.1)
-
-        const tile = Math.min(tileHeight, tileWidth)
-        const wall = tile / 10
-
-        const offsetLeft = (canvas.width - (scenario.width * tile + (scenario.width - 1) * wall)) / 2
-        const offsetTop = (canvas.height - (scenario.height * tile + (scenario.height - 1) * wall)) / 2
-
-        function left(x){
-            return offsetLeft + (tile + wall) * x
-        }
-        function top(y){
-            return offsetTop + (tile + wall) * y
-        }
-
-        // scenario:
-        {
-            // tiles:
-            ctx.fillStyle = 'lightgrey'
-            for (let y = 0; y < scenario.height; y++)
-                for (let x = 0; x < scenario.width; x++)
-                    ctx.fillRect(left(x), top(y), tile, tile)
-
-            // walls:
-            ctx.fillStyle = 'black'
-            scenario.walls.forEach(function (w) {
-                if (w.direction.Right)
-                    ctx.fillRect(left(w.position.x) + tile, top(w.position.y), wall, tile)
-                else if (w.direction.Down)
-                    ctx.fillRect(left(w.position.x), top(w.position.y) + tile, tile, wall)
-            })
-
-            // target:
-            {
-                ctx.fillStyle = 'green'
-                ctx.fillRect(left(scenario.targetPosition.x), top(scenario.targetPosition.y), tile, tile)
-            }
-
-            // pits:
-            ctx.fillStyle = 'white'
-            scenario.pits.forEach(pit =>
-                ctx.fillRect(left(pit.x), top(pit.y), tile, tile)
-            )
-        }
-
-
-        // robots:
-        robotsOrPlayers.forEach((player) => {
-            ctx.save()
-            const robot = player.robot
-            ctx.translate(left(robot.position.x) + tile / 2, top(robot.position.y) + tile / 2)
-            console.log(directionToRotation(robot.direction))
-            ctx.rotate(directionToRotation(robot.direction))
-            ctx.drawImage(images.player(player.index), -tile / 2, -tile / 2, tile, tile)
-            ctx.restore()
-        })
-    }
-
-
-    return h('canvas.game-view', {
-            hook: {
-                postpatch: (oldVnode, newVnode) => drawCanvas(newVnode.elm),
-                insert: (node)  => {
-                    window.onresize = () => drawCanvas(node.elm)
-                    drawCanvas(node.elm)
-                },
-                destroy: () => window.onresize = undefined
-            }
-        }
-    )
-}
-
 function renderScenarioPreview(name, scenario, actionHandler){
     return h('article.media', h('div.media-content', [
         h('h4', name),
@@ -196,37 +115,19 @@ function renderScenarioPreview(name, scenario, actionHandler){
     ]))
 }
 
-function directionToRotation(direction) {
-    if (direction.Up)
-        return 0
-    else if (direction.Right)
-        return Math.PI/2
-    else if (direction.Down)
-        return Math.PI
-    else if (direction.Left)
-        return Math.PI/2+Math.PI
-    else
-        console.error("unkown direction", direction)
-}
-
 function renderActionButtons(state, game, actionHandler) {
-    const player = game.players.find(function (player) {
-        return player.name === state.player
-    })
-    const slots = state.slots
-
-
+    const player = game.players.find((player) => player.name === state.player)
     function actionSelect(slot) {
-        const options = player ? player.possibleActions.map((action, index) =>
+        const options = player.possibleActions.map((action, index) =>
             h('option',
                 {
                     props: {
-                        selected: slots[slot] === index,
-                        disabled: slots.includes(index) && slots[slot] !== index
+                        selected: state.slots[slot] === index,
+                        disabled: state.slots.includes(index) && state.slots[slot] !== index
                     },
-                    class: {selectedOption: slots[slot] === index}
+                    class: {selectedOption: state.slots[slot] === index}
                 },
-                Object.keys(action)[0])) : []
+                Object.keys(action)[0]))
 
 
         options.unshift(h('option', (slot + 1) + ' unselected'))
@@ -236,7 +137,7 @@ function renderActionButtons(state, game, actionHandler) {
                     disabled: !player || player.finished
                 },
                 class: {
-                    selectedOption: slots[slot] !== undefined && slots[slot] !== -1
+                    selectedOption: state.slots[slot] !== undefined && state.slots[slot] !== -1
                 },
                 on: {
                     change: function (event) {
