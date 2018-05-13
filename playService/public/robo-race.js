@@ -17880,10 +17880,8 @@ function builder(props) {
 }
 
 function group() {
-    var args = Array.prototype.slice.call(arguments);
-    var wrappedInControl = args.map(function (button) {
-        return h('span.control', button)
-    })
+    var args = Array.prototype.slice.call(arguments)
+    var wrappedInControl = args.map((button) => h('span.control', button))
     return h('div.field.has-addons', wrappedInControl)
 }
 
@@ -17896,7 +17894,8 @@ module.exports = {
 
 },{"lodash":1,"snabbdom/h":2}],13:[function(require,module,exports){
 module.exports = {
-    numberOfActionsPerCycle: 5
+    numberOfActionsPerCycle: 5,
+    animationFrameDuration: 400
 }
 },{}],14:[function(require,module,exports){
 var h = require('snabbdom/h').default
@@ -17978,9 +17977,7 @@ module.exports = {
 },{}],18:[function(require,module,exports){
 var _ = require('lodash')
 var gameService = require('./game-service')
-// var animations = require('./animations')
 var constants = require('../common/constants')
-var gameBoard = require('./game-board')
 
 function actions(state, action) {
     if (action.leaveGame)
@@ -18011,10 +18008,11 @@ function actions(state, action) {
 }
 
 module.exports = actions
-},{"../common/constants":13,"./game-board":19,"./game-service":20,"lodash":1}],19:[function(require,module,exports){
+},{"../common/constants":13,"./game-service":20,"lodash":1}],19:[function(require,module,exports){
 var _ = require('lodash')
 var h = require('snabbdom/h').default
 var images = require('../common/images')
+var constants = require('../common/constants')
 
 function Robot(index, x, y, rotation, alpha) {
     return {index, x, y, rotation, alpha}
@@ -18027,8 +18025,8 @@ function robotFromPlayer(player) {
 function interpolateRobots(r1, r2, t){
     // https://gist.github.com/shaunlebron/8832585
     function angleLerp(a0, a1, t) {
-        const da = (a1 - a0) % (Math.PI * 2);
-        return a0 + (2 * da % (Math.PI * 2) - da) * t;
+        const da = (a1 - a0) % (Math.PI * 2)
+        return a0 + (2 * da % (Math.PI * 2) - da) * t
     }
     return Robot(r1.index,
         r1.x * (1 - t) + r2.x * t,
@@ -18041,8 +18039,8 @@ function drawCanvas(canvas, scenario, robots) {
     const ctx = canvas.getContext("2d")
 
     const rect = canvas.getBoundingClientRect()
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    canvas.width = rect.width
+    canvas.height = rect.height
 
     const tileWidth = rect.width / (scenario.width * 1.1 - 0.1)
     const tileHeight = rect.height / (scenario.height * 1.1 - 0.1)
@@ -18095,7 +18093,7 @@ function drawCanvas(canvas, scenario, robots) {
     // robots:
     robots.forEach((robot) => {
         ctx.save()
-        ctx.globalAlpha=robot.alpha;
+        ctx.globalAlpha = robot.alpha
         ctx.translate(left(robot.x) + tile / 2, top(robot.y) + tile / 2)
         ctx.rotate(robot.rotation)
         ctx.drawImage(images.player(robot.index), -tile / 2, -tile / 2, tile, tile)
@@ -18104,11 +18102,10 @@ function drawCanvas(canvas, scenario, robots) {
 }
 
 function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots) {
-    const frameDuration = 400
     const now = new Date()
     const passedMillis = now - startTime
-    const frameIndex = Math.floor(passedMillis / frameDuration)
-    const frameProgress = (passedMillis - frameDuration * frameIndex) / frameDuration
+    const frameIndex = Math.floor(passedMillis / constants.animationFrameDuration)
+    const frameProgress = (passedMillis - constants.animationFrameDuration * frameIndex) / constants.animationFrameDuration
 
     if (!frames || !frames[frameIndex] || !frames[frameIndex + 1]) {
         drawCanvas(canvas, scenario, newStateRobots)
@@ -18129,7 +18126,6 @@ function renderCanvas(state, scenario, robots) {
                     drawAnimatedCanvas(newVnode.elm, state.animationStart, scenario, state.animations, robots)
                 },
                 insert: (node) => {
-                    console.log("insert", node)
                     window.onresize = () => drawCanvas(node.elm, scenario, robots)
                     drawCanvas(node.elm, scenario, robots)
                 },
@@ -18189,7 +18185,7 @@ function framesFromEvents(oldGameState, events) {
 module.exports = {
     renderCanvas, robotFromPlayer, framesFromEvents
 }
-},{"../common/images":15,"lodash":1,"snabbdom/h":2}],20:[function(require,module,exports){
+},{"../common/constants":13,"../common/images":15,"lodash":1,"snabbdom/h":2}],20:[function(require,module,exports){
 function getState(gameId) {
     return fetch("/api/games/" + gameId)
         .then(parseJson)
@@ -18220,7 +18216,7 @@ function defineScenario(gameId, scenario) {
 }
 
 function updates(gameId) {
-    return new EventSource("/api/games/" + gameId + "/events");
+    return new EventSource("/api/games/" + gameId + "/events")
 }
 
 function parseJson(resp) {
@@ -18487,7 +18483,7 @@ var Game = require('./game/game')
 document.addEventListener('DOMContentLoaded', function () {
     var container = document.getElementById('robo-race')
     var player = localStorage.getItem('playerName')
-    var gameId = document.body.dataset.gameId;
+    var gameId = document.body.dataset.gameId
     if(gameId && player)
         Game(container, player, gameId)
     else
@@ -18541,7 +18537,7 @@ function parseJson(resp) {
 }
 
 function updates() {
-    return new EventSource("/api/games/events");
+    return new EventSource("/api/games/events")
 }
 
 module.exports = {

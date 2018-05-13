@@ -1,3 +1,4 @@
 module.exports = {
-    numberOfActionsPerCycle: 5
+    numberOfActionsPerCycle: 5,
+    animationFrameDuration: 400
 }

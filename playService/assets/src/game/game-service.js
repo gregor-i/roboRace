@@ -28,7 +28,7 @@ function defineScenario(gameId, scenario) {
 }
 
 function updates(gameId) {
-    return new EventSource("/api/games/" + gameId + "/events");
+    return new EventSource("/api/games/" + gameId + "/events")
 }
 
 function parseJson(resp) {

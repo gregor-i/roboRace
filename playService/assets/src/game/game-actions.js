@@ -1,8 +1,6 @@
 var _ = require('lodash')
 var gameService = require('./game-service')
-// var animations = require('./animations')
 var constants = require('../common/constants')
-var gameBoard = require('./game-board')
 
 function actions(state, action) {
     if (action.leaveGame)

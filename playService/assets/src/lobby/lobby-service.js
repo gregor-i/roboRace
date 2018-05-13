@@ -16,7 +16,7 @@ function parseJson(resp) {
 }
 
 function updates() {
-    return new EventSource("/api/games/events");
+    return new EventSource("/api/games/events")
 }
 
 module.exports = {

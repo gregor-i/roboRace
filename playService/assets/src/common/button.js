@@ -29,10 +29,8 @@ function builder(props) {
 }
 
 function group() {
-    var args = Array.prototype.slice.call(arguments);
-    var wrappedInControl = args.map(function (button) {
-        return h('span.control', button)
-    })
+    var args = Array.prototype.slice.call(arguments)
+    var wrappedInControl = args.map((button) => h('span.control', button))
     return h('div.field.has-addons', wrappedInControl)
 }
 

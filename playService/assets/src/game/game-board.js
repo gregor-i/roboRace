@@ -1,6 +1,7 @@
 var _ = require('lodash')
 var h = require('snabbdom/h').default
 var images = require('../common/images')
+var constants = require('../common/constants')
 
 function Robot(index, x, y, rotation, alpha) {
     return {index, x, y, rotation, alpha}
@@ -13,8 +14,8 @@ function robotFromPlayer(player) {
 function interpolateRobots(r1, r2, t){
     // https://gist.github.com/shaunlebron/8832585
     function angleLerp(a0, a1, t) {
-        const da = (a1 - a0) % (Math.PI * 2);
-        return a0 + (2 * da % (Math.PI * 2) - da) * t;
+        const da = (a1 - a0) % (Math.PI * 2)
+        return a0 + (2 * da % (Math.PI * 2) - da) * t
     }
     return Robot(r1.index,
         r1.x * (1 - t) + r2.x * t,
@@ -27,8 +28,8 @@ function drawCanvas(canvas, scenario, robots) {
     const ctx = canvas.getContext("2d")
 
     const rect = canvas.getBoundingClientRect()
-    canvas.width = rect.width;
-    canvas.height = rect.height;
+    canvas.width = rect.width
+    canvas.height = rect.height
 
     const tileWidth = rect.width / (scenario.width * 1.1 - 0.1)
     const tileHeight = rect.height / (scenario.height * 1.1 - 0.1)
@@ -81,7 +82,7 @@ function drawCanvas(canvas, scenario, robots) {
     // robots:
     robots.forEach((robot) => {
         ctx.save()
-        ctx.globalAlpha=robot.alpha;
+        ctx.globalAlpha = robot.alpha
         ctx.translate(left(robot.x) + tile / 2, top(robot.y) + tile / 2)
         ctx.rotate(robot.rotation)
         ctx.drawImage(images.player(robot.index), -tile / 2, -tile / 2, tile, tile)
@@ -90,11 +91,10 @@ function drawCanvas(canvas, scenario, robots) {
 }
 
 function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots) {
-    const frameDuration = 400
     const now = new Date()
     const passedMillis = now - startTime
-    const frameIndex = Math.floor(passedMillis / frameDuration)
-    const frameProgress = (passedMillis - frameDuration * frameIndex) / frameDuration
+    const frameIndex = Math.floor(passedMillis / constants.animationFrameDuration)
+    const frameProgress = (passedMillis - constants.animationFrameDuration * frameIndex) / constants.animationFrameDuration
 
     if (!frames || !frames[frameIndex] || !frames[frameIndex + 1]) {
         drawCanvas(canvas, scenario, newStateRobots)
@@ -115,7 +115,6 @@ function renderCanvas(state, scenario, robots) {
                     drawAnimatedCanvas(newVnode.elm, state.animationStart, scenario, state.animations, robots)
                 },
                 insert: (node) => {
-                    console.log("insert", node)
                     window.onresize = () => drawCanvas(node.elm, scenario, robots)
                     drawCanvas(node.elm, scenario, robots)
                 },
