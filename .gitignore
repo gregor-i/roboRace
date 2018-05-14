@@ -11,4 +11,5 @@ temp/
 
 gameRepo.json
 
+package-lock.json
 .heroku
