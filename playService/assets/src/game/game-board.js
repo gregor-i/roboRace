@@ -46,80 +46,95 @@ function drawCanvas(canvas, scenario, robots) {
   const offsetTop = (canvas.height - (scenario.height * tile + (scenario.height - 1) * wall)) / 2
 
   function left(x, y) {
-    return offsetLeft + (3 * hexagonSideLength) * x + ((y % 2 != 0) ? 1.5 * hexagonSideLength : 0)
+    return offsetLeft + (1.5 * hexagonSideLength) * x + x*wall
   }
 
   function top(x, y) {
-    return offsetTop + (hexagonHeight / 2) * y
+    return offsetTop + hexagonHeight * y + (x % 2) * (hexagonHeight+wall) /2 + y * wall
   }
 
   // scenario:
   {
+
+    const k = Math.sqrt(3) / 2
+    function hexagon(x, y, callback){
+      ctx.save()
+      ctx.translate(left(x, y) + hexagonSideLength, top(x, y) + hexagonSideLength)
+      ctx.beginPath()
+      ctx.moveTo(-hexagonSideLength, 0)
+      ctx.lineTo(-0.5 * hexagonSideLength, k * hexagonSideLength)
+      ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength)
+      ctx.lineTo(hexagonSideLength, 0)
+      ctx.lineTo(0.5 * hexagonSideLength, -k * hexagonSideLength)
+      ctx.lineTo(-0.5 * hexagonSideLength, -k * hexagonSideLength)
+      ctx.lineTo(- hexagonSideLength, 0)
+      callback()
+      ctx.fillText(x + " - " + y, -1 / 2 * hexagonSideLength + 2, -k * hexagonSideLength + 10)
+      ctx.restore()
+    }
 
     ctx.fillStyle = 'black'
     ctx.fillRect(0, 0, 5, hexagonHeight)
     ctx.fillRect(0, 0, hexagonHeight, 5)
     ctx.fillRect(10, 10, 5, hexagonSideLength)
     ctx.fillRect(10, 10, hexagonSideLength, 5)
-    console.log("left(2, 0)", left(2, 0))
     // tiles:
     for (let y = 0; y < scenario.height; y++)
       for (let x = 0; x < scenario.width; x++) {
-        ctx.save()
-        ctx.translate(left(x, y) + hexagonSideLength, top(x, y) + hexagonSideLength)
-        ctx.beginPath()
-        ctx.moveTo(-1 * hexagonSideLength, 0)
-        ctx.lineTo(-1 / 2 * hexagonSideLength, Math.sqrt(3) / 2 * hexagonSideLength)
-        ctx.lineTo(1 / 2 * hexagonSideLength, Math.sqrt(3) / 2 * hexagonSideLength)
-        ctx.lineTo(hexagonSideLength, 0)
-        ctx.lineTo(1 / 2 * hexagonSideLength, -Math.sqrt(3) / 2 * hexagonSideLength)
-        ctx.lineTo(-1 / 2 * hexagonSideLength, -Math.sqrt(3) / 2 * hexagonSideLength)
-        ctx.lineTo(-1 * hexagonSideLength, 0)
-        ctx.fillStyle = 'lightgrey'
-        ctx.stroke()
-
-        ctx.fillStyle = 'black'
-        ctx.fillRect(0,0,1,1)
-        ctx.fillText(x + " - " + y, -1 / 2 * hexagonSideLength + 2, -Math.sqrt(3) / 2 * hexagonSideLength + 10)
-        ctx.restore()
+        hexagon(x, y, () => {
+              ctx.fillStyle = 'lightgrey'
+              ctx.stroke()
+              ctx.fillStyle = 'black'
+              ctx.fillRect(0, 0, 1, 1)
+            }
+        )
       }
 
     // walls:
-    // ctx.fillStyle = 'black'
-    // scenario.walls.forEach(function (w) {
-    //     if (w.direction.Right)
-    //         ctx.fillRect(left(w.position.x, w.position.y) + tile, top(w.position.x, w.position.y), wall, tile)
-    //     else if (w.direction.Down)
-    //         ctx.fillRect(left(w.position.x, w.position.y), top(w.position.x, w.position.y) + tile, tile, wall)
-    // })
+    ctx.fillStyle = 'black'
+    scenario.walls.forEach(function (w) {
+        if (w.direction.Right)
+            ctx.fillRect(left(w.position.x, w.position.y) + tile, top(w.position.x, w.position.y), wall, tile)
+        else if (w.direction.Down) {
+          hexagon(w.position.x, w.position.y, () => {
+            ctx.fillStyle = 'blue'
+            ctx.beginPath()
+            ctx.lineTo(-0.5 * hexagonSideLength, k * hexagonSideLength)
+            ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength)
+            ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength + wall)
+            ctx.lineTo(-0.5 * hexagonSideLength, k * hexagonSideLength + wall)
+            ctx.fill()
+            ctx.fillStyle = 'lightgrey'
+            ctx.stroke()
+            ctx.fillStyle = 'black'
+            ctx.fillRect(0, 0, 1, 1)
+          })
+        }
+    })
 
     // target:
     {
       ctx.fillStyle = 'green'
       const x = scenario.targetPosition.x
       const y = scenario.targetPosition.y
-      ctx.save()
-      ctx.translate(left(x, y) + hexagonSideLength, top(x, y) + hexagonSideLength)
-      ctx.beginPath()
-      ctx.moveTo(-1 * hexagonSideLength, 0 * hexagonSideLength)
-      ctx.lineTo(-1 / 2 * hexagonSideLength, Math.sqrt(3) / 2 * hexagonSideLength)
-      ctx.lineTo(1 / 2 * hexagonSideLength, Math.sqrt(3) / 2 * hexagonSideLength)
-      ctx.lineTo(1 * hexagonSideLength, 0 * hexagonSideLength)
-      ctx.lineTo(1 / 2 * hexagonSideLength, -Math.sqrt(3) / 2 * hexagonSideLength)
-      ctx.lineTo(-1 / 2 * hexagonSideLength, -Math.sqrt(3) / 2 * hexagonSideLength)
-      ctx.lineTo(-1 * hexagonSideLength, 0 * hexagonSideLength)
-      ctx.fill()
-
-
-      ctx.fillText(x + ", " + y, -1 / 2 * hexagonSideLength + 2, -Math.sqrt(3) / 2 * hexagonSideLength + 10)
-      ctx.restore()
+      hexagon(x, y, () => {
+        ctx.fillStyle = 'green'
+        ctx.fill()
+        ctx.strokeStyle = 'black';
+        ctx.stroke()
+      })
     }
 
     // pits:
-    // ctx.fillStyle = 'white'
-    // scenario.pits.forEach(pit =>
-    //     ctx.fillRect(left(pit.x, pit.y), top(pit.x, pit.y), tile, tile)
-    // )
+    ctx.fillStyle = 'white'
+    scenario.pits.forEach(pit =>
+        hexagon(pit.x, pit.y, () => {
+          ctx.fillStyle = 'grey';
+          ctx.fill()
+          ctx.strokeStyle = 'black';
+          ctx.stroke()
+        })
+    )
   }
 
 

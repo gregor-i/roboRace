@@ -32,9 +32,9 @@ object MoveRobots {
   def pushRobots(position: Position, direction: Direction, gameRunning: GameRunning): Logged[GameRunning] =
     gameRunning.players.find(_.robot.position == position) match {
       case Some(player) =>
-        val nextPos = player.robot.position.move(direction)
+        val nextPos = direction(position)
         for {
-          rec <- pushRobots(position.move(direction), direction, gameRunning)
+          rec <- pushRobots(nextPos, direction, gameRunning)
           nextState <- Events.move(player, nextPos)(rec)
         } yield nextState
       case None => Logged.pure(gameRunning)
@@ -43,19 +43,22 @@ object MoveRobots {
 
   private def movementIsAllowed(game: GameRunning, position: Position, direction: Direction): Boolean = {
     val downWalls = game.scenario.walls.filter(_.direction == Down).map(_.position)
-    val rightWalls = game.scenario.walls.filter(_.direction == Right).map(_.position)
-    //    if (game.scenario.beaconPosition == position.move(direction))
-    //      false
-    if (direction == Down && downWalls.contains(position))
+    val downRightWalls = game.scenario.walls.filter(_.direction == DownRight).map(_.position)
+    val upRightWalls = game.scenario.walls.filter(_.direction == UpRight).map(_.position)
+    //        if (game.scenario.beaconPosition == position.move(direction))
+    //          false
+    val blockedByWall = direction match {
+      case Up => downWalls.contains(Up(position))
+      case UpRight => upRightWalls.contains(position)
+      case DownRight => downRightWalls.contains(position)
+      case Down => downWalls.contains(position)
+      case DownLeft => upRightWalls.contains(UpRight(position))
+      case UpLeft => downRightWalls.contains(DownRight(position))
+    }
+    if (blockedByWall)
       false
-    else if (direction == Right && rightWalls.contains(position))
-      false
-    else if (direction == Up && downWalls.contains(position.move(Up)))
-      false
-    else if (direction == Left && rightWalls.contains(position.move(Left)))
-      false
-    else if (game.players.exists(_.robot.position == position.move(direction)))
-      movementIsAllowed(game, position.move(direction), direction)
+    else if (game.players.exists(_.robot.position == direction(position)))
+      movementIsAllowed(game, direction(position), direction)
     else
       true
   }
