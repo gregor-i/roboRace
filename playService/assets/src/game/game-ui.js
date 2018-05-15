@@ -5,6 +5,8 @@ var button = require('../common/button')
 var modal = require('../common/modal')
 var frame = require('../common/frame')
 var gameBoard = require('./game-board')
+var images = require('../common/images')
+
 
 function render(state, actionHandler) {
     var m = null
@@ -89,10 +91,10 @@ function renderPlayerList(state) {
     else if (state.game.GameFinished)
         players = state.game.GameFinished.players
 
-    var rows = players.map(function (player, index) {
+    var rows = players.map(function (player) {
         return h('tr', [
             h('td', h('img', {
-                props: {src: '/assets/gem' + (index + 1) + '.png'},
+                props: {src: images.player(player.index).src},
                 style: {'max-width': '20px', 'max-height': '20px'}
             })),
             h('td', player.name),

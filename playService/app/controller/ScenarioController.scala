@@ -22,8 +22,12 @@ class ScenarioController @Inject()(ws: WSClient)(implicit ex: ExecutionContext)
   val token = "5a9e4214"
   val key = "robo-race"
 
-  def get() = Action.async {
+  /*def get() = Action.async {
     load().map(values => Ok(values.asJson))
+  }*/
+
+  def get() = Action{
+    Ok(Map("default" -> GameScenario.default).asJson)
   }
 
   def post() = Action.async(circe.tolerantJson[GameScenario]) { request =>
