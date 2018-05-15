@@ -18009,10 +18009,10 @@ function actions(state, action) {
 
 module.exports = actions
 },{"../common/constants":13,"./game-service":20,"lodash":1}],19:[function(require,module,exports){
-var _ = require('lodash')
-var h = require('snabbdom/h').default
-var images = require('../common/images')
-var constants = require('../common/constants')
+const _ = require('lodash')
+const h = require('snabbdom/h').default
+const images = require('../common/images')
+const constants = require('../common/constants')
 
 function Robot(index, x, y, rotation, alpha) {
   return {index, x, y, rotation, alpha}
@@ -18030,10 +18030,10 @@ function interpolateRobots(r1, r2, t) {
   }
 
   return Robot(r1.index,
-      r1.x * (1 - t) + r2.x * t,
-      r1.y * (1 - t) + r2.y * t,
-      angleLerp(r1.rotation, r2.rotation, t),
-      r1.alpha * (1 - t) + r2.alpha * t)
+    r1.x * (1 - t) + r2.x * t,
+    r1.y * (1 - t) + r2.y * t,
+    angleLerp(r1.rotation, r2.rotation, t),
+    r1.alpha * (1 - t) + r2.alpha * t)
 }
 
 function drawCanvas(canvas, scenario, robots) {
@@ -18046,32 +18046,35 @@ function drawCanvas(canvas, scenario, robots) {
   canvas.height = height
 
   const tileWidth = width / scenario.width
-    const tileHeight = height / (scenario.height + 0.1 * (scenario.height - 1) + 0.5 + 2 * 0.1)
+  const tileHeight = height / (scenario.height + 0.1 * (scenario.height - 1) + 0.5 + 2 * 0.1)
 
   const tile = Math.min(tileHeight, tileWidth)
 
   const wall = tile / 10
   const hexagonSideLength = tile / Math.sqrt(3)
 
-
-    const offsetTop = (canvas.height - (scenario.height * tile + (scenario.height - 1) * wall + 0.5 * tile + 2 * wall)) / 2
-    const offsetLeft = (canvas.width - scenario.width * tile ) / 2
-
-    console.log("0,0", left(0,0), top(0,0))
+  const offsetTop = (canvas.height - (scenario.height * tile + (scenario.height - 1) * wall + 0.5 * tile + 2 * wall)) / 2
+  const offsetLeft = (canvas.width - scenario.width * tile) / 2
 
   function left(x, y) {
-    return offsetLeft + (1.5 * hexagonSideLength) * x + x*wall
+    return offsetLeft + (1.5 * hexagonSideLength) * x + x * wall
   }
 
   function top(x, y) {
-    return offsetTop + tile * y + (x % 2) * (tile+wall) /2 + y * wall
+    function saw(x) {
+      const m = x % 2
+      if (m > 1) return 2 - m
+      else return m
+    }
+
+    return offsetTop + tile * y + y * wall + saw(x) * (tile + wall) / 2
   }
 
   // scenario:
   {
-
     const k = Math.sqrt(3) / 2
-    function hexagon(x, y, callback){
+
+    function hexagon(x, y, callback) {
       ctx.save()
       ctx.translate(left(x, y) + hexagonSideLength, top(x, y) + hexagonSideLength)
       ctx.beginPath()
@@ -18081,58 +18084,58 @@ function drawCanvas(canvas, scenario, robots) {
       ctx.lineTo(hexagonSideLength, 0)
       ctx.lineTo(0.5 * hexagonSideLength, -k * hexagonSideLength)
       ctx.lineTo(-0.5 * hexagonSideLength, -k * hexagonSideLength)
-      ctx.lineTo(- hexagonSideLength, 0)
+      ctx.lineTo(-hexagonSideLength, 0)
       callback()
-        ctx.fillStyle = 'black'
+      ctx.fillStyle = 'black'
       ctx.fillText(x + ' - ' + y, -1 / 2 * hexagonSideLength + 2, -k * hexagonSideLength + 10)
       ctx.restore()
     }
 
     ctx.fillStyle = 'black'
-    ctx.strokeRect(0,0,width, height)
+    ctx.strokeRect(0, 0, width, height)
 
 
     // tiles:
     for (let y = 0; y < scenario.height; y++)
       for (let x = 0; x < scenario.width; x++) {
         hexagon(x, y, () => {
-              ctx.fillStyle = 'lightgrey'
-              ctx.fill()
-              ctx.stroke()
-            }
+            ctx.fillStyle = 'lightgrey'
+            ctx.fill()
+            ctx.stroke()
+          }
         )
       }
 
     // walls:
     ctx.fillStyle = 'black'
-  const ox = wall *Math.sqrt(3)/2
-  const oy = wall /2
+    const ox = wall * Math.sqrt(3) / 2
+    const oy = wall / 2
     scenario.walls.forEach(function (w) {
-          hexagon(w.position.x, w.position.y, () => {
-            ctx.fillStyle = 'black'
-            ctx.beginPath()
-              if (w.direction.Down) {
-                  ctx.moveTo(-0.5 * hexagonSideLength, k * hexagonSideLength)
-                  ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength)
-                  ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength + wall)
-                  ctx.lineTo(-0.5 * hexagonSideLength, k * hexagonSideLength + wall)
-              }else if(w.direction.DownRight){
-                  ctx.moveTo(0.5 * hexagonSideLength, k * hexagonSideLength)
-                  ctx.lineTo(hexagonSideLength, 0)
-                  ctx.lineTo(hexagonSideLength+ox, oy)
-                  ctx.lineTo(0.5 * hexagonSideLength+ox, k * hexagonSideLength+oy)
-              }else if(w.direction.UpRight){
-                  ctx.moveTo(hexagonSideLength, 0)
-                  ctx.lineTo(0.5 * hexagonSideLength, -k * hexagonSideLength)
-                  ctx.lineTo(0.5 * hexagonSideLength+ox, -k * hexagonSideLength-oy)
-                  ctx.lineTo(hexagonSideLength+ox, -oy)
-              }else{
-                console.error("unknown wall direction")
-              }
-            ctx.fill()
-            ctx.fillStyle = 'lightgrey'
-            ctx.stroke()
-          })
+      hexagon(w.position.x, w.position.y, () => {
+        ctx.fillStyle = 'black'
+        ctx.beginPath()
+        if (w.direction.Down) {
+          ctx.moveTo(-0.5 * hexagonSideLength, k * hexagonSideLength)
+          ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength)
+          ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength + wall)
+          ctx.lineTo(-0.5 * hexagonSideLength, k * hexagonSideLength + wall)
+        } else if (w.direction.DownRight) {
+          ctx.moveTo(0.5 * hexagonSideLength, k * hexagonSideLength)
+          ctx.lineTo(hexagonSideLength, 0)
+          ctx.lineTo(hexagonSideLength + ox, oy)
+          ctx.lineTo(0.5 * hexagonSideLength + ox, k * hexagonSideLength + oy)
+        } else if (w.direction.UpRight) {
+          ctx.moveTo(hexagonSideLength, 0)
+          ctx.lineTo(0.5 * hexagonSideLength, -k * hexagonSideLength)
+          ctx.lineTo(0.5 * hexagonSideLength + ox, -k * hexagonSideLength - oy)
+          ctx.lineTo(hexagonSideLength + ox, -oy)
+        } else {
+          console.error("unknown wall direction")
+        }
+        ctx.fill()
+        ctx.fillStyle = 'lightgrey'
+        ctx.stroke()
+      })
     })
 
     // target:
@@ -18150,12 +18153,12 @@ function drawCanvas(canvas, scenario, robots) {
 
     // pits:
     scenario.pits.forEach(pit =>
-        hexagon(pit.x, pit.y, () => {
-          ctx.fillStyle = 'white';
-          ctx.fill()
-          ctx.strokeStyle = 'black';
-          ctx.stroke()
-        })
+      hexagon(pit.x, pit.y, () => {
+        ctx.fillStyle = 'white';
+        ctx.fill()
+        ctx.strokeStyle = 'black';
+        ctx.stroke()
+      })
     )
   }
 
@@ -18191,35 +18194,35 @@ function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots)
 
 function renderCanvas(state, scenario, robots) {
   return h('canvas.game-view', {
-        hook: {
-          postpatch: (oldVnode, newVnode) => {
-            drawAnimatedCanvas(newVnode.elm, state.animationStart, scenario, state.animations, robots)
-          },
-          insert: (node) => {
-            window.onresize = () => drawCanvas(node.elm, scenario, robots)
-            drawCanvas(node.elm, scenario, robots)
-          },
-          destroy: () => window.onresize = undefined
-        }
+      hook: {
+        postpatch: (oldVnode, newVnode) => {
+          drawAnimatedCanvas(newVnode.elm, state.animationStart, scenario, state.animations, robots)
+        },
+        insert: (node) => {
+          window.onresize = () => drawCanvas(node.elm, scenario, robots)
+          drawCanvas(node.elm, scenario, robots)
+        },
+        destroy: () => window.onresize = undefined
       }
+    }
   )
 }
 
 function directionToRotation(direction) {
-    if (direction.Up)
-        return 0
-    else if (direction.UpRight)
-        return Math.PI / 3
-    else if (direction.DownRight)
-        return Math.PI * 2 / 3
-    else if (direction.Down)
-        return Math.PI
-    else if (direction.DownLeft)
-        return Math.PI * 4 / 3
-    else if (direction.UpLeft)
-        return Math.PI * 5 / 3
-    else
-        throw new Error("unknown direction")
+  if (direction.Up)
+    return 0
+  else if (direction.UpRight)
+    return Math.PI / 3
+  else if (direction.DownRight)
+    return Math.PI * 2 / 3
+  else if (direction.Down)
+    return Math.PI
+  else if (direction.DownLeft)
+    return Math.PI * 4 / 3
+  else if (direction.UpLeft)
+    return Math.PI * 5 / 3
+  else
+    throw new Error("unknown direction")
 }
 
 function framesFromEvents(oldGameState, events) {
