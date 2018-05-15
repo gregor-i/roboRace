@@ -17917,12 +17917,19 @@ function image(url){
     return img
 }
 
-const player1 = image('/assets/gem1.png')
-const player2 = image('/assets/gem2.png')
-const player3 = image('/assets/gem3.png')
-const player4 = image('/assets/gem4.png')
-const player5 = image('/assets/gem5.png')
-const player6 = image('/assets/gem6.png')
+// https://materialdesignicons.com/icon/apple-keyboard-caps
+const player1 = image('/assets/player1.png')
+const player2 = image('/assets/player2.png')
+const player3 = image('/assets/player3.png')
+const player4 = image('/assets/player4.png')
+const player5 = image('/assets/player5.png')
+const player6 = image('/assets/player6.png')
+
+// https://materialdesignicons.com/icon/flag-variant-outline
+const target = image('/assets/target.png')
+
+// https://materialdesignicons.com/icon/alert-octagram
+const pit = image('/assets/pit.png')
 
 function player(index){
     switch (index % 6) {
@@ -17936,7 +17943,7 @@ function player(index){
 }
 
 module.exports = {
-    player
+    player, target, pit
 }
 },{}],16:[function(require,module,exports){
 var h = require('snabbdom/h').default
@@ -18148,6 +18155,7 @@ function drawCanvas(canvas, scenario, robots) {
         ctx.fill()
         ctx.strokeStyle = 'black';
         ctx.stroke()
+        ctx.drawImage(images.target, -hexagonSideLength/2, -hexagonSideLength/2, hexagonSideLength, hexagonSideLength)
       })
     }
 
@@ -18158,6 +18166,7 @@ function drawCanvas(canvas, scenario, robots) {
         ctx.fill()
         ctx.strokeStyle = 'black';
         ctx.stroke()
+        ctx.drawImage(images.pit, -hexagonSideLength/2, -hexagonSideLength/2, hexagonSideLength, hexagonSideLength)
       })
     )
   }
@@ -18169,7 +18178,7 @@ function drawCanvas(canvas, scenario, robots) {
     ctx.globalAlpha = robot.alpha
     ctx.translate(left(robot.x, robot.y) + tile / 2, top(robot.x, robot.y) + tile / 2)
     ctx.rotate(robot.rotation)
-    ctx.drawImage(images.player(robot.index), -tile / 2, -tile / 2, tile, tile)
+    ctx.drawImage(images.player(robot.index), -hexagonSideLength / 2, -hexagonSideLength / 2, hexagonSideLength, hexagonSideLength)
     ctx.restore()
   })
 }

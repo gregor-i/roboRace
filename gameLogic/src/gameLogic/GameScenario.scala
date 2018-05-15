@@ -25,9 +25,22 @@ object GameScenario {
       robot(6, 8, Up)
     ),
     walls = Seq(
-      wall(3, 1, Down),
+      wall(3, 2, Down),
       wall(3, 1, DownRight),
-      wall(2, 2, UpRight)
+      wall(2, 2, UpRight),
+      wall(4, 1, Down),
+      wall(2, 1, Down),
+
+      wall(4, 3, DownRight),
+      wall(4, 3, Down),
+
+      wall(1, 3, UpRight),
+      wall(2, 3, Down),
+
+      wall(0, 6, Down),
+      wall(2, 6, Down),
+      wall(4, 6, Down),
+      wall(6, 6, Down),
     ),
     pits = Seq(
       Position(3, 0),

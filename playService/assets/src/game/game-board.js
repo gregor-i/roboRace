@@ -137,6 +137,7 @@ function drawCanvas(canvas, scenario, robots) {
         ctx.fill()
         ctx.strokeStyle = 'black';
         ctx.stroke()
+        ctx.drawImage(images.target, -hexagonSideLength/2, -hexagonSideLength/2, hexagonSideLength, hexagonSideLength)
       })
     }
 
@@ -147,6 +148,7 @@ function drawCanvas(canvas, scenario, robots) {
         ctx.fill()
         ctx.strokeStyle = 'black';
         ctx.stroke()
+        ctx.drawImage(images.pit, -hexagonSideLength/2, -hexagonSideLength/2, hexagonSideLength, hexagonSideLength)
       })
     )
   }
@@ -158,7 +160,7 @@ function drawCanvas(canvas, scenario, robots) {
     ctx.globalAlpha = robot.alpha
     ctx.translate(left(robot.x, robot.y) + tile / 2, top(robot.x, robot.y) + tile / 2)
     ctx.rotate(robot.rotation)
-    ctx.drawImage(images.player(robot.index), -tile / 2, -tile / 2, tile, tile)
+    ctx.drawImage(images.player(robot.index), -hexagonSideLength / 2, -hexagonSideLength / 2, hexagonSideLength, hexagonSideLength)
     ctx.restore()
   })
 }
