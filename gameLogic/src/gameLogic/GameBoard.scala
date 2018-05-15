@@ -17,7 +17,7 @@ sealed trait Direction {
     }
   }
 
-  def right: Direction = this match {
+  def left: Direction = this match {
     case Up => UpLeft
     case UpRight => Up
     case DownRight => UpRight
@@ -26,7 +26,7 @@ sealed trait Direction {
     case UpLeft => DownLeft
   }
 
-  def left: Direction = this match {
+  def right: Direction = this match {
     case Up => UpRight
     case UpRight => DownRight
     case DownRight => Down

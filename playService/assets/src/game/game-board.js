@@ -184,16 +184,20 @@ function renderCanvas(state, scenario, robots) {
 }
 
 function directionToRotation(direction) {
-  if (direction.Up)
-    return 0
-  else if (direction.Right)
-    return 0.5 * Math.PI
-  else if (direction.Down)
-    return Math.PI
-  else if (direction.Left)
-    return 1.5 * Math.PI
-  else
-    throw new Error("unknown direction")
+    if (direction.Up)
+        return 0
+    else if (direction.UpRight)
+        return Math.PI / 3
+    else if (direction.DownRight)
+        return Math.PI * 2 / 3
+    else if (direction.Down)
+        return Math.PI
+    else if (direction.DownLeft)
+        return Math.PI * 4 / 3
+    else if (direction.UpLeft)
+        return Math.PI * 5 / 3
+    else
+        throw new Error("unknown direction")
 }
 
 function framesFromEvents(oldGameState, events) {
