@@ -18020,6 +18020,7 @@ const _ = require('lodash')
 const h = require('snabbdom/h').default
 const images = require('../common/images')
 const constants = require('../common/constants')
+const shapes = require('./shapes')
 
 function Robot(index, x, y, rotation, alpha) {
   return {index, x, y, rotation, alpha}
@@ -18046,25 +18047,29 @@ function interpolateRobots(r1, r2, t) {
 function drawCanvas(canvas, scenario, robots) {
   const ctx = canvas.getContext("2d")
 
+  const k = Math.sqrt(3) / 2
+
   const rect = canvas.getBoundingClientRect()
   const width = rect.width
   const height = rect.height
   canvas.width = width
   canvas.height = height
 
-  const tileWidth = width / scenario.width
-  const tileHeight = height / (scenario.height + 0.1 * (scenario.height - 1) + 0.5 + 2 * 0.1)
+  const wallFactor = 0.1
 
-  const tile = Math.min(tileHeight, tileWidth)
+  const kWidth = scenario.width * 0.75  + (scenario.width - 1) * wallFactor * k + 0.25
+  const kHeight = scenario.height * k + (scenario.height - 1) * wallFactor * k + 0.5 + wallFactor * 2
 
-  const wall = tile / 10
-  const hexagonSideLength = tile / Math.sqrt(3)
+  const tile = Math.min(height / kHeight, width / kWidth)
+  const th = tile /2
+  const offsetTop = (canvas.height - tile * kHeight) / 2
+  const offsetLeft = (canvas.width - tile * kWidth) / 2
 
-  const offsetTop = (canvas.height - (scenario.height * tile + (scenario.height - 1) * wall + 0.5 * tile + 2 * wall)) / 2
-  const offsetLeft = (canvas.width - scenario.width * tile) / 2
+  const deltaLeft = 3 / 4 * tile + tile * wallFactor*k
+  const deltaTop = tile * k + tile * wallFactor
 
   function left(x, y) {
-    return offsetLeft + (1.5 * hexagonSideLength) * x + x * wall
+    return offsetLeft + deltaLeft * x + th
   }
 
   function top(x, y) {
@@ -18074,113 +18079,64 @@ function drawCanvas(canvas, scenario, robots) {
       else return m
     }
 
-    return offsetTop + tile * y + y * wall + saw(x) * (tile + wall) / 2
+    return offsetTop + deltaTop * (y + saw(x) / 2) +th
   }
 
-  // scenario:
-  {
-    const k = Math.sqrt(3) / 2
+  // ctx.fillStyle = 'darkblue'
+  // ctx.fillRect(offsetLeft, offsetTop, tile * kWidth, tile * kHeight)
 
-    function hexagon(x, y, callback) {
-      ctx.save()
-      ctx.translate(left(x, y) + hexagonSideLength, top(x, y) + hexagonSideLength)
-      ctx.beginPath()
-      ctx.moveTo(-hexagonSideLength, 0)
-      ctx.lineTo(-0.5 * hexagonSideLength, k * hexagonSideLength)
-      ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength)
-      ctx.lineTo(hexagonSideLength, 0)
-      ctx.lineTo(0.5 * hexagonSideLength, -k * hexagonSideLength)
-      ctx.lineTo(-0.5 * hexagonSideLength, -k * hexagonSideLength)
-      ctx.lineTo(-hexagonSideLength, 0)
-      callback()
-      ctx.fillStyle = 'black'
-      ctx.fillText(x + ' - ' + y, -1 / 2 * hexagonSideLength + 2, -k * hexagonSideLength + 10)
-      ctx.restore()
-    }
+  const s = shapes(k, th, deltaTop, deltaLeft, wallFactor * tile)
 
-    ctx.fillStyle = 'black'
-    ctx.strokeRect(0, 0, width, height)
+  function translate(x, y, callback) {
+    ctx.save()
+    ctx.translate(left(x, y), top(x, y))
+    callback()
+    ctx.restore()
+  }
 
-
-    // tiles:
-    for (let y = 0; y < scenario.height; y++)
-      for (let x = 0; x < scenario.width; x++) {
-        hexagon(x, y, () => {
-            ctx.fillStyle = 'lightgrey'
-            ctx.fill()
-            ctx.stroke()
-          }
-        )
+  // walls:
+  scenario.walls.forEach(w =>
+    translate(w.position.x, w.position.y, () => {
+      ctx.fillStyle = 'DarkGrey'
+      if (w.direction.Down) {
+        ctx.fill(s.wallDown)
+        ctx.stroke(s.wallDown)
+      } else if (w.direction.DownRight) {
+        ctx.fill(s.wallDownRight)
+        ctx.stroke(s.wallDownRight)
+      } else if (w.direction.UpRight) {
+        ctx.fill(s.wallUpRight)
+        ctx.stroke(s.wallUpRight)
+      } else {
+        console.error("unknown wall direction")
       }
-
-    // walls:
-    ctx.fillStyle = 'black'
-    const ox = wall * Math.sqrt(3) / 2
-    const oy = wall / 2
-    scenario.walls.forEach(function (w) {
-      hexagon(w.position.x, w.position.y, () => {
-        ctx.fillStyle = 'black'
-        ctx.beginPath()
-        if (w.direction.Down) {
-          ctx.moveTo(-0.5 * hexagonSideLength, k * hexagonSideLength)
-          ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength)
-          ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength + wall)
-          ctx.lineTo(-0.5 * hexagonSideLength, k * hexagonSideLength + wall)
-        } else if (w.direction.DownRight) {
-          ctx.moveTo(0.5 * hexagonSideLength, k * hexagonSideLength)
-          ctx.lineTo(hexagonSideLength, 0)
-          ctx.lineTo(hexagonSideLength + ox, oy)
-          ctx.lineTo(0.5 * hexagonSideLength + ox, k * hexagonSideLength + oy)
-        } else if (w.direction.UpRight) {
-          ctx.moveTo(hexagonSideLength, 0)
-          ctx.lineTo(0.5 * hexagonSideLength, -k * hexagonSideLength)
-          ctx.lineTo(0.5 * hexagonSideLength + ox, -k * hexagonSideLength - oy)
-          ctx.lineTo(hexagonSideLength + ox, -oy)
-        } else {
-          console.error("unknown wall direction")
-        }
-        ctx.fill()
-        ctx.fillStyle = 'lightgrey'
-        ctx.stroke()
-      })
     })
+  )
 
-    // target:
-    {
-      ctx.fillStyle = 'green'
-      const x = scenario.targetPosition.x
-      const y = scenario.targetPosition.y
-      hexagon(x, y, () => {
-        ctx.fillStyle = 'green'
-        ctx.fill()
-        ctx.strokeStyle = 'black';
-        ctx.stroke()
-        ctx.drawImage(images.target, -hexagonSideLength/2, -hexagonSideLength/2, hexagonSideLength, hexagonSideLength)
+  // tiles:
+  for (let y = 0; y < scenario.height; y++)
+    for (let x = 0; x < scenario.width; x++)
+      translate(x, y, () => {
+        if (scenario.pits.find(p => p.x === x && p.y === y))
+          return
+        ctx.fillStyle = 'AliceBlue'
+        ctx.fill(s.hex)
+        ctx.stroke(s.hex)
       })
-    }
 
-    // pits:
-    scenario.pits.forEach(pit =>
-      hexagon(pit.x, pit.y, () => {
-        ctx.fillStyle = 'white';
-        ctx.fill()
-        ctx.strokeStyle = 'black';
-        ctx.stroke()
-        ctx.drawImage(images.pit, -hexagonSideLength/2, -hexagonSideLength/2, hexagonSideLength, hexagonSideLength)
-      })
-    )
-  }
-
+  // target:
+  translate(scenario.targetPosition.x, scenario.targetPosition.y, () => {
+    ctx.drawImage(images.target, -th / 2, -th / 2, th, th)
+  })
 
   // robots:
-  robots.forEach((robot) => {
-    ctx.save()
-    ctx.globalAlpha = robot.alpha
-    ctx.translate(left(robot.x, robot.y) + tile / 2, top(robot.x, robot.y) + tile / 2)
-    ctx.rotate(robot.rotation)
-    ctx.drawImage(images.player(robot.index), -hexagonSideLength / 2, -hexagonSideLength / 2, hexagonSideLength, hexagonSideLength)
-    ctx.restore()
-  })
+  robots.forEach(robot =>
+    translate(robot.x, robot.y, () => {
+      ctx.globalAlpha = robot.alpha
+      ctx.rotate(robot.rotation)
+      ctx.drawImage(images.player(robot.index), -th / 2, -th / 2, th, th)
+    })
+  )
 }
 
 function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots) {
@@ -18260,7 +18216,7 @@ function framesFromEvents(oldGameState, events) {
         state[i].rotation = events[j].RobotReset.to.direction
       } else if (events[j].PlayerFinished) {
         let i = indexByName(events[j].PlayerFinished.playerName)
-        state[i].alpha = 1.0
+        state[i].alpha = 0.0
       }
     }
     frames.push(_.cloneDeep(state))
@@ -18272,7 +18228,7 @@ module.exports = {
   renderCanvas, robotFromPlayer, framesFromEvents
 }
 
-},{"../common/constants":13,"../common/images":15,"lodash":1,"snabbdom/h":2}],20:[function(require,module,exports){
+},{"../common/constants":13,"../common/images":15,"./shapes":23,"lodash":1,"snabbdom/h":2}],20:[function(require,module,exports){
 function getState(gameId) {
     return fetch("/api/games/" + gameId)
         .then(parseJson)
@@ -18566,6 +18522,78 @@ function Game(element, player, gameId){
 
 module.exports = Game
 },{"../editor/editor-service":17,"./game-actions":18,"./game-board":19,"./game-service":20,"./game-ui":21,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],23:[function(require,module,exports){
+function shapes(k, th, deltaTop, deltaLeft, wall) {
+  const cornerLeft_x = -th
+  const cornerLeft_y = 0
+  const cornerUpLeft_x = -0.5 * th
+  const cornerUpLeft_y = -k * th
+  const cornerUpRight_x = 0.5 * th
+  const cornerUpRight_y = -k * th
+  const cornerRight_x = th
+  const cornerRight_y = 0
+  const cornerDownRight_x = 0.5 * th
+  const cornerDownRight_y = k * th
+  const cornerDownLeft_x = -0.5 * th
+  const cornerDownLeft_y = k * th
+
+  const moveUpRight_x = deltaLeft
+  const moveUpRight_y = -deltaTop / 2
+  const moveDownRight_x = deltaLeft
+  const moveDownRight_y = deltaTop / 2
+  const moveDown_x = 0
+  const moveDown_y = deltaTop
+
+  const wallCenterRight_x = cornerRight_x +  wall / Math.sqrt(3)
+  const wallCenterRight_y = cornerRight_y
+  const wallCenterDownRight_x = cornerDownRight_x +  wall * k/ 3
+  const wallCenterDownRight_y = cornerDownRight_y +  wall /2
+  const wallCenterDownLeft_x = cornerDownLeft_x -  wall * k/ 3
+  const wallCenterDownLeft_y = cornerDownLeft_y +  wall /2
+  const wallCenterUpRight_x = cornerUpRight_x +  wall * k/ 3
+  const wallCenterUpRight_y = cornerUpRight_y -  wall /2
+
+
+  const hex = new Path2D()
+  hex.moveTo(cornerLeft_x, cornerLeft_y)
+  hex.lineTo(cornerUpLeft_x, cornerUpLeft_y)
+  hex.lineTo(cornerUpRight_x, cornerUpRight_y)
+  hex.lineTo(cornerRight_x, cornerRight_y)
+  hex.lineTo(cornerDownRight_x, cornerDownRight_y)
+  hex.lineTo(cornerDownLeft_x, cornerDownLeft_y)
+  hex.closePath()
+
+  const wallDown = new Path2D()
+  wallDown.moveTo(cornerDownRight_x, cornerDownRight_y)
+  wallDown.lineTo(cornerDownLeft_x, cornerDownLeft_y)
+  wallDown.lineTo(wallCenterDownLeft_x, wallCenterDownLeft_y)
+  wallDown.lineTo(cornerUpLeft_x + moveDown_x, cornerUpLeft_y + moveDown_y)
+  wallDown.lineTo(cornerUpRight_x + moveDown_x, cornerUpRight_y + moveDown_y)
+  wallDown.lineTo(wallCenterDownRight_x, wallCenterDownRight_y)
+  wallDown.closePath()
+
+  const wallDownRight = new Path2D()
+  wallDownRight.moveTo(cornerDownRight_x, cornerDownRight_y)
+  wallDownRight.lineTo(cornerRight_x, cornerRight_y)
+  wallDownRight.lineTo(wallCenterRight_x, wallCenterRight_y)
+  wallDownRight.lineTo(cornerUpLeft_x + moveDownRight_x, cornerUpLeft_y + moveDownRight_y)
+  wallDownRight.lineTo(cornerLeft_x + moveDownRight_x, cornerLeft_y + moveDownRight_y)
+  wallDownRight.lineTo(wallCenterDownRight_x, wallCenterDownRight_y)
+  wallDownRight.closePath()
+
+  const wallUpRight = new Path2D()
+  wallUpRight.moveTo(cornerRight_x, cornerRight_y)
+  wallUpRight.lineTo(cornerDownRight_x, cornerUpRight_y)
+  wallUpRight.lineTo(wallCenterUpRight_x, wallCenterUpRight_y)
+  wallUpRight.lineTo(cornerLeft_x + moveUpRight_x, cornerLeft_y + moveUpRight_y)
+  wallUpRight.lineTo(cornerDownLeft_x + moveUpRight_x, cornerDownLeft_y + moveUpRight_y)
+  wallUpRight.lineTo(wallCenterRight_x, wallCenterRight_y)
+  wallUpRight.closePath()
+
+  return {hex, wallDown, wallDownRight, wallUpRight}
+}
+
+module.exports = shapes
+},{}],24:[function(require,module,exports){
 var Lobby = require('./lobby/lobby')
 var Game = require('./game/game')
 
@@ -18579,7 +18607,7 @@ document.addEventListener('DOMContentLoaded', function () {
         Lobby(container, player)
 })
 
-},{"./game/game":22,"./lobby/lobby":27}],24:[function(require,module,exports){
+},{"./game/game":22,"./lobby/lobby":28}],25:[function(require,module,exports){
 var _ = require('lodash')
 var lobbyService = require('./lobby-service')
 
@@ -18607,7 +18635,7 @@ function actions(state, action) {
 }
 
 module.exports = actions
-},{"./lobby-service":25,"lodash":1}],25:[function(require,module,exports){
+},{"./lobby-service":26,"lodash":1}],26:[function(require,module,exports){
 function getAllGames() {
   return fetch("/api/games")
       .then(parseJson)
@@ -18636,7 +18664,7 @@ module.exports = {
   updates
 }
 
-},{}],26:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var h = require('snabbdom/h').default
 var button = require('../common/button')
 var modal = require('../common/modal')
@@ -18676,7 +18704,7 @@ function renderGameRow(id, gameState, actionHandler) {
         h('td', gameState),
         h('td', button.group(
             button.builder.primary()(actionHandler, {enterGame: id}, 'Enter'),
-            button.builder.danger()(actionHandler, {deleteGame: id}, 'Delete')
+            button.builder(actionHandler, {deleteGame: id}, 'Delete')
         ))
     ])
 }
@@ -18712,7 +18740,7 @@ function renderLoginModal(player, actionHandler) {
 }
 
 module.exports = render
-},{"../common/button":12,"../common/frame":14,"../common/modal":16,"snabbdom/h":2}],27:[function(require,module,exports){
+},{"../common/button":12,"../common/frame":14,"../common/modal":16,"snabbdom/h":2}],28:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18766,4 +18794,4 @@ function Lobby(element, player) {
 }
 
 module.exports = Lobby
-},{"./lobby-actions":24,"./lobby-service":25,"./lobby-ui":26,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[23]);
+},{"./lobby-actions":25,"./lobby-service":26,"./lobby-ui":27,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[24]);

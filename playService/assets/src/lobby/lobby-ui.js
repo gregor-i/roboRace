@@ -37,7 +37,7 @@ function renderGameRow(id, gameState, actionHandler) {
         h('td', gameState),
         h('td', button.group(
             button.builder.primary()(actionHandler, {enterGame: id}, 'Enter'),
-            button.builder.danger()(actionHandler, {deleteGame: id}, 'Delete')
+            button.builder(actionHandler, {deleteGame: id}, 'Delete')
         ))
     ])
 }

@@ -2,6 +2,7 @@ const _ = require('lodash')
 const h = require('snabbdom/h').default
 const images = require('../common/images')
 const constants = require('../common/constants')
+const shapes = require('./shapes')
 
 function Robot(index, x, y, rotation, alpha) {
   return {index, x, y, rotation, alpha}
@@ -28,25 +29,29 @@ function interpolateRobots(r1, r2, t) {
 function drawCanvas(canvas, scenario, robots) {
   const ctx = canvas.getContext("2d")
 
+  const k = Math.sqrt(3) / 2
+
   const rect = canvas.getBoundingClientRect()
   const width = rect.width
   const height = rect.height
   canvas.width = width
   canvas.height = height
 
-  const tileWidth = width / scenario.width
-  const tileHeight = height / (scenario.height + 0.1 * (scenario.height - 1) + 0.5 + 2 * 0.1)
+  const wallFactor = 0.1
 
-  const tile = Math.min(tileHeight, tileWidth)
+  const kWidth = scenario.width * 0.75  + (scenario.width - 1) * wallFactor * k + 0.25
+  const kHeight = scenario.height * k + (scenario.height - 1) * wallFactor * k + 0.5 + wallFactor * 2
 
-  const wall = tile / 10
-  const hexagonSideLength = tile / Math.sqrt(3)
+  const tile = Math.min(height / kHeight, width / kWidth)
+  const th = tile /2
+  const offsetTop = (canvas.height - tile * kHeight) / 2
+  const offsetLeft = (canvas.width - tile * kWidth) / 2
 
-  const offsetTop = (canvas.height - (scenario.height * tile + (scenario.height - 1) * wall + 0.5 * tile + 2 * wall)) / 2
-  const offsetLeft = (canvas.width - scenario.width * tile) / 2
+  const deltaLeft = 3 / 4 * tile + tile * wallFactor*k
+  const deltaTop = tile * k + tile * wallFactor
 
   function left(x, y) {
-    return offsetLeft + (1.5 * hexagonSideLength) * x + x * wall
+    return offsetLeft + deltaLeft * x + th
   }
 
   function top(x, y) {
@@ -56,113 +61,64 @@ function drawCanvas(canvas, scenario, robots) {
       else return m
     }
 
-    return offsetTop + tile * y + y * wall + saw(x) * (tile + wall) / 2
+    return offsetTop + deltaTop * (y + saw(x) / 2) +th
   }
 
-  // scenario:
-  {
-    const k = Math.sqrt(3) / 2
+  // ctx.fillStyle = 'darkblue'
+  // ctx.fillRect(offsetLeft, offsetTop, tile * kWidth, tile * kHeight)
 
-    function hexagon(x, y, callback) {
-      ctx.save()
-      ctx.translate(left(x, y) + hexagonSideLength, top(x, y) + hexagonSideLength)
-      ctx.beginPath()
-      ctx.moveTo(-hexagonSideLength, 0)
-      ctx.lineTo(-0.5 * hexagonSideLength, k * hexagonSideLength)
-      ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength)
-      ctx.lineTo(hexagonSideLength, 0)
-      ctx.lineTo(0.5 * hexagonSideLength, -k * hexagonSideLength)
-      ctx.lineTo(-0.5 * hexagonSideLength, -k * hexagonSideLength)
-      ctx.lineTo(-hexagonSideLength, 0)
-      callback()
-      ctx.fillStyle = 'black'
-      ctx.fillText(x + ' - ' + y, -1 / 2 * hexagonSideLength + 2, -k * hexagonSideLength + 10)
-      ctx.restore()
-    }
+  const s = shapes(k, th, deltaTop, deltaLeft, wallFactor * tile)
 
-    ctx.fillStyle = 'black'
-    ctx.strokeRect(0, 0, width, height)
+  function translate(x, y, callback) {
+    ctx.save()
+    ctx.translate(left(x, y), top(x, y))
+    callback()
+    ctx.restore()
+  }
 
-
-    // tiles:
-    for (let y = 0; y < scenario.height; y++)
-      for (let x = 0; x < scenario.width; x++) {
-        hexagon(x, y, () => {
-            ctx.fillStyle = 'lightgrey'
-            ctx.fill()
-            ctx.stroke()
-          }
-        )
+  // walls:
+  scenario.walls.forEach(w =>
+    translate(w.position.x, w.position.y, () => {
+      ctx.fillStyle = 'DarkGrey'
+      if (w.direction.Down) {
+        ctx.fill(s.wallDown)
+        ctx.stroke(s.wallDown)
+      } else if (w.direction.DownRight) {
+        ctx.fill(s.wallDownRight)
+        ctx.stroke(s.wallDownRight)
+      } else if (w.direction.UpRight) {
+        ctx.fill(s.wallUpRight)
+        ctx.stroke(s.wallUpRight)
+      } else {
+        console.error("unknown wall direction")
       }
-
-    // walls:
-    ctx.fillStyle = 'black'
-    const ox = wall * Math.sqrt(3) / 2
-    const oy = wall / 2
-    scenario.walls.forEach(function (w) {
-      hexagon(w.position.x, w.position.y, () => {
-        ctx.fillStyle = 'black'
-        ctx.beginPath()
-        if (w.direction.Down) {
-          ctx.moveTo(-0.5 * hexagonSideLength, k * hexagonSideLength)
-          ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength)
-          ctx.lineTo(0.5 * hexagonSideLength, k * hexagonSideLength + wall)
-          ctx.lineTo(-0.5 * hexagonSideLength, k * hexagonSideLength + wall)
-        } else if (w.direction.DownRight) {
-          ctx.moveTo(0.5 * hexagonSideLength, k * hexagonSideLength)
-          ctx.lineTo(hexagonSideLength, 0)
-          ctx.lineTo(hexagonSideLength + ox, oy)
-          ctx.lineTo(0.5 * hexagonSideLength + ox, k * hexagonSideLength + oy)
-        } else if (w.direction.UpRight) {
-          ctx.moveTo(hexagonSideLength, 0)
-          ctx.lineTo(0.5 * hexagonSideLength, -k * hexagonSideLength)
-          ctx.lineTo(0.5 * hexagonSideLength + ox, -k * hexagonSideLength - oy)
-          ctx.lineTo(hexagonSideLength + ox, -oy)
-        } else {
-          console.error("unknown wall direction")
-        }
-        ctx.fill()
-        ctx.fillStyle = 'lightgrey'
-        ctx.stroke()
-      })
     })
+  )
 
-    // target:
-    {
-      ctx.fillStyle = 'green'
-      const x = scenario.targetPosition.x
-      const y = scenario.targetPosition.y
-      hexagon(x, y, () => {
-        ctx.fillStyle = 'green'
-        ctx.fill()
-        ctx.strokeStyle = 'black';
-        ctx.stroke()
-        ctx.drawImage(images.target, -hexagonSideLength/2, -hexagonSideLength/2, hexagonSideLength, hexagonSideLength)
+  // tiles:
+  for (let y = 0; y < scenario.height; y++)
+    for (let x = 0; x < scenario.width; x++)
+      translate(x, y, () => {
+        if (scenario.pits.find(p => p.x === x && p.y === y))
+          return
+        ctx.fillStyle = 'AliceBlue'
+        ctx.fill(s.hex)
+        ctx.stroke(s.hex)
       })
-    }
 
-    // pits:
-    scenario.pits.forEach(pit =>
-      hexagon(pit.x, pit.y, () => {
-        ctx.fillStyle = 'white';
-        ctx.fill()
-        ctx.strokeStyle = 'black';
-        ctx.stroke()
-        ctx.drawImage(images.pit, -hexagonSideLength/2, -hexagonSideLength/2, hexagonSideLength, hexagonSideLength)
-      })
-    )
-  }
-
+  // target:
+  translate(scenario.targetPosition.x, scenario.targetPosition.y, () => {
+    ctx.drawImage(images.target, -th / 2, -th / 2, th, th)
+  })
 
   // robots:
-  robots.forEach((robot) => {
-    ctx.save()
-    ctx.globalAlpha = robot.alpha
-    ctx.translate(left(robot.x, robot.y) + tile / 2, top(robot.x, robot.y) + tile / 2)
-    ctx.rotate(robot.rotation)
-    ctx.drawImage(images.player(robot.index), -hexagonSideLength / 2, -hexagonSideLength / 2, hexagonSideLength, hexagonSideLength)
-    ctx.restore()
-  })
+  robots.forEach(robot =>
+    translate(robot.x, robot.y, () => {
+      ctx.globalAlpha = robot.alpha
+      ctx.rotate(robot.rotation)
+      ctx.drawImage(images.player(robot.index), -th / 2, -th / 2, th, th)
+    })
+  )
 }
 
 function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots) {
@@ -242,7 +198,7 @@ function framesFromEvents(oldGameState, events) {
         state[i].rotation = events[j].RobotReset.to.direction
       } else if (events[j].PlayerFinished) {
         let i = indexByName(events[j].PlayerFinished.playerName)
-        state[i].alpha = 1.0
+        state[i].alpha = 0.0
       }
     }
     frames.push(_.cloneDeep(state))
