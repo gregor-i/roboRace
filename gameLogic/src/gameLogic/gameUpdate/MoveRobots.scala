@@ -42,21 +42,19 @@ object MoveRobots {
 
 
   private def movementIsAllowed(game: GameRunning, position: Position, direction: Direction): Boolean = {
-    val downWalls = game.scenario.walls.filter(_.direction == Down).map(_.position)
-    val downRightWalls = game.scenario.walls.filter(_.direction == DownRight).map(_.position)
-    val upRightWalls = game.scenario.walls.filter(_.direction == UpRight).map(_.position)
-    //        if (game.scenario.beaconPosition == position.move(direction))
-    //          false
+    val walls = game.scenario.walls
     val blockedByWall = direction match {
-      case Up => downWalls.contains(Up(position))
-      case UpRight => upRightWalls.contains(position)
-      case DownRight => downRightWalls.contains(position)
-      case Down => downWalls.contains(position)
-      case DownLeft => upRightWalls.contains(UpRight(position))
-      case UpLeft => downRightWalls.contains(DownRight(position))
+      case Up        => walls.contains(Wall(Up(position), Down))
+      case UpRight   => walls.contains(Wall(position, UpRight))
+      case DownRight => walls.contains(Wall(position, DownRight))
+      case Down      => walls.contains(Wall(position, Down))
+      case DownLeft  => walls.contains(Wall(DownLeft(position), UpRight))
+      case UpLeft    => walls.contains(Wall(UpLeft(position), DownRight))
     }
     if (blockedByWall)
       false
+    //        if (game.scenario.beaconPosition == position.move(direction))
+    //          false
     else if (game.players.exists(_.robot.position == direction(position)))
       movementIsAllowed(game, direction(position), direction)
     else
