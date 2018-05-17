@@ -18065,7 +18065,7 @@ function drawCanvas(canvas, scenario, robots) {
   const offsetTop = (canvas.height - tile * kHeight) / 2
   const offsetLeft = (canvas.width - tile * kWidth) / 2
 
-  const deltaLeft = 3 / 4 * tile + tile * wallFactor*k
+  const deltaLeft = 0.75 * tile + tile * wallFactor*k
   const deltaTop = tile * k + tile * wallFactor
 
   function left(x, y) {
@@ -18079,25 +18079,39 @@ function drawCanvas(canvas, scenario, robots) {
       else return m
     }
 
-    return offsetTop + deltaTop * (y + saw(x) / 2) +th
+    return offsetTop + deltaTop * (y + saw(x) / 2) + th
   }
 
-  // ctx.fillStyle = 'darkblue'
-  // ctx.fillRect(offsetLeft, offsetTop, tile * kWidth, tile * kHeight)
+  const s = shapes(th, wallFactor)
 
-  const s = shapes(k, th, deltaTop, deltaLeft, wallFactor * tile)
-
-  function translate(x, y, callback) {
+  function centerOn(x, y, callback) {
     ctx.save()
     ctx.translate(left(x, y), top(x, y))
     callback()
     ctx.restore()
   }
 
+  // tiles:
+  for (let y = 0; y < scenario.height; y++)
+    for (let x = 0; x < scenario.width; x++)
+      centerOn(x, y, () => {
+        if (scenario.pits.find(p => p.x === x && p.y === y))
+          return
+        ctx.fillStyle = 'rgb(240, 248, 255)'
+
+        ctx.fill(s.hex)
+        ctx.stroke(s.hex)
+      })
+
+  // target:
+  centerOn(scenario.targetPosition.x, scenario.targetPosition.y, () => {
+    ctx.drawImage(images.target, -th / 2, -th / 2, th, th)
+  })
+
   // walls:
   scenario.walls.forEach(w =>
-    translate(w.position.x, w.position.y, () => {
-      ctx.fillStyle = 'DarkGrey'
+    centerOn(w.position.x, w.position.y, () => {
+      ctx.fillStyle = 'DimGray'
       if (w.direction.Down) {
         ctx.fill(s.wallDown)
         ctx.stroke(s.wallDown)
@@ -18113,25 +18127,9 @@ function drawCanvas(canvas, scenario, robots) {
     })
   )
 
-  // tiles:
-  for (let y = 0; y < scenario.height; y++)
-    for (let x = 0; x < scenario.width; x++)
-      translate(x, y, () => {
-        if (scenario.pits.find(p => p.x === x && p.y === y))
-          return
-        ctx.fillStyle = 'AliceBlue'
-        ctx.fill(s.hex)
-        ctx.stroke(s.hex)
-      })
-
-  // target:
-  translate(scenario.targetPosition.x, scenario.targetPosition.y, () => {
-    ctx.drawImage(images.target, -th / 2, -th / 2, th, th)
-  })
-
   // robots:
   robots.forEach(robot =>
-    translate(robot.x, robot.y, () => {
+    centerOn(robot.x, robot.y, () => {
       ctx.globalAlpha = robot.alpha
       ctx.rotate(robot.rotation)
       ctx.drawImage(images.player(robot.index), -th / 2, -th / 2, th, th)
@@ -18522,74 +18520,48 @@ function Game(element, player, gameId){
 
 module.exports = Game
 },{"../editor/editor-service":17,"./game-actions":18,"./game-board":19,"./game-service":20,"./game-ui":21,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],23:[function(require,module,exports){
-function shapes(k, th, deltaTop, deltaLeft, wall) {
-  const cornerLeft_x = -th
-  const cornerLeft_y = 0
-  const cornerUpLeft_x = -0.5 * th
-  const cornerUpLeft_y = -k * th
-  const cornerUpRight_x = 0.5 * th
-  const cornerUpRight_y = -k * th
-  const cornerRight_x = th
-  const cornerRight_y = 0
-  const cornerDownRight_x = 0.5 * th
-  const cornerDownRight_y = k * th
-  const cornerDownLeft_x = -0.5 * th
-  const cornerDownLeft_y = k * th
+// left = 0
+function x(angle, size){
+  return -Math.cos(degree(angle)) *size
+}
+function y(angle, size){
+  return -Math.sin(degree(angle)) * size
+}
+function degree(a) {
+  return a * Math.PI / 180
+}
 
-  const moveUpRight_x = deltaLeft
-  const moveUpRight_y = -deltaTop / 2
-  const moveDownRight_x = deltaLeft
-  const moveDownRight_y = deltaTop / 2
-  const moveDown_x = 0
-  const moveDown_y = deltaTop
+function shapes(th, wallFactor) {
+  const wall = wallFactor * th * 2
+  const wallCenter = wall / Math.sqrt(3)
 
-  const wallCenterRight_x = cornerRight_x +  wall / Math.sqrt(3)
-  const wallCenterRight_y = cornerRight_y
-  const wallCenterDownRight_x = cornerDownRight_x +  wall * k/ 3
-  const wallCenterDownRight_y = cornerDownRight_y +  wall /2
-  const wallCenterDownLeft_x = cornerDownLeft_x -  wall * k/ 3
-  const wallCenterDownLeft_y = cornerDownLeft_y +  wall /2
-  const wallCenterUpRight_x = cornerUpRight_x +  wall * k/ 3
-  const wallCenterUpRight_y = cornerUpRight_y -  wall /2
-
+  function wallShape(angle) {
+    const w = new Path2D()
+    w.moveTo(x(angle - 30, th), y(angle - 30, th))
+    w.lineTo(x(angle + 30, th), y(angle + 30, th))
+    w.lineTo(x(angle + 30, th + wallCenter), y(angle + 30, th + wallCenter))
+    w.lineTo(x(angle + 30, th) + x(angle, wall), y(angle + 30, th) + y(angle, wall))
+    w.lineTo(x(angle - 30, th) + x(angle, wall), y(angle - 30, th) + y(angle, wall))
+    w.lineTo(x(angle - 30, th + wallCenter), y(angle - 30, th + wallCenter))
+    w.closePath()
+    return w
+  }
 
   const hex = new Path2D()
-  hex.moveTo(cornerLeft_x, cornerLeft_y)
-  hex.lineTo(cornerUpLeft_x, cornerUpLeft_y)
-  hex.lineTo(cornerUpRight_x, cornerUpRight_y)
-  hex.lineTo(cornerRight_x, cornerRight_y)
-  hex.lineTo(cornerDownRight_x, cornerDownRight_y)
-  hex.lineTo(cornerDownLeft_x, cornerDownLeft_y)
+  hex.moveTo(x(0, th), y(0, th))
+  hex.lineTo(x(60, th), y(60, th))
+  hex.lineTo(x(120, th), y(120, th))
+  hex.lineTo(x(180, th), y(180, th))
+  hex.lineTo(x(240, th), y(240, th))
+  hex.lineTo(x(300, th), y(300, th))
   hex.closePath()
 
-  const wallDown = new Path2D()
-  wallDown.moveTo(cornerDownRight_x, cornerDownRight_y)
-  wallDown.lineTo(cornerDownLeft_x, cornerDownLeft_y)
-  wallDown.lineTo(wallCenterDownLeft_x, wallCenterDownLeft_y)
-  wallDown.lineTo(cornerUpLeft_x + moveDown_x, cornerUpLeft_y + moveDown_y)
-  wallDown.lineTo(cornerUpRight_x + moveDown_x, cornerUpRight_y + moveDown_y)
-  wallDown.lineTo(wallCenterDownRight_x, wallCenterDownRight_y)
-  wallDown.closePath()
-
-  const wallDownRight = new Path2D()
-  wallDownRight.moveTo(cornerDownRight_x, cornerDownRight_y)
-  wallDownRight.lineTo(cornerRight_x, cornerRight_y)
-  wallDownRight.lineTo(wallCenterRight_x, wallCenterRight_y)
-  wallDownRight.lineTo(cornerUpLeft_x + moveDownRight_x, cornerUpLeft_y + moveDownRight_y)
-  wallDownRight.lineTo(cornerLeft_x + moveDownRight_x, cornerLeft_y + moveDownRight_y)
-  wallDownRight.lineTo(wallCenterDownRight_x, wallCenterDownRight_y)
-  wallDownRight.closePath()
-
-  const wallUpRight = new Path2D()
-  wallUpRight.moveTo(cornerRight_x, cornerRight_y)
-  wallUpRight.lineTo(cornerDownRight_x, cornerUpRight_y)
-  wallUpRight.lineTo(wallCenterUpRight_x, wallCenterUpRight_y)
-  wallUpRight.lineTo(cornerLeft_x + moveUpRight_x, cornerLeft_y + moveUpRight_y)
-  wallUpRight.lineTo(cornerDownLeft_x + moveUpRight_x, cornerDownLeft_y + moveUpRight_y)
-  wallUpRight.lineTo(wallCenterRight_x, wallCenterRight_y)
-  wallUpRight.closePath()
-
-  return {hex, wallDown, wallDownRight, wallUpRight}
+  return {
+    hex,
+    wallUpRight: wallShape(150),
+    wallDownRight: wallShape(210),
+    wallDown: wallShape(270)
+  }
 }
 
 module.exports = shapes

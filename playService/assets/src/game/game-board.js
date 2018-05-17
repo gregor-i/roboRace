@@ -47,7 +47,7 @@ function drawCanvas(canvas, scenario, robots) {
   const offsetTop = (canvas.height - tile * kHeight) / 2
   const offsetLeft = (canvas.width - tile * kWidth) / 2
 
-  const deltaLeft = 3 / 4 * tile + tile * wallFactor*k
+  const deltaLeft = 0.75 * tile + tile * wallFactor*k
   const deltaTop = tile * k + tile * wallFactor
 
   function left(x, y) {
@@ -61,25 +61,39 @@ function drawCanvas(canvas, scenario, robots) {
       else return m
     }
 
-    return offsetTop + deltaTop * (y + saw(x) / 2) +th
+    return offsetTop + deltaTop * (y + saw(x) / 2) + th
   }
 
-  // ctx.fillStyle = 'darkblue'
-  // ctx.fillRect(offsetLeft, offsetTop, tile * kWidth, tile * kHeight)
+  const s = shapes(th, wallFactor)
 
-  const s = shapes(k, th, deltaTop, deltaLeft, wallFactor * tile)
-
-  function translate(x, y, callback) {
+  function centerOn(x, y, callback) {
     ctx.save()
     ctx.translate(left(x, y), top(x, y))
     callback()
     ctx.restore()
   }
 
+  // tiles:
+  for (let y = 0; y < scenario.height; y++)
+    for (let x = 0; x < scenario.width; x++)
+      centerOn(x, y, () => {
+        if (scenario.pits.find(p => p.x === x && p.y === y))
+          return
+        ctx.fillStyle = 'rgb(240, 248, 255)'
+
+        ctx.fill(s.hex)
+        ctx.stroke(s.hex)
+      })
+
+  // target:
+  centerOn(scenario.targetPosition.x, scenario.targetPosition.y, () => {
+    ctx.drawImage(images.target, -th / 2, -th / 2, th, th)
+  })
+
   // walls:
   scenario.walls.forEach(w =>
-    translate(w.position.x, w.position.y, () => {
-      ctx.fillStyle = 'DarkGrey'
+    centerOn(w.position.x, w.position.y, () => {
+      ctx.fillStyle = 'DimGray'
       if (w.direction.Down) {
         ctx.fill(s.wallDown)
         ctx.stroke(s.wallDown)
@@ -95,25 +109,9 @@ function drawCanvas(canvas, scenario, robots) {
     })
   )
 
-  // tiles:
-  for (let y = 0; y < scenario.height; y++)
-    for (let x = 0; x < scenario.width; x++)
-      translate(x, y, () => {
-        if (scenario.pits.find(p => p.x === x && p.y === y))
-          return
-        ctx.fillStyle = 'AliceBlue'
-        ctx.fill(s.hex)
-        ctx.stroke(s.hex)
-      })
-
-  // target:
-  translate(scenario.targetPosition.x, scenario.targetPosition.y, () => {
-    ctx.drawImage(images.target, -th / 2, -th / 2, th, th)
-  })
-
   // robots:
   robots.forEach(robot =>
-    translate(robot.x, robot.y, () => {
+    centerOn(robot.x, robot.y, () => {
       ctx.globalAlpha = robot.alpha
       ctx.rotate(robot.rotation)
       ctx.drawImage(images.player(robot.index), -th / 2, -th / 2, th, th)
