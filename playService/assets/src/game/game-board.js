@@ -137,11 +137,11 @@ function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots)
 }
 
 
-function renderCanvas(state, scenario, robots) {
+function renderCanvas(scenario, robots, animationStart, animations) {
   return h('canvas.game-view', {
       hook: {
         postpatch: (oldVnode, newVnode) => {
-          drawAnimatedCanvas(newVnode.elm, state.animationStart, scenario, state.animations, robots)
+          drawAnimatedCanvas(newVnode.elm, animationStart, scenario, animations, robots)
         },
         insert: (node) => {
           window.onresize = () => drawCanvas(node.elm, scenario, robots)

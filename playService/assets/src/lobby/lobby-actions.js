@@ -5,9 +5,9 @@ function actions(state, action) {
     if (action.createGame) {
         lobbyService.createGame()
     } else if (action.deleteGame) {
-        lobbyService.deleteGame(action.deleteGame)
-    } else if (action.enterGame) {
-        window.location.href = "/"+action.enterGame
+      lobbyService.deleteGame(action.deleteGame)
+    }else if (action.redirectTo) {
+        window.location.href = action.redirectTo
     } else if (action.definePlayerName) {
         localStorage.setItem('playerName', action.definePlayerName)
         return Promise.resolve(Object.assign({}, state, {player: action.definePlayerName}))
