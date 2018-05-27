@@ -12,9 +12,12 @@ GET           /api/scenarios                      controller.ScenarioController.
 POST          /api/scenarios                      controller.ScenarioController.post()
 
 #Frontend
-GET           /:id                                controller.UiController.game(id: String)
 GET           /                                   controller.UiController.lobby()
+GET           /:id                                controller.UiController.game(id: String)
 
 GET           /assets/*file                       controllers.Assets.at(file)
 
 POST          /admin/post-default-scenario        controller.ScenarioController.postDefault()
+
+#Admin
+GET           /admin/config                       controller.AdminController.config()

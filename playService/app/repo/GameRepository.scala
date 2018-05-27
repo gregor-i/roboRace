@@ -1,49 +1,49 @@
 package repo
 
-import java.io.FileWriter
-
+import anorm._
 import gameLogic.GameState
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
+import javax.inject.{Inject, Singleton}
+import play.api.db.Database
 
-import scala.io.Source
-import scala.util.Try
-
-trait GameRepository {
-  def get(id: String): Option[GameState]
-  def list(): Seq[(String, GameState)]
-  def save(id: String, gameState: GameState): Unit
-  def delete(id: String): Unit
-}
+@Singleton
+class GameRepository @Inject()(db: Database){
+  private val gameParser: RowParser[Option[GameState]] = SqlParser.str("game").map(data => decode[GameState](data).toOption)
+  private val rowParser: RowParser[(String, Option[GameState])] = for {
+    id <- SqlParser.str("id")
+    game <- gameParser
+  } yield (id, game)
 
 
-class MemoryGameRepository extends GameRepository {
-  def get(id: String): Option[GameState] = synchronized(cache.get(id))
-  def list(): Seq[(String, GameState)] = synchronized(cache.toSeq)
-  def save(id: String, gameState: GameState): Unit = synchronized{cache = cache + (id -> gameState)}
-  def delete(id: String): Unit = synchronized{cache = cache - id}
+  def get(id: String): Option[GameState] =
+    db.withConnection { implicit con =>
+      SQL"""SELECT game
+          FROM games
+          WHERE id = $id"""
+        .as(gameParser.singleOpt).flatten
+    }
 
-  private[this] var cache: Map[String, GameState] = Map.empty
-}
+  def list(): Seq[(String, GameState)] =
+    db.withConnection { implicit con =>
+      SQL"""SELECT * FROM games"""
+        .as(rowParser.*)
+        .collect { case (id, Some(game)) => (id, game) }
+    }
 
-class FileGameRepository extends GameRepository{
-  def get(id: String): Option[GameState] = synchronized(read().get(id))
-  def list(): Seq[(String, GameState)] = synchronized(read().toSeq)
-  def save(id: String, gameState: GameState): Unit = synchronized(write(read() + (id -> gameState)))
-  def delete(id: String) : Unit = synchronized(write(read() - id))
-
-  private def file = new java.io.File("gameRepo.json")
-  private def read(): Map[String, GameState] =
-    Try {
-      parse(Source.fromFile(file).mkString)
-        .flatMap(_.as[Map[String, GameState]])
-        .toOption
-    }.toOption.flatten
-      .getOrElse(Map.empty)
-  private def write(state: Map[String, GameState]): Unit = {
-    val writer = new FileWriter(file)
-    writer.append(state.asJson.spaces2)
-    writer.close()
+  def save(id: String, gameState: GameState): Unit = db.withConnection { implicit con =>
+    val gameStateJson = gameState.asJson.noSpaces
+    SQL"""INSERT INTO games (id, game)
+          VALUES ($id, $gameStateJson)
+          ON CONFLICT (id) DO UPDATE
+          SET game = $gameStateJson"""
+      .executeUpdate()
+  }
+  def delete(id: String): Unit= db.withConnection{ implicit con =>
+    SQL"""DELETE
+          FROM games
+          WHERE id = $id"""
+      .executeUpdate()
   }
 }
