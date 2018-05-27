@@ -33,11 +33,11 @@ class GameRepository @Inject()(db: Database){
     }
 
   def save(id: String, gameState: GameState): Unit = db.withConnection { implicit con =>
-    val gameStateJson = gameState.asJson.noSpaces
+    val data = gameState.asJson.noSpaces
     SQL"""INSERT INTO games (id, game)
-          VALUES ($id, $gameStateJson)
+          VALUES ($id, $data)
           ON CONFLICT (id) DO UPDATE
-          SET game = $gameStateJson"""
+          SET game = $data"""
       .executeUpdate()
   }
   def delete(id: String): Unit= db.withConnection{ implicit con =>

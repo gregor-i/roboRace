@@ -4,6 +4,7 @@ scalaVersion in ThisBuild := "2.12.6"
 
 lazy val playService = project.in(file("playService"))
   .dependsOn(gameLogic)
+  .settings(scalaTest)
 
 lazy val gameLogic = project.in(file("gameLogic"))
   .settings(folderSettings, monocle, scalaTest)
