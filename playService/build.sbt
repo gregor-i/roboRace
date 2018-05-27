@@ -1,6 +1,6 @@
 enablePlugins(PlayScala)
 
-enablePlugins(EmbeddedPostgresPlugin)
+//enablePlugins(EmbeddedPostgresPlugin)
 
 libraryDependencies += guice
 libraryDependencies += ws
@@ -11,6 +11,6 @@ libraryDependencies += jdbc
 libraryDependencies += "org.playframework.anorm" %% "anorm" % "2.6.2"
 
 
-postgresSilencer := true
-
-javaOptions += s"-DDATABASE_URL=${postgresConnectionString.value}"
+//postgresSilencer := true
+//
+//javaOptions += s"-DDATABASE_URL=${postgresConnectionString.value}"
