@@ -9,6 +9,6 @@ libraryDependencies += "org.playframework.anorm" %% "anorm" % "2.6.2"
 
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
 
-//enablePlugins(EmbeddedPostgresPlugin)
-//javaOptions += s"-DDATABASE_URL=${postgresConnectionString.value}"
-//postgresSilencer := true
+enablePlugins(EmbeddedPostgresPlugin)
+javaOptions += s"-DDATABASE_URL=${postgresConnectionString.value}"
+postgresSilencer := true

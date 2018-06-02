@@ -1,8 +1,4 @@
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.10")
 
-//resolvers += Resolver.url("io.nhanzlikova.sbt", url("https://dl.bintray.com/geekity/sbt-plugins/"))(Resolver.ivyStylePatterns)
-//
-//addSbtPlugin("io.nhanzlikova.sbt" % "sbt-embedded-postgres" % "1.1.0")
-
-//lazy val root = project.in( file(".") ).dependsOn( assemblyPlugin )
-//lazy val assemblyPlugin = RootProject(uri("git://github.com/gregor-i/sbt-embedded-postgres"))
+resolvers += Resolver.bintrayRepo("gregor-i", "maven")
+addSbtPlugin("com.github.gregor-i" % "sbt-embedded-postgres" % "1.2.0")
