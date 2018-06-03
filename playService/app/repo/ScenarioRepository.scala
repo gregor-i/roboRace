@@ -28,7 +28,9 @@ class ScenarioRepository @Inject()(db: Database){
 
   def list(): Seq[ScenarioRow] =
     db.withConnection { implicit con =>
-      SQL"""SELECT * FROM scenarios"""
+      SQL"""SELECT *
+            FROM scenarios
+            ORDER BY id"""
         .as(rowParser.*).flatten
     }
 

@@ -18015,6 +18015,7 @@ function actions(state, action) {
 }
 
 module.exports = actions
+
 },{"../common/constants":13,"./game-service":20,"lodash":1}],19:[function(require,module,exports){
 const _ = require('lodash')
 const h = require('snabbdom/h').default
@@ -18296,7 +18297,7 @@ function render(state, actionHandler) {
         return frame(header('Initial Game', [
                 backToLobbyButton(actionHandler),
             ]),
-            h('div.content', renderScenarioList(state.scenarios)),
+            h('div.content', renderScenarioList(state.scenarios, actionHandler)),
             undefined,
             m)
     }else if (state.game.GameStarting) {

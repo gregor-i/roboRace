@@ -20,7 +20,7 @@ function render(state, actionHandler) {
         return frame(header('Initial Game', [
                 backToLobbyButton(actionHandler),
             ]),
-            h('div.content', renderScenarioList(state.scenarios)),
+            h('div.content', renderScenarioList(state.scenarios, actionHandler)),
             undefined,
             m)
     }else if (state.game.GameStarting) {
