@@ -7,13 +7,13 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 class GameRepositorySpec extends FunSuite with Matchers with GuiceOneAppPerSuite with BeforeAndAfterEach{
   def repo = app.injector.instanceOf[GameRepository]
 
-  val g1 = ("initial", InitialGame)
-  val g2 = ("starting", GameStarting(GameScenario.default, List.empty))
+  val g1 = GameRow("initial", "player", InitialGame)
+  val g2 = GameRow("starting", "player", GameStarting(GameScenario.default, List.empty))
 
   override def beforeEach = {
-    repo.list().foreach(g => repo.delete(g._1))
-    repo.save(g1._1, g1._2)
-    repo.save(g2._1, g2._2)
+    repo.list().foreach(row => repo.delete(row.id))
+    repo.save(g1)
+    repo.save(g2)
   }
 
   test("save") {
@@ -21,8 +21,8 @@ class GameRepositorySpec extends FunSuite with Matchers with GuiceOneAppPerSuite
   }
 
   test("get") {
-    repo.get(g1._1) shouldBe Some(g1._2)
-    repo.get(g2._1) shouldBe Some(g2._2)
+    repo.get(g1.id) shouldBe Some(g1)
+    repo.get(g2.id) shouldBe Some(g2)
   }
 
   test("list") {
@@ -30,8 +30,8 @@ class GameRepositorySpec extends FunSuite with Matchers with GuiceOneAppPerSuite
   }
 
   test("delete") {
-    repo.delete(g1._1)
-    repo.get(g1._1) shouldBe None
+    repo.delete(g1.id)
+    repo.get(g1.id) shouldBe None
     repo.list() shouldBe List(g2)
   }
 }

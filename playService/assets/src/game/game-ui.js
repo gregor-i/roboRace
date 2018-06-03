@@ -20,7 +20,7 @@ function render(state, actionHandler) {
         return frame(header('Initial Game', [
                 backToLobbyButton(actionHandler),
             ]),
-            h('div.content', Object.keys(state.scenarios).map(key => renderScenarioPreview(key, state.scenarios[key], actionHandler))),
+            h('div.content', renderScenarioList(state.scenarios)),
             undefined,
             m)
     }else if (state.game.GameStarting) {
@@ -102,19 +102,28 @@ function renderPlayerList(state) {
         ])
     })
 
-    rows.unshift(h('tr', [h('th', ''), h('th', 'name'), h('th', 'state')]))
+    const header = h('tr', [h('th', ''), h('th', 'name'), h('th', 'state')])
 
     return h('div', [
         h('h4', 'Players: '),
-        h('table', rows)
+        h('table', [header, ...rows])
     ])
 }
 
-function renderScenarioPreview(name, scenario, actionHandler){
-    return h('article.media', h('div.media-content', [
-        h('h4', name),
-        button.primary(actionHandler, {selectScenario: scenario}, 'Select this Scenario')
-    ]))
+function renderScenarioList(scenarios, actionHandler){
+  const header = h('tr', [h('th', 'Id'), h('th', 'owner'), h('th', 'actions')])
+
+  const rows = scenarios.map(row =>
+      h('tr', [
+          h('td', row.id),
+          h('td', row.owner),
+          h('td', button.group(
+              button.primary(actionHandler, {selectScenario: row.scenario}, 'Select this Scenario'),
+              button.builder.disable(true)(actionHandler, {previewScenario: row.scenario}, 'Preview')
+          ))
+  ]))
+
+  return h('table', [header, ...rows])
 }
 
 function renderActionButtons(state, game, actionHandler) {

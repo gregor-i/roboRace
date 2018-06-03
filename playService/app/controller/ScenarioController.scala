@@ -8,24 +8,25 @@ import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
-import repo.ScenarioRepository
+import repo.{ScenarioRepository, ScenarioRow}
 
 @Singleton
 class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedController with Circe {
 
   def get() = Action {
-    Ok(repo.list().toMap.asJson)
+    Ok(repo.list().asJson)
   }
 
   def post() = Action(circe.tolerantJson[GameScenario]) { request =>
     val id = UUID.randomUUID().toString
     val scenario = request.body
-    repo.save(id, scenario)
+    val row = ScenarioRow(id, "owner", scenario)
+    repo.save(row)
     Ok
   }
 
   def postDefault() = Action{
-    repo.save("default", GameScenario.default)
+    repo.save(ScenarioRow("default", "system", GameScenario.default))
     Ok
   }
 }

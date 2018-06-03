@@ -8,7 +8,6 @@ import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.libs.circe.Circe
@@ -31,11 +30,11 @@ class GameController @Inject()(repo: GameRepository)
 
   def sendCommand(id: String) = Action(circe.tolerantJson[Command]) { request =>
     repo.get(id) match {
-      case Some(gameState) =>
-        request.body.apply(gameState) match {
+      case Some(gameRow) =>
+        request.body.apply(gameRow.game) match {
           case CommandAccepted(afterCommand) =>
             val afterCycle = Cycle(afterCommand)
-            repo.save(id, afterCycle.state)
+            repo.save(gameRow.copy(game = afterCycle.state))
             Source.single(
               Json.obj(
                 "state" -> afterCycle.state.asJson,

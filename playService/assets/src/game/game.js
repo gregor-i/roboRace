@@ -47,9 +47,10 @@ function Game(element, player, gameId){
     }
 
     editorService.loadAllScenarios().then(function (scenarios) {
-        return gameService.getState(gameId).then(function (game) {
+        return gameService.getState(gameId).then(function (gameRow) {
             renderState({
-                player, gameId, game,
+                player, gameId,
+                game: gameRow.game,
                 eventSource: gameService.updates(gameId),
                 slots: [],
                 logs: [],

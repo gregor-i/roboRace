@@ -18296,7 +18296,7 @@ function render(state, actionHandler) {
         return frame(header('Initial Game', [
                 backToLobbyButton(actionHandler),
             ]),
-            h('div.content', Object.keys(state.scenarios).map(key => renderScenarioPreview(key, state.scenarios[key], actionHandler))),
+            h('div.content', renderScenarioList(state.scenarios)),
             undefined,
             m)
     }else if (state.game.GameStarting) {
@@ -18378,19 +18378,28 @@ function renderPlayerList(state) {
         ])
     })
 
-    rows.unshift(h('tr', [h('th', ''), h('th', 'name'), h('th', 'state')]))
+    const header = h('tr', [h('th', ''), h('th', 'name'), h('th', 'state')])
 
     return h('div', [
         h('h4', 'Players: '),
-        h('table', rows)
+        h('table', [header, ...rows])
     ])
 }
 
-function renderScenarioPreview(name, scenario, actionHandler){
-    return h('article.media', h('div.media-content', [
-        h('h4', name),
-        button.primary(actionHandler, {selectScenario: scenario}, 'Select this Scenario')
-    ]))
+function renderScenarioList(scenarios, actionHandler){
+  const header = h('tr', [h('th', 'Id'), h('th', 'owner'), h('th', 'actions')])
+
+  const rows = scenarios.map(row =>
+      h('tr', [
+          h('td', row.id),
+          h('td', row.owner),
+          h('td', button.group(
+              button.primary(actionHandler, {selectScenario: row.scenario}, 'Select this Scenario'),
+              button.builder.disable(true)(actionHandler, {previewScenario: row.scenario}, 'Preview')
+          ))
+  ]))
+
+  return h('table', [header, ...rows])
 }
 
 function renderActionButtons(state, game, actionHandler) {
@@ -18495,9 +18504,10 @@ function Game(element, player, gameId){
     }
 
     editorService.loadAllScenarios().then(function (scenarios) {
-        return gameService.getState(gameId).then(function (game) {
+        return gameService.getState(gameId).then(function (gameRow) {
             renderState({
-                player, gameId, game,
+                player, gameId,
+                game: gameRow.game,
                 eventSource: gameService.updates(gameId),
                 slots: [],
                 logs: [],
@@ -18519,6 +18529,7 @@ function Game(element, player, gameId){
 }
 
 module.exports = Game
+
 },{"../editor/editor-service":17,"./game-actions":18,"./game-board":19,"./game-service":20,"./game-ui":21,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],23:[function(require,module,exports){
 // left = 0
 function x(angle, size){
@@ -18655,30 +18666,24 @@ function render(state, actionHandler) {
 }
 
 function renderGameTable(state, games, actionHandler) {
-    var rows = Object.keys(games).map(function (id) {
-        return renderGameRow(id, games[id], actionHandler)
-    })
+  const header = h('tr', [
+    h('th', 'Id'),
+    h('th', 'Owner'),
+    h('th', 'State'),
+    h('th', 'Actions'),
+  ])
 
-    var header = h('tr', [
-        h('th', 'Id'),
-        h('th', 'State'),
-        h('th', 'Actions'),
-    ])
+  const rows = games.map(row => h('tr', [
+    h('td', row.id),
+    h('td', row.owner),
+    h('td', row.state),
+    h('td', button.group(
+        button.builder.primary()(actionHandler, {enterGame: row.id}, 'Enter'),
+        button.builder.disable(row.owner !== state.player)(actionHandler, {deleteGame: row.id}, 'Delete')
+    ))
+  ]))
 
-    rows.unshift(header)
-
-    return h('table', rows)
-}
-
-function renderGameRow(id, gameState, actionHandler) {
-    return h('tr', [
-        h('td', id),
-        h('td', gameState),
-        h('td', button.group(
-            button.builder.primary()(actionHandler, {enterGame: id}, 'Enter'),
-            button.builder(actionHandler, {deleteGame: id}, 'Delete')
-        ))
-    ])
+  return h('table', [header, ...rows])
 }
 
 function renderLoginModal(player, actionHandler) {
@@ -18712,6 +18717,7 @@ function renderLoginModal(player, actionHandler) {
 }
 
 module.exports = render
+
 },{"../common/button":12,"../common/frame":14,"../common/modal":16,"snabbdom/h":2}],28:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
@@ -18747,10 +18753,10 @@ function Lobby(element, player) {
         return function(event){
             const data = JSON.parse(event.data)
             if(data.GameDeleted){
-                delete state.games[data.GameDeleted.id]
+                state.games = state.games.filter(game => game.id !== data.GameDeleted.id)
                 renderState(state)
             }else if(data.GameCreated){
-                state.games[data.GameCreated.id] = data.GameCreated.state
+                state.games = [...state.games, data.GameCreated.gameOverview]
                 renderState(state)
             }else {
                 console.error("unhandled lobby event", data)
@@ -18766,4 +18772,5 @@ function Lobby(element, player) {
 }
 
 module.exports = Lobby
+
 },{"./lobby-actions":25,"./lobby-service":26,"./lobby-ui":27,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[24]);

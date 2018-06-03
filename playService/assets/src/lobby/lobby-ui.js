@@ -16,30 +16,24 @@ function render(state, actionHandler) {
 }
 
 function renderGameTable(state, games, actionHandler) {
-    var rows = Object.keys(games).map(function (id) {
-        return renderGameRow(id, games[id], actionHandler)
-    })
+  const header = h('tr', [
+    h('th', 'Id'),
+    h('th', 'Owner'),
+    h('th', 'State'),
+    h('th', 'Actions'),
+  ])
 
-    var header = h('tr', [
-        h('th', 'Id'),
-        h('th', 'State'),
-        h('th', 'Actions'),
-    ])
+  const rows = games.map(row => h('tr', [
+    h('td', row.id),
+    h('td', row.owner),
+    h('td', row.state),
+    h('td', button.group(
+        button.builder.primary()(actionHandler, {enterGame: row.id}, 'Enter'),
+        button.builder.disable(row.owner !== state.player)(actionHandler, {deleteGame: row.id}, 'Delete')
+    ))
+  ]))
 
-    rows.unshift(header)
-
-    return h('table', rows)
-}
-
-function renderGameRow(id, gameState, actionHandler) {
-    return h('tr', [
-        h('td', id),
-        h('td', gameState),
-        h('td', button.group(
-            button.builder.primary()(actionHandler, {enterGame: id}, 'Enter'),
-            button.builder(actionHandler, {deleteGame: id}, 'Delete')
-        ))
-    ])
+  return h('table', [header, ...rows])
 }
 
 function renderLoginModal(player, actionHandler) {

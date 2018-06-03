@@ -13,9 +13,10 @@ import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
-import repo.GameRepository
+import repo.{GameRepository, GameRow}
 
 import scala.concurrent.ExecutionContext
+
 
 class LobbyController @Inject()(gameRepo: GameRepository)
                                (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
@@ -31,14 +32,16 @@ class LobbyController @Inject()(gameRepo: GameRepository)
   }
 
   def list() = Action {
-    Ok(gameRepo.list().toMap.mapValues(stateDescription).asJson)
+    Ok(gameRepo.list().map(row => GameOverview(row.id, row.owner, stateDescription(row.game))).asJson)
   }
 
   def create() = Action {
     val id = UUID.randomUUID().toString.take(8)
     val gameState = InitialGame
-    gameRepo.save(id, gameState)
-    Source.single((GameCreated(id, stateDescription(gameState)):LobbyEvent).asJson.noSpaces).runWith(sink)
+    val row = GameRow(id, "owner", gameState)
+    gameRepo.save(row) // todo: get owner from request
+    val event: LobbyEvent = GameCreated(GameOverview(row.id, row.owner, stateDescription(row.game)))
+    Source.single(event.asJson.noSpaces).runWith(sink)
     NoContent
   }
 
@@ -55,4 +58,6 @@ class LobbyController @Inject()(gameRepo: GameRepository)
 
 sealed trait LobbyEvent
 case class GameDeleted(id: String) extends LobbyEvent
-case class GameCreated(id: String, state: String) extends LobbyEvent
+case class GameCreated(gameOverview: GameOverview) extends LobbyEvent
+
+case class GameOverview(id: String, owner: String, state: String)
