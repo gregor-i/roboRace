@@ -10,7 +10,7 @@ convert raw_icons/bee.png -resize 48x48 public/favicon.png
 
 convert raw_icons/sleep.png -resize 50x50 public/action_Sleep.png
 
-convert raw_icons/uturn.png -distort SRT 90 -flip -resize 50x50  public/action_UTurn.png
+convert raw_icons/uturn.png -distort SRT 90 -flop -resize 50x50  public/action_UTurn.png
 
 convert raw_icons/double_arrow.png -resize 50x50  public/action_MoveTwiceForward.png
 
