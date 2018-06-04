@@ -5,7 +5,7 @@ function frame(header, body, footer, modal) {
         modal,
         h('div.frame-header', h('div.content', header)),
         h('div.frame-body', body),
-        h('div.frame-footer', h('div.content', footer))
+        footer ? h('div.frame-footer', h('div.content', footer)) : undefined
     ])
 }
 

@@ -129,32 +129,29 @@ function renderScenarioList(scenarios, actionHandler) {
 function renderActionButtons(state, game, actionHandler) {
   const player = game.players.find((player) => player.name === state.player)
 
-  function blockStyle(borderColor) {
-    return {width: '50px', height: '50px', display: 'inline-block', border: '1px solid ' + borderColor}
-  }
-
   function actionSlot(index) {
     const action = state.slots[index]
     const image = action !== undefined ? images.action(Object.keys(player.possibleActions[action])[0]) : undefined
-    console.log(action)
     return h('div.slot', {
-      style: blockStyle(action !== undefined ? 'green' : 'red'),
-      on: {
-        dragover: (ev) => ev.preventDefault(),
-        drop: (ev) => {
-          const actionIndex = parseInt(ev.dataTransfer.getData("actionIndex"))
-          actionHandler({defineAction: {slot: index, value: actionIndex, cycle: game.cycle}})
-        }
-      }
-    },
-        image !== undefined ? h('img', {props: {src:image.src}}) : undefined)
+          class: {
+            'slot-selected': action !== undefined
+          },
+          on: {
+            dragover: ev => ev.preventDefault(),
+            drop: ev => {
+              const actionIndex = parseInt(ev.dataTransfer.getData("actionIndex"))
+              actionHandler({defineAction: {slot: index, value: actionIndex, cycle: game.cycle}})
+            }
+          }
+        },
+        image !== undefined ? h('img', {props: {src: image.src}}) : undefined)
   }
 
   function action(action, index) {
     const isUsed = state.slots.find(s => s === index) !== undefined
     const image = images.action(Object.keys(action)[0])
     return h('div.action', {
-      style: blockStyle(isUsed ? 'gray' : 'blue'),
+      class: {'action-used': isUsed},
       props: {draggable: !isUsed},
       on: {dragstart: (ev) => ev.dataTransfer.setData("actionIndex", index)}
     }, h('img', {props: {src: image.src}}))
