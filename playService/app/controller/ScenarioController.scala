@@ -20,7 +20,8 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
   def post() = Action(circe.tolerantJson[GameScenario]) { request =>
     val id = UUID.randomUUID().toString
     val scenario = request.body
-    val row = ScenarioRow(id, "owner", scenario)
+    val owner = Utils.playerName(request).getOrElse(Utils.fallbackPlayerName)
+    val row = ScenarioRow(id, owner, scenario)
     repo.save(row)
     Ok
   }

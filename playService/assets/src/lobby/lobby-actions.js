@@ -1,5 +1,6 @@
-var _ = require('lodash')
-var lobbyService = require('./lobby-service')
+const _ = require('lodash')
+const lobbyService = require('./lobby-service')
+const Cookie = require('js-cookie')
 
 function actions(state, action) {
     if (action.createGame) {
@@ -9,14 +10,15 @@ function actions(state, action) {
     } else if (action.enterGame) {
         window.location.href = "/"+action.enterGame
     } else if (action.definePlayerName) {
-        localStorage.setItem('playerName', action.definePlayerName)
-        return Promise.resolve(Object.assign({}, state, {player: action.definePlayerName}))
+        const name = action.definePlayerName
+        Cookie.set('playerName', name)
+        return Promise.resolve(Object.assign({}, state, {player: name}))
     }else if(action.reloadGameList) {
         return lobbyService.getAllGames().then(function (gameList) {
             return Object.assign({}, state, {games: gameList})
         })
     }else if(action.resetUserName){
-        localStorage.removeItem('playerName')
+        Cookie.remove('playerName')
         delete state.player
         return Promise.resolve(state)
     } else {

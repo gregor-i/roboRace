@@ -35,11 +35,11 @@ class LobbyController @Inject()(gameRepo: GameRepository)
     Ok(gameRepo.list().map(row => GameOverview(row.id, row.owner, stateDescription(row.game))).asJson)
   }
 
-  def create() = Action {
+  def create() = Action { request =>
     val id = UUID.randomUUID().toString.take(8)
     val gameState = InitialGame
-    val row = GameRow(id, "owner", gameState)
-    gameRepo.save(row) // todo: get owner from request
+    val row = GameRow(id, Utils.playerName(request).getOrElse(Utils.fallbackPlayerName), gameState)
+    gameRepo.save(row)
     val event: LobbyEvent = GameCreated(GameOverview(row.id, row.owner, stateDescription(row.game)))
     Source.single(event.asJson.noSpaces).runWith(sink)
     NoContent

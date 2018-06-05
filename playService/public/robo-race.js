@@ -1,4 +1,171 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+/*!
+ * JavaScript Cookie v2.2.0
+ * https://github.com/js-cookie/js-cookie
+ *
+ * Copyright 2006, 2015 Klaus Hartl & Fagner Brack
+ * Released under the MIT license
+ */
+;(function (factory) {
+	var registeredInModuleLoader = false;
+	if (typeof define === 'function' && define.amd) {
+		define(factory);
+		registeredInModuleLoader = true;
+	}
+	if (typeof exports === 'object') {
+		module.exports = factory();
+		registeredInModuleLoader = true;
+	}
+	if (!registeredInModuleLoader) {
+		var OldCookies = window.Cookies;
+		var api = window.Cookies = factory();
+		api.noConflict = function () {
+			window.Cookies = OldCookies;
+			return api;
+		};
+	}
+}(function () {
+	function extend () {
+		var i = 0;
+		var result = {};
+		for (; i < arguments.length; i++) {
+			var attributes = arguments[ i ];
+			for (var key in attributes) {
+				result[key] = attributes[key];
+			}
+		}
+		return result;
+	}
+
+	function init (converter) {
+		function api (key, value, attributes) {
+			var result;
+			if (typeof document === 'undefined') {
+				return;
+			}
+
+			// Write
+
+			if (arguments.length > 1) {
+				attributes = extend({
+					path: '/'
+				}, api.defaults, attributes);
+
+				if (typeof attributes.expires === 'number') {
+					var expires = new Date();
+					expires.setMilliseconds(expires.getMilliseconds() + attributes.expires * 864e+5);
+					attributes.expires = expires;
+				}
+
+				// We're using "expires" because "max-age" is not supported by IE
+				attributes.expires = attributes.expires ? attributes.expires.toUTCString() : '';
+
+				try {
+					result = JSON.stringify(value);
+					if (/^[\{\[]/.test(result)) {
+						value = result;
+					}
+				} catch (e) {}
+
+				if (!converter.write) {
+					value = encodeURIComponent(String(value))
+						.replace(/%(23|24|26|2B|3A|3C|3E|3D|2F|3F|40|5B|5D|5E|60|7B|7D|7C)/g, decodeURIComponent);
+				} else {
+					value = converter.write(value, key);
+				}
+
+				key = encodeURIComponent(String(key));
+				key = key.replace(/%(23|24|26|2B|5E|60|7C)/g, decodeURIComponent);
+				key = key.replace(/[\(\)]/g, escape);
+
+				var stringifiedAttributes = '';
+
+				for (var attributeName in attributes) {
+					if (!attributes[attributeName]) {
+						continue;
+					}
+					stringifiedAttributes += '; ' + attributeName;
+					if (attributes[attributeName] === true) {
+						continue;
+					}
+					stringifiedAttributes += '=' + attributes[attributeName];
+				}
+				return (document.cookie = key + '=' + value + stringifiedAttributes);
+			}
+
+			// Read
+
+			if (!key) {
+				result = {};
+			}
+
+			// To prevent the for loop in the first place assign an empty array
+			// in case there are no cookies at all. Also prevents odd result when
+			// calling "get()"
+			var cookies = document.cookie ? document.cookie.split('; ') : [];
+			var rdecode = /(%[0-9A-Z]{2})+/g;
+			var i = 0;
+
+			for (; i < cookies.length; i++) {
+				var parts = cookies[i].split('=');
+				var cookie = parts.slice(1).join('=');
+
+				if (!this.json && cookie.charAt(0) === '"') {
+					cookie = cookie.slice(1, -1);
+				}
+
+				try {
+					var name = parts[0].replace(rdecode, decodeURIComponent);
+					cookie = converter.read ?
+						converter.read(cookie, name) : converter(cookie, name) ||
+						cookie.replace(rdecode, decodeURIComponent);
+
+					if (this.json) {
+						try {
+							cookie = JSON.parse(cookie);
+						} catch (e) {}
+					}
+
+					if (key === name) {
+						result = cookie;
+						break;
+					}
+
+					if (!key) {
+						result[name] = cookie;
+					}
+				} catch (e) {}
+			}
+
+			return result;
+		}
+
+		api.set = api;
+		api.get = function (key) {
+			return api.call(api, key);
+		};
+		api.getJSON = function () {
+			return api.apply({
+				json: true
+			}, [].slice.call(arguments));
+		};
+		api.defaults = {};
+
+		api.remove = function (key, attributes) {
+			api(key, '', extend(attributes, {
+				expires: -1
+			}));
+		};
+
+		api.withConverter = init;
+
+		return api;
+	}
+
+	return init(function () {});
+}));
+
+},{}],2:[function(require,module,exports){
 (function (global){
 /**
  * @license
@@ -17107,7 +17274,7 @@
 }.call(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var vnode_1 = require("./vnode");
@@ -17167,7 +17334,7 @@ exports.h = h;
 ;
 exports.default = h;
 
-},{"./is":4,"./vnode":11}],3:[function(require,module,exports){
+},{"./is":5,"./vnode":12}],4:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function createElement(tagName) {
@@ -17234,7 +17401,7 @@ exports.htmlDomApi = {
 };
 exports.default = exports.htmlDomApi;
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.array = Array.isArray;
@@ -17243,7 +17410,7 @@ function primitive(s) {
 }
 exports.primitive = primitive;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function updateClass(oldVnode, vnode) {
@@ -17269,7 +17436,7 @@ function updateClass(oldVnode, vnode) {
 exports.classModule = { create: updateClass, update: updateClass };
 exports.default = exports.classModule;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function invokeHandler(handler, vnode, event) {
@@ -17365,7 +17532,7 @@ exports.eventListenersModule = {
 };
 exports.default = exports.eventListenersModule;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function updateProps(oldVnode, vnode) {
@@ -17392,7 +17559,7 @@ function updateProps(oldVnode, vnode) {
 exports.propsModule = { create: updateProps, update: updateProps };
 exports.default = exports.propsModule;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var raf = (typeof window !== 'undefined' && window.requestAnimationFrame) || setTimeout;
@@ -17479,7 +17646,7 @@ exports.styleModule = {
 };
 exports.default = exports.styleModule;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var vnode_1 = require("./vnode");
@@ -17789,7 +17956,7 @@ function init(modules, domApi) {
 }
 exports.init = init;
 
-},{"./h":2,"./htmldomapi":3,"./is":4,"./thunk":10,"./vnode":11}],10:[function(require,module,exports){
+},{"./h":3,"./htmldomapi":4,"./is":5,"./thunk":11,"./vnode":12}],11:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var h_1 = require("./h");
@@ -17837,7 +18004,7 @@ exports.thunk = function thunk(sel, key, fn, args) {
 };
 exports.default = exports.thunk;
 
-},{"./h":2}],11:[function(require,module,exports){
+},{"./h":3}],12:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function vnode(sel, data, children, text, elm) {
@@ -17848,7 +18015,7 @@ function vnode(sel, data, children, text, elm) {
 exports.vnode = vnode;
 exports.default = vnode;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var h = require('snabbdom/h').default
 var _ = require('lodash')
 
@@ -17892,12 +18059,12 @@ module.exports = {
     link: builder().link(true)
 }
 
-},{"lodash":1,"snabbdom/h":2}],13:[function(require,module,exports){
+},{"lodash":2,"snabbdom/h":3}],14:[function(require,module,exports){
 module.exports = {
     numberOfActionsPerCycle: 5,
     animationFrameDuration: 400
 }
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 var h = require('snabbdom/h').default
 
 function frame(header, body, footer, modal) {
@@ -17911,7 +18078,7 @@ function frame(header, body, footer, modal) {
 
 module.exports = frame
 
-},{"snabbdom/h":2}],15:[function(require,module,exports){
+},{"snabbdom/h":3}],16:[function(require,module,exports){
 function image(url){
     const img = new Image
     img.src = url
@@ -17971,7 +18138,7 @@ module.exports = {
     player, target, pit, action
 }
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var h = require('snabbdom/h').default
 
 function modal(content, onClose) {
@@ -17985,17 +18152,31 @@ function modal(content, onClose) {
 }
 
 module.exports = modal
-},{"snabbdom/h":2}],17:[function(require,module,exports){
+},{"snabbdom/h":3}],18:[function(require,module,exports){
+const _ = require('lodash')
+
+const defaultHeader = {
+  credentials: "same-origin"
+}
+
+function header(additional){
+  return _.merge(defaultHeader, additional)
+}
+
+module.exports = header
+},{"lodash":2}],19:[function(require,module,exports){
+const headers = require('../common/service-headers')
+
 function loadAllScenarios() {
-    return fetch("/api/scenarios")
+    return fetch("/api/scenarios", headers({}))
         .then(parseJson)
 }
 
 function postScenario(scenario) {
-    return fetch("/api/scenarios", {
+    return fetch("/api/scenarios", headers({
         method: "POST",
         body: JSON.stringify(scenario)
-    })
+    }))
 }
 
 function parseJson(resp) {
@@ -18007,7 +18188,7 @@ module.exports = {
     postScenario
 }
 
-},{}],18:[function(require,module,exports){
+},{"../common/service-headers":18}],20:[function(require,module,exports){
 const _ = require('lodash')
 const gameService = require('./game-service')
 const constants = require('../common/constants')
@@ -18046,7 +18227,7 @@ function actions(state, action) {
 
 module.exports = actions
 
-},{"../common/constants":13,"./game-service":20,"lodash":1}],19:[function(require,module,exports){
+},{"../common/constants":14,"./game-service":22,"lodash":2}],21:[function(require,module,exports){
 const _ = require('lodash')
 const h = require('snabbdom/h').default
 const images = require('../common/images')
@@ -18257,17 +18438,19 @@ module.exports = {
   renderCanvas, robotFromPlayer, framesFromEvents
 }
 
-},{"../common/constants":13,"../common/images":15,"./shapes":23,"lodash":1,"snabbdom/h":2}],20:[function(require,module,exports){
+},{"../common/constants":14,"../common/images":16,"./shapes":25,"lodash":2,"snabbdom/h":3}],22:[function(require,module,exports){
+const headers = require('../common/service-headers')
+
 function getState(gameId) {
-    return fetch("/api/games/" + gameId)
+    return fetch("/api/games/" + gameId, headers({}))
         .then(parseJson)
 }
 
 function sendCommand(gameId, command) {
-    return fetch("/api/games/" + gameId + "/commands", {
+    return fetch("/api/games/" + gameId + "/commands", headers({
         method: "POST",
         body: JSON.stringify(command)
-    })
+    }))
 }
 
 function defineAction(gameId, player, cycle, actions) {
@@ -18304,7 +18487,7 @@ module.exports = {
     updates
 }
 
-},{}],21:[function(require,module,exports){
+},{"../common/service-headers":18}],23:[function(require,module,exports){
 const _ = require('lodash')
 const h = require('snabbdom/h').default
 const constants = require('../common/constants')
@@ -18477,7 +18660,7 @@ function renderLog(logs) {
 
 module.exports = render
 
-},{"../common/button":12,"../common/constants":13,"../common/frame":14,"../common/images":15,"../common/modal":16,"./game-board":19,"lodash":1,"snabbdom/h":2}],22:[function(require,module,exports){
+},{"../common/button":13,"../common/constants":14,"../common/frame":15,"../common/images":16,"../common/modal":17,"./game-board":21,"lodash":2,"snabbdom/h":3}],24:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18553,7 +18736,7 @@ function Game(element, player, gameId){
 
 module.exports = Game
 
-},{"../editor/editor-service":17,"./game-actions":18,"./game-board":19,"./game-service":20,"./game-ui":21,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}],23:[function(require,module,exports){
+},{"../editor/editor-service":19,"./game-actions":20,"./game-board":21,"./game-service":22,"./game-ui":23,"snabbdom":10,"snabbdom/modules/class":6,"snabbdom/modules/eventlisteners":7,"snabbdom/modules/props":8,"snabbdom/modules/style":9}],25:[function(require,module,exports){
 // left = 0
 function x(angle, size){
   return -Math.cos(degree(angle)) *size
@@ -18599,23 +18782,25 @@ function shapes(th, wallFactor) {
 }
 
 module.exports = shapes
-},{}],24:[function(require,module,exports){
-var Lobby = require('./lobby/lobby')
-var Game = require('./game/game')
+},{}],26:[function(require,module,exports){
+const Lobby = require('./lobby/lobby')
+const Game = require('./game/game')
+const Cookie = require('js-cookie')
 
 document.addEventListener('DOMContentLoaded', function () {
-    var container = document.getElementById('robo-race')
-    var player = localStorage.getItem('playerName')
-    var gameId = document.body.dataset.gameId
+    const container = document.getElementById('robo-race')
+    const player = Cookie.get('playerName')
+    const gameId = document.body.dataset.gameId
     if(gameId && player)
         Game(container, player, gameId)
     else
         Lobby(container, player)
 })
 
-},{"./game/game":22,"./lobby/lobby":28}],25:[function(require,module,exports){
-var _ = require('lodash')
-var lobbyService = require('./lobby-service')
+},{"./game/game":24,"./lobby/lobby":30,"js-cookie":1}],27:[function(require,module,exports){
+const _ = require('lodash')
+const lobbyService = require('./lobby-service')
+const Cookie = require('js-cookie')
 
 function actions(state, action) {
     if (action.createGame) {
@@ -18625,14 +18810,15 @@ function actions(state, action) {
     } else if (action.enterGame) {
         window.location.href = "/"+action.enterGame
     } else if (action.definePlayerName) {
-        localStorage.setItem('playerName', action.definePlayerName)
-        return Promise.resolve(Object.assign({}, state, {player: action.definePlayerName}))
+        const name = action.definePlayerName
+        Cookie.set('playerName', name)
+        return Promise.resolve(Object.assign({}, state, {player: name}))
     }else if(action.reloadGameList) {
         return lobbyService.getAllGames().then(function (gameList) {
             return Object.assign({}, state, {games: gameList})
         })
     }else if(action.resetUserName){
-        localStorage.removeItem('playerName')
+        Cookie.remove('playerName')
         delete state.player
         return Promise.resolve(state)
     } else {
@@ -18641,26 +18827,28 @@ function actions(state, action) {
 }
 
 module.exports = actions
-},{"./lobby-service":26,"lodash":1}],26:[function(require,module,exports){
+},{"./lobby-service":28,"js-cookie":1,"lodash":2}],28:[function(require,module,exports){
+const headers = require('../common/service-headers')
+
 function getAllGames() {
-  return fetch("/api/games")
-      .then(parseJson)
+  return fetch("/api/games", headers({}))
+    .then(parseJson)
 }
 
 function createGame() {
-  return fetch("/api/games", {method: "POST"})
+  return fetch("/api/games", headers({method: "POST"}))
 }
 
 function deleteGame(gameId) {
-  return fetch("/api/games/" + gameId, {method: "DELETE"})
+  return fetch("/api/games/" + gameId, headers({method: "DELETE"}))
 }
 
 function parseJson(resp) {
-    return resp.json()
+  return resp.json()
 }
 
 function updates() {
-    return new EventSource("/api/games/events")
+  return new EventSource("/api/games/events")
 }
 
 module.exports = {
@@ -18670,7 +18858,7 @@ module.exports = {
   updates
 }
 
-},{}],27:[function(require,module,exports){
+},{"../common/service-headers":18}],29:[function(require,module,exports){
 var h = require('snabbdom/h').default
 var button = require('../common/button')
 var modal = require('../common/modal')
@@ -18741,7 +18929,7 @@ function renderLoginModal(player, actionHandler) {
 
 module.exports = render
 
-},{"../common/button":12,"../common/frame":14,"../common/modal":16,"snabbdom/h":2}],28:[function(require,module,exports){
+},{"../common/button":13,"../common/frame":15,"../common/modal":17,"snabbdom/h":3}],30:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
     require('snabbdom/modules/eventlisteners').default,
@@ -18796,4 +18984,4 @@ function Lobby(element, player) {
 
 module.exports = Lobby
 
-},{"./lobby-actions":25,"./lobby-service":26,"./lobby-ui":27,"snabbdom":9,"snabbdom/modules/class":5,"snabbdom/modules/eventlisteners":6,"snabbdom/modules/props":7,"snabbdom/modules/style":8}]},{},[24]);
+},{"./lobby-actions":27,"./lobby-service":28,"./lobby-ui":29,"snabbdom":10,"snabbdom/modules/class":6,"snabbdom/modules/eventlisteners":7,"snabbdom/modules/props":8,"snabbdom/modules/style":9}]},{},[26]);

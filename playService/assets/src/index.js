@@ -1,10 +1,11 @@
-var Lobby = require('./lobby/lobby')
-var Game = require('./game/game')
+const Lobby = require('./lobby/lobby')
+const Game = require('./game/game')
+const Cookie = require('js-cookie')
 
 document.addEventListener('DOMContentLoaded', function () {
-    var container = document.getElementById('robo-race')
-    var player = localStorage.getItem('playerName')
-    var gameId = document.body.dataset.gameId
+    const container = document.getElementById('robo-race')
+    const player = Cookie.get('playerName')
+    const gameId = document.body.dataset.gameId
     if(gameId && player)
         Game(container, player, gameId)
     else
