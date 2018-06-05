@@ -9,7 +9,7 @@ const images = require('../common/images')
 
 
 function render(state, actionHandler) {
-  var m = null
+  let m = null
   if (state.modal === 'log')
     m = modal(renderLog(state.logs), [actionHandler, {setModal: 'none'}])
   else if (state.modal === 'playerList')
@@ -129,32 +129,24 @@ function renderScenarioList(scenarios, actionHandler) {
 function renderActionButtons(state, game, actionHandler) {
   const player = game.players.find((player) => player.name === state.player)
 
+  function action(action, index) {
+    const isFocused = state.focusAction === index
+    const isUsed = state.slots.find(s => s === index) !== undefined
+    const image = images.action(Object.keys(action)[0])
+    return h('div.action', {
+      class: {'action-used': isUsed, 'action-focused': isFocused},
+      on: !isUsed ?  {click: [actionHandler, {focusAction: index}]} : {}
+    }, h('img', {props: {src: image.src}}))
+  }
+
   function actionSlot(index) {
     const action = state.slots[index]
     const image = action !== undefined ? images.action(Object.keys(player.possibleActions[action])[0]) : undefined
     return h('div.slot', {
-          class: {
-            'slot-selected': action !== undefined
-          },
-          on: {
-            dragover: ev => ev.preventDefault(),
-            drop: ev => {
-              const actionIndex = parseInt(ev.dataTransfer.getData("actionIndex"))
-              actionHandler({defineAction: {slot: index, value: actionIndex, cycle: game.cycle}})
-            }
-          }
+          class: {'slot-selected': action !== undefined},
+          on: state.focusAction !== undefined ? {click: [actionHandler, {defineAction: {slot: index, value: state.focusAction, cycle: state.game.GameRunning.cycle}}]} : {}
         },
         image !== undefined ? h('img', {props: {src: image.src}}) : undefined)
-  }
-
-  function action(action, index) {
-    const isUsed = state.slots.find(s => s === index) !== undefined
-    const image = images.action(Object.keys(action)[0])
-    return h('div.action', {
-      class: {'action-used': isUsed},
-      props: {draggable: !isUsed},
-      on: {dragstart: (ev) => ev.dataTransfer.setData("actionIndex", index)}
-    }, h('img', {props: {src: image.src}}))
   }
 
   if (!player) {

@@ -55,10 +55,10 @@ body {
     display: inline-block;
     border-radius: 3px;
     margin: 2px;
+    background: lightgrey;
 }
 
 .slot img, .action img {
-    /*background: white;*/
     display: block;
     width: 50px;
     height: 50px;
@@ -78,4 +78,8 @@ body {
 
 .action-used {
     border: 1px solid lightgrey;
+}
+
+.action-focused {
+    border: 1px dashed blue;
 }
