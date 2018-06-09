@@ -12,6 +12,10 @@ function robotFromPlayer(player) {
   return Robot(player.index, player.robot.position.x, player.robot.position.y, directionToRotation(player.robot.direction), player.finished ? 0 : 1)
 }
 
+function robotFromInitial(initial, index){
+  return Robot(index, initial.position.x, initial.position.y, directionToRotation(initial.direction), 1)
+}
+
 function interpolateRobots(r1, r2, t) {
   // https://gist.github.com/shaunlebron/8832585
   function angleLerp(a0, a1, t) {
@@ -43,7 +47,6 @@ function drawCanvas(canvas, scenario, robots) {
   const kHeight = scenario.height * k + (scenario.height - 1) * wallFactor * k + 0.5 + wallFactor * 2
 
   const tile = Math.min(height / kHeight, width / kWidth)
-  const th = tile /2
   const offsetTop = (canvas.height - tile * kHeight) / 2
   const offsetLeft = (canvas.width - tile * kWidth) / 2
 
@@ -51,7 +54,7 @@ function drawCanvas(canvas, scenario, robots) {
   const deltaTop = tile * k + tile * wallFactor
 
   function left(x, y) {
-    return offsetLeft + deltaLeft * x + th
+    return offsetLeft + deltaLeft * x + tile /2
   }
 
   function top(x, y) {
@@ -61,10 +64,10 @@ function drawCanvas(canvas, scenario, robots) {
       else return m
     }
 
-    return offsetTop + deltaTop * (y + saw(x) / 2) + th
+    return offsetTop + deltaTop * (y + saw(x) / 2) + tile /2
   }
 
-  const s = shapes(th, wallFactor)
+  const s = shapes(tile, wallFactor)
 
   function centerOn(x, y, callback) {
     ctx.save()
@@ -87,7 +90,7 @@ function drawCanvas(canvas, scenario, robots) {
 
   // target:
   centerOn(scenario.targetPosition.x, scenario.targetPosition.y, () => {
-    ctx.drawImage(images.target, -th / 2, -th / 2, th, th)
+    ctx.drawImage(images.target, -tile / 4, -tile / 2 / 2, tile / 2, tile / 2)
   })
 
   // walls:
@@ -114,7 +117,7 @@ function drawCanvas(canvas, scenario, robots) {
     centerOn(robot.x, robot.y, () => {
       ctx.globalAlpha = robot.alpha
       ctx.rotate(robot.rotation)
-      ctx.drawImage(images.player(robot.index), -th / 2, -th / 2, th, th)
+      ctx.drawImage(images.player(robot.index), -tile / 4, -tile / 4, tile / 2, tile / 2)
     })
   )
 }
@@ -143,7 +146,7 @@ function renderCanvas(state, scenario, robots) {
         postpatch: (oldVnode, newVnode) => {
           drawAnimatedCanvas(newVnode.elm, state.animationStart, scenario, state.animations, robots)
         },
-        insert: (node) => {
+        insert: node => {
           window.onresize = () => drawCanvas(node.elm, scenario, robots)
           drawCanvas(node.elm, scenario, robots)
         },
@@ -205,5 +208,5 @@ function framesFromEvents(oldGameState, events) {
 }
 
 module.exports = {
-  renderCanvas, robotFromPlayer, framesFromEvents
+  renderCanvas, robotFromPlayer, robotFromInitial, framesFromEvents
 }

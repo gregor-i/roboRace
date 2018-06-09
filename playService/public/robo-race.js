@@ -18113,8 +18113,8 @@ function player(index){
 
 const MoveForward = image('/assets/action_MoveForward.png')
 const MoveBackward = image('/assets/action_MoveBackward.png')
-const StepRight = image('/assets/action_StepRight.png')
-const StepLeft = image('/assets/action_StepLeft.png')
+// const StepRight = image('/assets/action_StepRight.png')
+// const StepLeft = image('/assets/action_StepLeft.png')
 const MoveTwiceForward = image('/assets/action_MoveTwiceForward.png')
 const TurnRight = image('/assets/action_TurnRight.png')
 const TurnLeft = image('/assets/action_TurnLeft.png')
@@ -18125,8 +18125,8 @@ function action(name) {
   switch (name){
     case 'MoveForward':      return MoveForward
     case 'MoveBackward':     return MoveBackward
-    case 'StepRight':        return StepRight
-    case 'StepLeft':         return StepLeft
+    // case 'StepRight':        return StepRight
+    // case 'StepLeft':         return StepLeft
     case 'MoveTwiceForward': return MoveTwiceForward
     case 'TurnRight':        return TurnRight
     case 'TurnLeft':         return TurnLeft
@@ -18221,6 +18221,9 @@ function actions(state, action) {
   } else if (action.setModal) {
     state.modal = action.setModal
     return Promise.resolve(state)
+  }else if (action.closeModal){
+    delete state.modal
+    return Promise.resolve(state)
   } else {
     console.error("unknown action", action)
   }
@@ -18241,6 +18244,10 @@ function Robot(index, x, y, rotation, alpha) {
 
 function robotFromPlayer(player) {
   return Robot(player.index, player.robot.position.x, player.robot.position.y, directionToRotation(player.robot.direction), player.finished ? 0 : 1)
+}
+
+function robotFromInitial(initial, index){
+  return Robot(index, initial.position.x, initial.position.y, directionToRotation(initial.direction), 1)
 }
 
 function interpolateRobots(r1, r2, t) {
@@ -18274,7 +18281,6 @@ function drawCanvas(canvas, scenario, robots) {
   const kHeight = scenario.height * k + (scenario.height - 1) * wallFactor * k + 0.5 + wallFactor * 2
 
   const tile = Math.min(height / kHeight, width / kWidth)
-  const th = tile /2
   const offsetTop = (canvas.height - tile * kHeight) / 2
   const offsetLeft = (canvas.width - tile * kWidth) / 2
 
@@ -18282,7 +18288,7 @@ function drawCanvas(canvas, scenario, robots) {
   const deltaTop = tile * k + tile * wallFactor
 
   function left(x, y) {
-    return offsetLeft + deltaLeft * x + th
+    return offsetLeft + deltaLeft * x + tile /2
   }
 
   function top(x, y) {
@@ -18292,10 +18298,10 @@ function drawCanvas(canvas, scenario, robots) {
       else return m
     }
 
-    return offsetTop + deltaTop * (y + saw(x) / 2) + th
+    return offsetTop + deltaTop * (y + saw(x) / 2) + tile /2
   }
 
-  const s = shapes(th, wallFactor)
+  const s = shapes(tile, wallFactor)
 
   function centerOn(x, y, callback) {
     ctx.save()
@@ -18318,7 +18324,7 @@ function drawCanvas(canvas, scenario, robots) {
 
   // target:
   centerOn(scenario.targetPosition.x, scenario.targetPosition.y, () => {
-    ctx.drawImage(images.target, -th / 2, -th / 2, th, th)
+    ctx.drawImage(images.target, -tile / 4, -tile / 2 / 2, tile / 2, tile / 2)
   })
 
   // walls:
@@ -18345,7 +18351,7 @@ function drawCanvas(canvas, scenario, robots) {
     centerOn(robot.x, robot.y, () => {
       ctx.globalAlpha = robot.alpha
       ctx.rotate(robot.rotation)
-      ctx.drawImage(images.player(robot.index), -th / 2, -th / 2, th, th)
+      ctx.drawImage(images.player(robot.index), -tile / 4, -tile / 4, tile / 2, tile / 2)
     })
   )
 }
@@ -18374,7 +18380,7 @@ function renderCanvas(state, scenario, robots) {
         postpatch: (oldVnode, newVnode) => {
           drawAnimatedCanvas(newVnode.elm, state.animationStart, scenario, state.animations, robots)
         },
-        insert: (node) => {
+        insert: node => {
           window.onresize = () => drawCanvas(node.elm, scenario, robots)
           drawCanvas(node.elm, scenario, robots)
         },
@@ -18436,7 +18442,7 @@ function framesFromEvents(oldGameState, events) {
 }
 
 module.exports = {
-  renderCanvas, robotFromPlayer, framesFromEvents
+  renderCanvas, robotFromPlayer, robotFromInitial, framesFromEvents
 }
 
 },{"../common/constants":14,"../common/images":16,"./shapes":25,"lodash":2,"snabbdom/h":3}],22:[function(require,module,exports){
@@ -18501,14 +18507,23 @@ const images = require('../common/images')
 
 function render(state, actionHandler) {
   let m = null
+  const closeAction = [actionHandler, {closeModal: true}]
   if (state.modal === 'log')
-    m = modal(renderLog(state.logs), [actionHandler, {setModal: 'none'}])
+    m = modal(renderLog(state.logs), closeAction)
   else if (state.modal === 'playerList')
-    m = modal(renderPlayerList(state), [actionHandler, {setModal: 'none'}])
+    m = modal(renderPlayerList(state), closeAction)
+  else if (state.modal && state.modal.type === 'previewScenario')
+    m = modal(h('div',
+        {style: {display: 'flex', width: '100%', height: '80vh'}},
+        gameBoard.renderCanvas({}, state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial)),
+        ),
+        closeAction)
+
+  const backToLobby = button.link(actionHandler, {leaveGame: true}, 'Back to Lobby')
 
   if (state.game.InitialGame) {
     return frame(header('Initial Game', [
-          backToLobbyButton(actionHandler),
+          backToLobby,
         ]),
         h('div.content', renderScenarioList(state.scenarios, actionHandler)),
         undefined,
@@ -18516,9 +18531,9 @@ function render(state, actionHandler) {
   } else if (state.game.GameStarting) {
     const game = state.game.GameStarting
     return frame(header('Game ' + state.gameId, [
-          backToLobbyButton(actionHandler),
-          joinGameButton(state, game, actionHandler),
-          readyButton(state, game, actionHandler)
+          backToLobby,
+          button.builder.primary().disable(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game'),
+          button.builder.disable(_.get(game.players.find(player => player.name === state.player), 'ready')).primary()(actionHandler, {readyForGame: state.gameId}, 'Ready')
         ]),
         h('div.content', renderPlayerList(state)),
         undefined,
@@ -18526,17 +18541,17 @@ function render(state, actionHandler) {
   } else if (state.game.GameRunning || state.game.GameFinished) {
     const game = state.game.GameRunning || state.game.GameFinished
     return frame(header('Game ' + state.gameId, [
-          backToLobbyButton(actionHandler),
-          animationsButton(state.animations, actionHandler),
-          logsButton(actionHandler),
-          playerListButton(actionHandler)
+          backToLobby,
+          button.builder.disable(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations'),
+          button.builder(actionHandler, {setModal: 'log'}, 'Logs'),
+          button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
         ]),
         gameBoard.renderCanvas(state, game.scenario, game.players.map(gameBoard.robotFromPlayer)),
         renderActionButtons(state, game, actionHandler),
         m)
   } else {
     return frame(header('GameState \'undefined\' is currently not supported.', [
-          backToLobbyButton(actionHandler),
+          backToLobby,
         ]),
         undefined,
         undefined,
@@ -18546,30 +18561,6 @@ function render(state, actionHandler) {
 
 function header(title, buttons) {
   return button.group(buttons)
-}
-
-function logsButton(actionHandler) {
-  return button.builder(actionHandler, {setModal: 'log'}, 'Logs')
-}
-
-function playerListButton(actionHandler) {
-  return button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
-}
-
-function backToLobbyButton(actionHandler) {
-  return button.link(actionHandler, {leaveGame: true}, 'Back to Lobby')
-}
-
-function animationsButton(animations, actionHandler) {
-  return button.builder.disable(!animations || animations.length === 0)(actionHandler, {replayAnimations: animations}, 'Replay Animations')
-}
-
-function joinGameButton(state, game, actionHandler) {
-  return button.builder.primary().disable(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game')
-}
-
-function readyButton(state, game, actionHandler) {
-  return button.builder.disable(_.get(game.players.find(player => player.name === state.player), 'ready')).primary()(actionHandler, {readyForGame: state.gameId}, 'Ready')
 }
 
 function renderPlayerList(state) {
@@ -18609,14 +18600,14 @@ function renderScenarioList(scenarios, actionHandler) {
         h('td', row.owner),
         h('td', button.group(
             button.primary(actionHandler, {selectScenario: row.scenario}, 'Select this Scenario'),
-            button.builder.disable(true)(actionHandler, {previewScenario: row.scenario}, 'Preview')
+            button.builder(actionHandler, {setModal: {type: 'previewScenario', scenario:row.scenario}}, 'Preview')
         ))
       ]))
 
   return h('div', [
     h('h4', 'Select a scenario: '),
     h('table', [header, ...rows])
-      ])
+  ])
 }
 
 function renderActionButtons(state, game, actionHandler) {
@@ -18762,7 +18753,8 @@ function degree(a) {
   return a * Math.PI / 180
 }
 
-function shapes(th, wallFactor) {
+function shapes(tile, wallFactor) {
+  const th = tile / 2
   const wall = wallFactor * th * 2
   const wallCenter = wall / Math.sqrt(3)
 
@@ -18796,6 +18788,7 @@ function shapes(th, wallFactor) {
 }
 
 module.exports = shapes
+
 },{}],26:[function(require,module,exports){
 const Lobby = require('./lobby/lobby')
 const Game = require('./game/game')

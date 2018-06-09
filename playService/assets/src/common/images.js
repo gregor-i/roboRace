@@ -31,8 +31,8 @@ function player(index){
 
 const MoveForward = image('/assets/action_MoveForward.png')
 const MoveBackward = image('/assets/action_MoveBackward.png')
-const StepRight = image('/assets/action_StepRight.png')
-const StepLeft = image('/assets/action_StepLeft.png')
+// const StepRight = image('/assets/action_StepRight.png')
+// const StepLeft = image('/assets/action_StepLeft.png')
 const MoveTwiceForward = image('/assets/action_MoveTwiceForward.png')
 const TurnRight = image('/assets/action_TurnRight.png')
 const TurnLeft = image('/assets/action_TurnLeft.png')
@@ -43,8 +43,8 @@ function action(name) {
   switch (name){
     case 'MoveForward':      return MoveForward
     case 'MoveBackward':     return MoveBackward
-    case 'StepRight':        return StepRight
-    case 'StepLeft':         return StepLeft
+    // case 'StepRight':        return StepRight
+    // case 'StepLeft':         return StepLeft
     case 'MoveTwiceForward': return MoveTwiceForward
     case 'TurnRight':        return TurnRight
     case 'TurnLeft':         return TurnLeft

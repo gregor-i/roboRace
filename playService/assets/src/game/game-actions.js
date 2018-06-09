@@ -29,6 +29,9 @@ function actions(state, action) {
   } else if (action.setModal) {
     state.modal = action.setModal
     return Promise.resolve(state)
+  }else if (action.closeModal){
+    delete state.modal
+    return Promise.resolve(state)
   } else {
     console.error("unknown action", action)
   }

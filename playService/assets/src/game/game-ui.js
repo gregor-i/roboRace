@@ -10,14 +10,23 @@ const images = require('../common/images')
 
 function render(state, actionHandler) {
   let m = null
+  const closeAction = [actionHandler, {closeModal: true}]
   if (state.modal === 'log')
-    m = modal(renderLog(state.logs), [actionHandler, {setModal: 'none'}])
+    m = modal(renderLog(state.logs), closeAction)
   else if (state.modal === 'playerList')
-    m = modal(renderPlayerList(state), [actionHandler, {setModal: 'none'}])
+    m = modal(renderPlayerList(state), closeAction)
+  else if (state.modal && state.modal.type === 'previewScenario')
+    m = modal(h('div',
+        {style: {display: 'flex', width: '100%', height: '80vh'}},
+        gameBoard.renderCanvas({}, state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial)),
+        ),
+        closeAction)
+
+  const backToLobby = button.link(actionHandler, {leaveGame: true}, 'Back to Lobby')
 
   if (state.game.InitialGame) {
     return frame(header('Initial Game', [
-          backToLobbyButton(actionHandler),
+          backToLobby,
         ]),
         h('div.content', renderScenarioList(state.scenarios, actionHandler)),
         undefined,
@@ -25,9 +34,9 @@ function render(state, actionHandler) {
   } else if (state.game.GameStarting) {
     const game = state.game.GameStarting
     return frame(header('Game ' + state.gameId, [
-          backToLobbyButton(actionHandler),
-          joinGameButton(state, game, actionHandler),
-          readyButton(state, game, actionHandler)
+          backToLobby,
+          button.builder.primary().disable(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game'),
+          button.builder.disable(_.get(game.players.find(player => player.name === state.player), 'ready')).primary()(actionHandler, {readyForGame: state.gameId}, 'Ready')
         ]),
         h('div.content', renderPlayerList(state)),
         undefined,
@@ -35,17 +44,17 @@ function render(state, actionHandler) {
   } else if (state.game.GameRunning || state.game.GameFinished) {
     const game = state.game.GameRunning || state.game.GameFinished
     return frame(header('Game ' + state.gameId, [
-          backToLobbyButton(actionHandler),
-          animationsButton(state.animations, actionHandler),
-          logsButton(actionHandler),
-          playerListButton(actionHandler)
+          backToLobby,
+          button.builder.disable(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations'),
+          button.builder(actionHandler, {setModal: 'log'}, 'Logs'),
+          button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
         ]),
         gameBoard.renderCanvas(state, game.scenario, game.players.map(gameBoard.robotFromPlayer)),
         renderActionButtons(state, game, actionHandler),
         m)
   } else {
     return frame(header('GameState \'undefined\' is currently not supported.', [
-          backToLobbyButton(actionHandler),
+          backToLobby,
         ]),
         undefined,
         undefined,
@@ -55,30 +64,6 @@ function render(state, actionHandler) {
 
 function header(title, buttons) {
   return button.group(buttons)
-}
-
-function logsButton(actionHandler) {
-  return button.builder(actionHandler, {setModal: 'log'}, 'Logs')
-}
-
-function playerListButton(actionHandler) {
-  return button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
-}
-
-function backToLobbyButton(actionHandler) {
-  return button.link(actionHandler, {leaveGame: true}, 'Back to Lobby')
-}
-
-function animationsButton(animations, actionHandler) {
-  return button.builder.disable(!animations || animations.length === 0)(actionHandler, {replayAnimations: animations}, 'Replay Animations')
-}
-
-function joinGameButton(state, game, actionHandler) {
-  return button.builder.primary().disable(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game')
-}
-
-function readyButton(state, game, actionHandler) {
-  return button.builder.disable(_.get(game.players.find(player => player.name === state.player), 'ready')).primary()(actionHandler, {readyForGame: state.gameId}, 'Ready')
 }
 
 function renderPlayerList(state) {
@@ -118,14 +103,14 @@ function renderScenarioList(scenarios, actionHandler) {
         h('td', row.owner),
         h('td', button.group(
             button.primary(actionHandler, {selectScenario: row.scenario}, 'Select this Scenario'),
-            button.builder.disable(true)(actionHandler, {previewScenario: row.scenario}, 'Preview')
+            button.builder(actionHandler, {setModal: {type: 'previewScenario', scenario:row.scenario}}, 'Preview')
         ))
       ]))
 
   return h('div', [
     h('h4', 'Select a scenario: '),
     h('table', [header, ...rows])
-      ])
+  ])
 }
 
 function renderActionButtons(state, game, actionHandler) {
