@@ -18513,8 +18513,7 @@ function render(state, actionHandler) {
   else if (state.modal === 'playerList')
     m = modal(renderPlayerList(state), closeAction)
   else if (state.modal && state.modal.type === 'previewScenario')
-    m = modal(h('div',
-        {style: {display: 'flex', width: '100%', height: '80vh'}},
+    m = modal(h('div.modal-maximized',
         gameBoard.renderCanvas({}, state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial)),
         ),
         closeAction)
