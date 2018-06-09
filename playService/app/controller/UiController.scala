@@ -3,17 +3,17 @@ package controller
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
 
-class UiController() extends InjectedController with Circe {
+class UiController() extends InjectedController {
 
-  def lobby() = Action(
-    Ok(views.html.RoboRace(mode = "lobby"))
+  private def ui(mode: String, gameId: String = "", scenarioId: String = "") = Action(
+    Ok(views.html.RoboRace(mode = mode, gameId = gameId, scenarioId = scenarioId))
   )
 
-  def game(id: String) = Action(
-    Ok(views.html.RoboRace(mode = "game", gameId = id))
-  )
+  def lobby() = ui(mode = "lobby")
 
-  def editor() =  Action(
-    Ok(views.html.RoboRace(mode = "editor"))
-  )
+  def game(id: String) = ui(mode = "game", gameId = id)
+
+  def editor() = ui(mode = "editor")
+
+  def editorWithId(id: String) = ui(mode = "editor", scenarioId = id)
 }

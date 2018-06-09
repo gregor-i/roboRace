@@ -1,4 +1,4 @@
-@(mode: String, gameId: String = "")
+@(mode: String, gameId: String, scenarioId: String)
 <!DOCTYPE html>
 <html>
     <head>
@@ -10,7 +10,7 @@
         <link rel="stylesheet" type="text/css" href="/assets/robo-race.css">
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.2/css/bulma.css">
     </head>
-    <body data-mode="@mode" data-game-id="@gameId">
+    <body data-mode="@mode" data-game-id="@gameId" data-scenario-id="@scenarioId">
         <div id="robo-race"></div>
     </body>
 </html>

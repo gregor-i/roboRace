@@ -13,10 +13,6 @@ function actions(state, action) {
         const name = action.definePlayerName
         Cookie.set('playerName', name)
         return Promise.resolve(Object.assign({}, state, {player: name}))
-    }else if(action.reloadGameList) {
-        return lobbyService.getAllGames().then(function (gameList) {
-            return Object.assign({}, state, {games: gameList})
-        })
     }else if(action.resetUserName){
         Cookie.remove('playerName')
         delete state.player

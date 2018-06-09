@@ -10,7 +10,7 @@ const ui = require('./editor-ui')
 const service = require('./editor-service')
 const actions = require('./editor-actions')
 
-function Editor(element) {
+function Editor(element, player, scenarioId) {
   let node = element
 
   function renderState(state) {
@@ -27,11 +27,25 @@ function Editor(element) {
   }
 
   service.loadAllScenarios().then(function (scenarios) {
-    renderState({
-      modal: 'none',
-      scenarios: scenarios,
-      scenario: scenarios['default']
-    }, element)
+    const scenario = scenarios.find(row => row.id === scenarioId)
+    if(scenario !== undefined)
+      renderState({
+        player,
+        scenarios,
+        scenario: scenario.scenario,
+        scenarioId: scenario.id,
+        scenarioOwner: scenario.owner,
+        modal: undefined
+      }, element)
+    else
+      renderState({
+        player,
+        scenarios,
+        scenario: undefined,
+        scenarioId: undefined,
+        scenarioOwner: undefined,
+        modal: undefined
+      }, element)
   })
 
   return this

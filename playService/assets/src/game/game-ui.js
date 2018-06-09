@@ -17,7 +17,7 @@ function render(state, actionHandler) {
     m = modal(renderPlayerList(state), closeAction)
   else if (state.modal && state.modal.type === 'previewScenario')
     m = modal(h('div.modal-maximized',
-        gameBoard.renderCanvas({}, state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial)),
+        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial)),
         ),
         closeAction)
 
@@ -34,8 +34,8 @@ function render(state, actionHandler) {
     const game = state.game.GameStarting
     return frame(header('Game ' + state.gameId, [
           backToLobby,
-          button.builder.primary().disable(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game'),
-          button.builder.disable(_.get(game.players.find(player => player.name === state.player), 'ready')).primary()(actionHandler, {readyForGame: state.gameId}, 'Ready')
+          button.builder.primary().disabled(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game'),
+          button.builder.disabled(_.get(game.players.find(player => player.name === state.player), 'ready')).primary()(actionHandler, {readyForGame: state.gameId}, 'Ready')
         ]),
         h('div.content', renderPlayerList(state)),
         undefined,
@@ -44,11 +44,11 @@ function render(state, actionHandler) {
     const game = state.game.GameRunning || state.game.GameFinished
     return frame(header('Game ' + state.gameId, [
           backToLobby,
-          button.builder.disable(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations'),
+          button.builder.disabled(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations'),
           button.builder(actionHandler, {setModal: 'log'}, 'Logs'),
           button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
         ]),
-        gameBoard.renderCanvas(state, game.scenario, game.players.map(gameBoard.robotFromPlayer)),
+        gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), state.animationStart, state.animations),
         renderActionButtons(state, game, actionHandler),
         m)
   } else {
@@ -137,7 +137,7 @@ function renderActionButtons(state, game, actionHandler) {
           }
         }]
       }} : {}
-    if (instruction) {
+    if (instruction !== undefined) {
       const image = images.action(Object.keys(player.instructionOptions[instruction])[0])
       return h('div.slot.slot-selected', eventListener,
           h('img', {props: {src: image.src}}))

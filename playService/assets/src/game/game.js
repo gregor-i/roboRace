@@ -61,11 +61,9 @@ function Game(element, player, gameId){
             }, element)
         }).catch(function (ex) {
             console.error(ex)
-            document.location = '/'
         })
     }).catch(function (ex) {
         console.error(ex)
-        document.location = '/'
     })
 
     return this

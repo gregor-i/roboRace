@@ -21,7 +21,7 @@ function builder(props) {
     f.link = function (bool) {
         return f.addProperty({class: {'is-link': bool === undefined ? true : bool}})
     }
-    f.disable = function (bool) {
+    f.disabled = function (bool) {
         return f.addProperty({props: {disabled: bool === undefined ? true : bool}})
     }
 

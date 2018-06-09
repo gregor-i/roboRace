@@ -4,10 +4,9 @@ var modal = require('../common/modal')
 var frame = require('../common/frame')
 
 function render(state, actionHandler) {
-    return frame([h('h1', 'Game Lobby:'), button.group(
+    return frame([h('h1', 'Robo Race - Game Lobby:'), button.group(
         button.builder.primary()(actionHandler, {createGame: true}, 'New Game'),
         button.builder(actionHandler, {redirectTo: '/editor'}, 'Scenario Editor'),
-        button.builder(actionHandler, {reloadGameList: true}, 'Refresh'),
         button.builder(actionHandler, {resetUserName: true}, 'Logout')
         )],
         h('div.content', renderGameTable(state, state.games, actionHandler)),
@@ -29,8 +28,8 @@ function renderGameTable(state, games, actionHandler) {
     h('td', row.owner),
     h('td', row.state),
     h('td', button.group(
-        button.builder.primary()(actionHandler, {enterGame: row.id}, 'Enter'),
-        button.builder.disable(row.owner !== state.player)(actionHandler, {deleteGame: row.id}, 'Delete')
+        button.builder.primary()(actionHandler, {redirectTo: '/game/' + row.id}, 'Enter'),
+        button.builder.disabled(row.owner !== state.player)(actionHandler, {deleteGame: row.id}, 'Delete')
     ))
   ]))
 

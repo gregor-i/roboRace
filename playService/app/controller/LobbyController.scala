@@ -36,19 +36,27 @@ class LobbyController @Inject()(gameRepo: GameRepository)
   }
 
   def create() = Action { request =>
-    val id = UUID.randomUUID().toString.take(8)
-    val gameState = InitialGame
-    val row = GameRow(id, Utils.playerName(request).getOrElse(Utils.fallbackPlayerName), gameState)
-    gameRepo.save(row)
-    val event: LobbyEvent = GameCreated(GameOverview(row.id, row.owner, stateDescription(row.game)))
-    Source.single(event.asJson.noSpaces).runWith(sink)
-    NoContent
+    Utils.playerName(request) match {
+      case None => Unauthorized
+      case Some(player) =>
+        val row = GameRow(id = Utils.newShortId(), owner = player, game = InitialGame)
+        gameRepo.save(row)
+        val event: LobbyEvent = GameCreated(GameOverview(row.id, row.owner, stateDescription(row.game)))
+        Source.single(event.asJson.noSpaces).runWith(sink)
+        Created(row.asJson)
+    }
   }
 
-  def delete(id: String) = Action {
-    gameRepo.delete(id)
-    Source.single((GameDeleted(id):LobbyEvent).asJson.noSpaces).runWith(sink)
-    NoContent
+  def delete(id: String) = Action { request =>
+    (gameRepo.get(id), Utils.playerName(request)) match {
+      case (None, _) => NotFound
+      case (_, None) => Unauthorized
+      case (Some(row), Some(player)) if row.owner != player => Unauthorized
+      case (Some(_), Some(_)) =>
+        gameRepo.delete(id)
+        Source.single((GameDeleted(id):LobbyEvent).asJson.noSpaces).runWith(sink)
+        NoContent
+    }
   }
 
   def sse() = Action {

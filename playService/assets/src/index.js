@@ -8,12 +8,13 @@ document.addEventListener('DOMContentLoaded', function () {
   const player = Cookie.get('playerName')
   const mode = document.body.dataset.mode
   const gameId = document.body.dataset.gameId
+  const scenarioId = document.body.dataset.scenarioId
   if (mode === "lobby")
     Lobby(container, player)
   else if (mode === "game")
     Game(container, player, gameId)
   else if (mode === "editor")
-    Editor(container)
+    Editor(container, player, scenarioId)
   else
     document.write('unknown mode')
 })

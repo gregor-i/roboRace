@@ -1,13 +1,13 @@
 package controller
 
-import play.api.Logger
+import java.util.UUID
+
 import play.api.mvc.Request
 
 object Utils {
-  def playerName(request: Request[_]): Option[String] = {
-    Logger.info(s"cookies: ${request.cookies}")
+  def playerName(request: Request[_]): Option[String] =
     request.cookies.get("playerName").map(_.value)
-  }
 
-  def fallbackPlayerName = "observer"
+
+  def newShortId(): String = UUID.randomUUID().toString.take(8)
 }

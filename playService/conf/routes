@@ -10,10 +10,12 @@ GET           /api/games/:id/events               controller.GameController.sse(
 
 GET           /api/scenarios                      controller.ScenarioController.get()
 POST          /api/scenarios                      controller.ScenarioController.post()
+DELETE        /api/scenarios/:id                   controller.ScenarioController.delete(id: String)
 
 #Frontend
 GET           /                                   controller.UiController.lobby()
 GET           /editor                             controller.UiController.editor()
+GET           /editor/:id                         controller.UiController.editorWithId(id: String)
 GET           /game/:id                           controller.UiController.game(id: String)
 
 GET           /assets/*file                       controllers.Assets.at(file)
