@@ -13,10 +13,10 @@ class CycleSpec extends FunSuite with Matchers with TestData {
     started.players.map(_.name) shouldBe oldState.players.map(_.name)
     started.cycle shouldBe 0
     for(player <- started.players){
-      player.actions shouldBe Seq()
+      player.instructions shouldBe Seq()
       player.finished shouldBe None
       player.robot shouldBe s.initialRobots(player.index)
-      player.possibleActions.size shouldBe Constants.actionOptionsPerCycle
+      player.possibleInstructions.size shouldBe Constants.instructionOptionsPerCycle
     }
   }
 

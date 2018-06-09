@@ -4,7 +4,7 @@ sealed abstract class EventLog(val text: String)
 
 case class GameStarted() extends EventLog("Game Started")
 
-case class RobotAction(playerName: String, action: Action) extends EventLog(s"'$playerName' does '$action'")
+case class RobotAction(playerName: String, instruction: Instruction) extends EventLog(s"'$playerName' does '$instruction'")
 case class RobotMoves(playerName: String, to: Position) extends EventLog(s"'$playerName' moves to $to")
 case class RobotTurns(playerName: String, to: Direction) extends EventLog(s"'$playerName' turns $to")
 case class MovementBlocked(playerName: String, position: Position, direction: Direction) extends EventLog(s"The movement of '$playerName' is blocked")

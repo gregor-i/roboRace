@@ -3,7 +3,7 @@ package gameLogic.gameUpdate
 import org.scalatest.{FunSuite, Matchers}
 
 class DealOptionsSpec extends  FunSuite with Matchers {
-  test("DealOptions.randomAction creates actions using the weights"){
+  test("DealOptions.randomAction creates instructions using the weights"){
     def start(n: Int) = DealOptions.weights.take(n).map(_._2).sum
 
     for(n <- DealOptions.weights.indices)

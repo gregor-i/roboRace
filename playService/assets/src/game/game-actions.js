@@ -14,13 +14,13 @@ function actions(state, action) {
   else if (action.focusAction !== undefined) {
     state.focusAction = action.focusAction
     return Promise.resolve(state)
-  } else if (action.defineAction) {
+  } else if (action.defineInstruction) {
     if (!state.slots)
       state.slots = []
-    let slot = action.defineAction.slot
-    state.slots[slot] = action.defineAction.value
-    if (_.range(constants.numberOfActionsPerCycle).every(i => state.slots[i] >= 0))
-      gameService.defineAction(state.gameId, state.player, action.defineAction.cycle, state.slots)
+    let slot = action.defineInstruction.slot
+    state.slots[slot] = action.defineInstruction.value
+    if (_.range(constants.numberOfInstructionsPerCycle).every(i => state.slots[i] >= 0))
+      gameService.defineInstruction(state.gameId, state.player, action.defineInstruction.cycle, state.slots)
     delete state.focusAction
     return Promise.resolve(state)
   } else if (action.replayAnimations) {

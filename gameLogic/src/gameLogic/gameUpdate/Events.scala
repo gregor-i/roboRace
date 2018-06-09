@@ -18,7 +18,7 @@ object Events {
 
   def reset(player: RunningPlayer, initialRobot: Robot)(game: GameRunning): Logged[GameRunning] =
     robot(player.name).set(initialRobot)
-      .andThen((GameRunning.player(player.name) composeLens RunningPlayer.actions).set(List.empty))
+      .andThen((GameRunning.player(player.name) composeLens RunningPlayer.instructions).set(List.empty))
       .apply(game)
       .log(RobotReset(player.name, initialRobot))
 

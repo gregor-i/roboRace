@@ -12,8 +12,8 @@ function sendCommand(gameId, command) {
     }))
 }
 
-function defineAction(gameId, player, cycle, actions) {
-    return sendCommand(gameId, {DefineNextAction: {player, cycle, actions}})
+function defineInstruction(gameId, player, cycle, instructions) {
+    return sendCommand(gameId, {ChooseInstructions: {player, cycle, instructions}})
         .then(parseJson)
 }
 
@@ -39,7 +39,7 @@ function parseJson(resp) {
 
 module.exports = {
     getState,
-    defineAction,
+    defineInstruction,
     defineScenario,
     readyForGame,
     joinGame,

@@ -11,9 +11,9 @@ sealed trait Player {
 case class RunningPlayer(index: Int,
                          name: String,
                          robot: Robot,
-                         actions: Seq[Action],
-                         finished: Option[FinishedStatistic],
-                         possibleActions: Seq[Action]) extends Player
+                         instructions: Seq[Instruction],
+                         instructionOptions: Seq[Instruction],
+                         finished: Option[FinishedStatistic]) extends Player
 
 @Lenses
 case class StartingPlayer(index: Int,

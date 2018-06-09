@@ -2,7 +2,7 @@ package gameLogic
 package gameUpdate
 
 object MoveRobots {
-  def apply(player: RunningPlayer, action: MoveAction, game: GameRunning): Logged[GameRunning] = {
+  def apply(player: RunningPlayer, instruction: MoveInstruction, game: GameRunning): Logged[GameRunning] = {
     def move(direction: Direction, gameRunning: GameRunning): Logged[GameRunning] ={
       val p = gameRunning.players.find(_.name == player.name).get
       if (movementIsAllowed(gameRunning, p.robot.position, direction)) {
@@ -15,7 +15,7 @@ object MoveRobots {
       }
     }
 
-    action match {
+    instruction match {
       case MoveForward => move(player.robot.direction, game)
       case MoveBackward => move(player.robot.direction.back, game)
       case StepRight => move(player.robot.direction.right, game)

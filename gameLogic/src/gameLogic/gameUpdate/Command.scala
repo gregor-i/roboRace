@@ -31,7 +31,7 @@ case class RegisterForGame(playerName: String) extends Command {
     case g if g.players.size >= g.scenario.initialRobots.size =>
       CommandRejected(TooMuchPlayersRegistered)
     case g =>
-      CommandAccepted(GameStarting.players.modify(players => players :+ StartingPlayer(players.size, playerName, false))(g))
+      CommandAccepted(GameStarting.players.modify(players => players :+ StartingPlayer(players.size, playerName, ready = false))(g))
   }
 }
 
@@ -44,17 +44,17 @@ case class ReadyForGame(playerName: String) extends Command {
   }
 }
 
-case class DefineNextAction(player: String, cycle: Int, actions: Seq[Int]) extends Command {
+case class ChooseInstructions(player: String, cycle: Int, instructions: Seq[Int]) extends Command {
   override def ifRunning: GameRunning => CommandResponse = {
     case g if g.cycle != cycle =>
       CommandRejected(WrongCycle)
     case g if !g.players.exists(_.name == player) =>
       CommandRejected(PlayerNotFound)
-    case g if actions.size != Constants.actionsPerCycle ||
-      actions.distinct.size != Constants.actionsPerCycle ||
-      actions.forall(i => 0 > i || i > Constants.actionOptionsPerCycle) =>
+    case g if instructions.size != Constants.instructionsPerCycle ||
+      instructions.distinct.size != Constants.instructionsPerCycle ||
+      instructions.forall(i => 0 > i || i > Constants.instructionOptionsPerCycle) =>
       CommandRejected(InvalidActionChoice)
     case g =>
-      CommandAccepted(GameRunning.player(player).modify(p => p.copy(actions = actions.map(p.possibleActions)))(g))
+      CommandAccepted(GameRunning.player(player).modify(p => p.copy(instructions = instructions.map(p.instructionOptions)))(g))
   }
 }

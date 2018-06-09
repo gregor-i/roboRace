@@ -1,6 +1,6 @@
 package gameLogic
 
 object Constants {
-  val actionsPerCycle = 5
-  val actionOptionsPerCycle = 12
+  val instructionsPerCycle = 5
+  val instructionOptionsPerCycle = 12
 }
