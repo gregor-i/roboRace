@@ -1,13 +1,19 @@
 const Lobby = require('./lobby/lobby')
 const Game = require('./game/game')
 const Cookie = require('js-cookie')
+const Editor = require('./editor/editor')
 
 document.addEventListener('DOMContentLoaded', function () {
-    const container = document.getElementById('robo-race')
-    const player = Cookie.get('playerName')
-    const gameId = document.body.dataset.gameId
-    if(gameId && player)
-        Game(container, player, gameId)
-    else
-        Lobby(container, player)
+  const container = document.getElementById('robo-race')
+  const player = Cookie.get('playerName')
+  const mode = document.body.dataset.mode
+  const gameId = document.body.dataset.gameId
+  if (mode === "lobby")
+    Lobby(container, player)
+  else if (mode === "game")
+    Game(container, player, gameId)
+  else if (mode === "editor")
+    Editor(container)
+  else
+    document.write('unknown mode')
 })

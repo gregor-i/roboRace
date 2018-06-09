@@ -13,7 +13,8 @@ POST          /api/scenarios                      controller.ScenarioController.
 
 #Frontend
 GET           /                                   controller.UiController.lobby()
-GET           /:id                                controller.UiController.game(id: String)
+GET           /editor                             controller.UiController.editor()
+GET           /game/:id                           controller.UiController.game(id: String)
 
 GET           /assets/*file                       controllers.Assets.at(file)
 

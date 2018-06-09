@@ -6,6 +6,7 @@ var frame = require('../common/frame')
 function render(state, actionHandler) {
     return frame([h('h1', 'Game Lobby:'), button.group(
         button.builder.primary()(actionHandler, {createGame: true}, 'New Game'),
+        button.builder(actionHandler, {redirectTo: '/editor'}, 'Scenario Editor'),
         button.builder(actionHandler, {reloadGameList: true}, 'Refresh'),
         button.builder(actionHandler, {resetUserName: true}, 'Logout')
         )],
@@ -37,33 +38,35 @@ function renderGameTable(state, games, actionHandler) {
 }
 
 function renderLoginModal(player, actionHandler) {
-    function submit() {
-        var player = document.getElementById('player-name-input').value
-        if (player)
-            actionHandler({definePlayerName: player})
+  let input = h('input.input.is-primary', {
+      props: {
+        placeholder: 'Name',
+        id: 'player-name-input'
+      },
+      on: {
+        keydown: function (event) {
+          if (event.key === 'Enter')
+            submit()
+        }
+      }
     }
+  )
 
-    if (!player) {
-        return modal([
-            h('h3', 'Login'),
-            h('input.input.is-primary', {
-                    props: {
-                        placeholder: 'Name',
-                        id: 'player-name-input'
-                    },
-                    on: {
-                        keydown: function (event) {
-                            if (event.key === 'Enter')
-                                submit()
-                        }
-                    }
-                }
-            ),
-            h('a.button.is-primary', {on: {click: submit}}, 'Enter')
-        ])
-    } else {
-        return undefined
-    }
+  function submit() {
+    var player = input.elm.value
+    if (player)
+      actionHandler({definePlayerName: player})
+  }
+
+  if (!player) {
+    return modal([
+      h('h3', 'Login'),
+      input,
+      h('a.button.is-primary', {on: {click: submit}}, 'Enter')
+    ])
+  } else {
+    return undefined
+  }
 }
 
 module.exports = render
