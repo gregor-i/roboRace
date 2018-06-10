@@ -18657,7 +18657,10 @@ function onClickCanvas(scenario, options) {
             bestY = y
           }
 
-      options.onClickTile(bestX, bestY)
+      if(Math.sqrt(dist(bestX, bestY)) > tile/2)
+          console.log('clicked outside')
+      else
+        options.onClickTile(bestX, bestY)
     }
   else
     return null
