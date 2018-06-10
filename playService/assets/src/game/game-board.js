@@ -4,6 +4,8 @@ const images = require('../common/images')
 const constants = require('../common/constants')
 const shapes = require('./shapes')
 
+const k = Math.sqrt(3) / 2
+
 function Robot(index, x, y, rotation, alpha) {
   return {index, x, y, rotation, alpha}
 }
@@ -32,8 +34,6 @@ function interpolateRobots(r1, r2, t) {
 
 function drawCanvas(canvas, scenario, robots) {
   const ctx = canvas.getContext("2d")
-
-  const k = Math.sqrt(3) / 2
 
   const rect = canvas.getBoundingClientRect()
   const width = rect.width
@@ -139,12 +139,70 @@ function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots)
   }
 }
 
+function onClickCanvas(scenario, options) {
+  if(options.onClickTile)
+    return (event) => {
+      const canvas = event.target
+      const rect = canvas.getBoundingClientRect()
+      const width = rect.width
+      const height = rect.height
 
-function renderCanvas(scenario, robots, animationStart, animations) {
+      const wallFactor = 0.1
+
+      const kWidth = scenario.width * 0.75  + (scenario.width - 1) * wallFactor * k + 0.25
+      const kHeight = scenario.height * k + (scenario.height - 1) * wallFactor * k + 0.5 + wallFactor * 2
+
+      const tile = Math.min(height / kHeight, width / kWidth)
+      const offsetTop = (height - tile * kHeight) / 2
+      const offsetLeft = (width - tile * kWidth) / 2
+
+      const deltaLeft = 0.75 * tile + tile * wallFactor*k
+      const deltaTop = tile * k + tile * wallFactor
+
+      function left(x, y) {
+        return offsetLeft + deltaLeft * x + tile /2
+      }
+
+      function top(x, y) {
+        function saw(x) {
+          const m = x % 2
+          if (m > 1) return 2 - m
+          else return m
+        }
+
+        return offsetTop + deltaTop * (y + saw(x) / 2) + tile /2
+      }
+
+      const eventX = event.offsetX
+      const eventY = event.offsetY
+
+      let bestX = 0
+      let bestY = 0
+
+      function dist(x, y){
+        return (eventX - left(x,y)) * (eventX - left(x,y)) + (eventY - top(x,y)) * (eventY - top(x,y))
+      }
+
+      for (let y = 0; y < scenario.height; y++)
+        for (let x = 0; x < scenario.width; x++)
+          if(dist(bestX, bestY) > dist(x, y)){
+            bestX = x
+            bestY = y
+          }
+
+      options.onClickTile(bestX, bestY)
+    }
+  else
+    return null
+}
+
+
+function renderCanvas(scenario, robots, options) {
   return h('canvas.game-view', {
+      on : {click: onClickCanvas(scenario, options)},
       hook: {
         postpatch: (oldVnode, newVnode) => {
-          drawAnimatedCanvas(newVnode.elm, animationStart, scenario, animations, robots)
+          drawAnimatedCanvas(newVnode.elm, options.animationStart, scenario, options.frames, robots)
         },
         insert: node => {
           window.onresize = () => drawCanvas(node.elm, scenario, robots)

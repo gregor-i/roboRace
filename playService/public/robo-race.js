@@ -18196,6 +18196,45 @@ function actions(state, action) {
   } else if (action === 'height--') {
     state.scenario.height--
     return Promise.resolve(state)
+  }else if(action.setClickAction) {
+    state.clickAction = action.setClickAction
+    return Promise.resolve(state)
+  }else if(action.togglePit) {
+    const {x, y} = action.togglePit
+    if (state.scenario.pits.find(p => p.x === x && p.y === y))
+      state.scenario.pits = state.scenario.pits.filter(p => p.x !== x || p.y !== y)
+    else
+      state.scenario.pits = [...state.scenario.pits, {x, y}]
+    return Promise.resolve(state)
+  }else if(action.setTarget) {
+    state.scenario.targetPosition = action.setTarget
+    return Promise.resolve(state)
+  }else if(action.toggleInitialRobot) {
+    const {x, y} = action.toggleInitialRobot
+    if (state.scenario.initialRobots.find(r => r.position.x === x && r.position.y === y))
+      state.scenario.initialRobots = state.scenario.initialRobots.filter(r => r.position.x !== x || r.position.y !== y)
+    else
+      state.scenario.initialRobots = [...state.scenario.initialRobots, {position: {x, y}, direction: {Up: {}}}]
+    return Promise.resolve(state)
+  }else if(action.rotateRobot){
+    const {x, y} = action.rotateRobot
+    function rot(dir){
+      if(dir.Up)
+        return {UpRight: {}}
+      else if(dir.UpRight)
+        return {DownRight: {}}
+      else if(dir.DownRight)
+        return {Down: {}}
+      else if(dir.Down)
+        return {DownLeft: {}}
+      else if(dir.DownLeft)
+        return {UpLeft: {}}
+      else if(dir.UpLeft)
+        return {Up: {}}
+    }
+    if (state.scenario.initialRobots.find(r => r.position.x === x && r.position.y === y))
+      state.scenario.initialRobots = state.scenario.initialRobots.map(r => r.position.x === x && r.position.y === y ? {position: r.position, direction: rot(r.direction)} : r)
+    return Promise.resolve(state)
 
   } else if (action === 'save') {
     editorService.postScenario(state.scenario)
@@ -18252,28 +18291,15 @@ function render(state, actionHandler) {
   const closeAction = [actionHandler, {closeModal: true}]
   if (state.modal && state.modal.type === 'previewScenario')
     m = modal(h('div.modal-maximized',
-        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial)),
-        ),
-        closeAction)
+        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial), {}),
+        ), closeAction)
 
   const backToLobby = backToLobbyButton(actionHandler)
 
   if(state.scenario) {
-    let width = h('input.input',
-        {props: {value: state.scenario.width}, on: {change: function(){ actionHandler({setWidth: width.elm.value})}}}
-    )
-    let height = h('input.input',
-        {props: {value: state.scenario.height}, on: {change: function(){ actionHandler({setHeight: height.elm.value})}}}
-    )
     return frame([h('h1', 'Scenario Editor: ' + state.scenarioId), button.group(backToLobby)],
-        gameBoard.renderCanvas(state.scenario, state.scenario.initialRobots.map(gameBoard.robotFromInitial)),
-        h('div.control-panel', [
-          button.builder(actionHandler, 'width--', 'Widht -'),
-          button.builder(actionHandler, 'width++', 'Widht +'),
-          button.builder(actionHandler, 'height--', 'Height -'),
-          button.builder(actionHandler, 'height++', 'Height +'),
-          button.builder(actionHandler, 'save', 'Save Scenario')
-        ]),
+        gameBoard.renderCanvas(state.scenario, state.scenario.initialRobots.map(gameBoard.robotFromInitial), clickEventHandler(state.clickAction, actionHandler)),
+        renderEditorActionbar(actionHandler),
         m)
   } else {
     return frame([h('h1', 'Scenario Editor:'), button.group(backToLobby)],
@@ -18281,6 +18307,37 @@ function render(state, actionHandler) {
         undefined,
         m)
   }
+}
+
+function clickEventHandler(clickAction, actionHandler){
+  if(clickAction === 'TogglePit')
+    return {onClickTile: (x, y) => actionHandler({togglePit: {x, y}})}
+  else if(clickAction === 'SetTarget')
+    return {onClickTile: (x, y) => actionHandler({setTarget: {x, y}})}
+  else if(clickAction === 'ToggleInitialRobot')
+    return {onClickTile: (x, y) => actionHandler({toggleInitialRobot: {x, y}})}
+  else if(clickAction === 'RotateRobot')
+    return {onClickTile: (x, y) => actionHandler({rotateRobot: {x, y}})}
+  else
+    return {}
+}
+
+function renderEditorActionbar(actionHandler){
+  return [
+    h('div.control-panel', [
+      button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
+      button.builder(actionHandler, {setClickAction: 'SetTarget'}, 'Target'),
+      button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
+      button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
+    ]),
+    h('div.control-panel', [
+      button.builder(actionHandler, 'width--', 'W-'),
+      button.builder(actionHandler, 'width++', 'W+'),
+      button.builder(actionHandler, 'height--', 'H-'),
+      button.builder(actionHandler, 'height++', 'H+'),
+      button.builder(actionHandler, 'save', 'Save Scenario')
+    ])
+  ]
 }
 
 function renderScenarioList(player, scenarios, actionHandler) {
@@ -18301,24 +18358,6 @@ function renderScenarioList(player, scenarios, actionHandler) {
     h('h4', 'Select a scenario: '),
     h('table', [header, ...rows])
   ])
-}
-
-function doubleInput(label, input1, input2) {
-  return h('div.field.is-horizontal',
-    [
-      h('div.field-label.is-normal',
-        h('label.label', label)
-      ),
-      h('div.field-body', [
-        h('div.field', h('p.control', input1)),
-        h('div.field', h('p.control', input2)),
-      ])
-    ]
-  )
-}
-
-function label(text) {
-  return h('label.label', text)
 }
 
 function backToLobbyButton(actionHandler) {
@@ -18432,6 +18471,8 @@ const images = require('../common/images')
 const constants = require('../common/constants')
 const shapes = require('./shapes')
 
+const k = Math.sqrt(3) / 2
+
 function Robot(index, x, y, rotation, alpha) {
   return {index, x, y, rotation, alpha}
 }
@@ -18460,8 +18501,6 @@ function interpolateRobots(r1, r2, t) {
 
 function drawCanvas(canvas, scenario, robots) {
   const ctx = canvas.getContext("2d")
-
-  const k = Math.sqrt(3) / 2
 
   const rect = canvas.getBoundingClientRect()
   const width = rect.width
@@ -18567,12 +18606,70 @@ function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots)
   }
 }
 
+function onClickCanvas(scenario, options) {
+  if(options.onClickTile)
+    return (event) => {
+      const canvas = event.target
+      const rect = canvas.getBoundingClientRect()
+      const width = rect.width
+      const height = rect.height
 
-function renderCanvas(scenario, robots, animationStart, animations) {
+      const wallFactor = 0.1
+
+      const kWidth = scenario.width * 0.75  + (scenario.width - 1) * wallFactor * k + 0.25
+      const kHeight = scenario.height * k + (scenario.height - 1) * wallFactor * k + 0.5 + wallFactor * 2
+
+      const tile = Math.min(height / kHeight, width / kWidth)
+      const offsetTop = (height - tile * kHeight) / 2
+      const offsetLeft = (width - tile * kWidth) / 2
+
+      const deltaLeft = 0.75 * tile + tile * wallFactor*k
+      const deltaTop = tile * k + tile * wallFactor
+
+      function left(x, y) {
+        return offsetLeft + deltaLeft * x + tile /2
+      }
+
+      function top(x, y) {
+        function saw(x) {
+          const m = x % 2
+          if (m > 1) return 2 - m
+          else return m
+        }
+
+        return offsetTop + deltaTop * (y + saw(x) / 2) + tile /2
+      }
+
+      const eventX = event.offsetX
+      const eventY = event.offsetY
+
+      let bestX = 0
+      let bestY = 0
+
+      function dist(x, y){
+        return (eventX - left(x,y)) * (eventX - left(x,y)) + (eventY - top(x,y)) * (eventY - top(x,y))
+      }
+
+      for (let y = 0; y < scenario.height; y++)
+        for (let x = 0; x < scenario.width; x++)
+          if(dist(bestX, bestY) > dist(x, y)){
+            bestX = x
+            bestY = y
+          }
+
+      options.onClickTile(bestX, bestY)
+    }
+  else
+    return null
+}
+
+
+function renderCanvas(scenario, robots, options) {
   return h('canvas.game-view', {
+      on : {click: onClickCanvas(scenario, options)},
       hook: {
         postpatch: (oldVnode, newVnode) => {
-          drawAnimatedCanvas(newVnode.elm, animationStart, scenario, animations, robots)
+          drawAnimatedCanvas(newVnode.elm, options.animationStart, scenario, options.frames, robots)
         },
         insert: node => {
           window.onresize = () => drawCanvas(node.elm, scenario, robots)
@@ -18708,7 +18805,7 @@ function render(state, actionHandler) {
     m = modal(renderPlayerList(state), closeAction)
   else if (state.modal && state.modal.type === 'previewScenario')
     m = modal(h('div.modal-maximized',
-        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial)),
+        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial), {}),
         ),
         closeAction)
 
@@ -18739,7 +18836,7 @@ function render(state, actionHandler) {
           button.builder(actionHandler, {setModal: 'log'}, 'Logs'),
           button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
         ]),
-        gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), state.animationStart, state.animations),
+        gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), {animationStart:state.animationStart, frames:state.animations}),
         renderActionButtons(state, game, actionHandler),
         m)
   } else {
@@ -18812,7 +18909,7 @@ function renderActionButtons(state, game, actionHandler) {
     const image = images.action(Object.keys(action)[0])
     return h('div.action', {
       class: {'action-used': isUsed, 'action-focused': isFocused},
-      on: !isUsed ?  {click: [actionHandler, {focusAction: index}]} : {}
+      on: !isUsed ?  {click: () => actionHandler({focusAction: index})} : {}
     }, h('img', {props: {src: image.src}}))
   }
 

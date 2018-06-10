@@ -10,28 +10,15 @@ function render(state, actionHandler) {
   const closeAction = [actionHandler, {closeModal: true}]
   if (state.modal && state.modal.type === 'previewScenario')
     m = modal(h('div.modal-maximized',
-        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial)),
-        ),
-        closeAction)
+        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial), {}),
+        ), closeAction)
 
   const backToLobby = backToLobbyButton(actionHandler)
 
   if(state.scenario) {
-    let width = h('input.input',
-        {props: {value: state.scenario.width}, on: {change: function(){ actionHandler({setWidth: width.elm.value})}}}
-    )
-    let height = h('input.input',
-        {props: {value: state.scenario.height}, on: {change: function(){ actionHandler({setHeight: height.elm.value})}}}
-    )
     return frame([h('h1', 'Scenario Editor: ' + state.scenarioId), button.group(backToLobby)],
-        gameBoard.renderCanvas(state.scenario, state.scenario.initialRobots.map(gameBoard.robotFromInitial)),
-        h('div.control-panel', [
-          button.builder(actionHandler, 'width--', 'Widht -'),
-          button.builder(actionHandler, 'width++', 'Widht +'),
-          button.builder(actionHandler, 'height--', 'Height -'),
-          button.builder(actionHandler, 'height++', 'Height +'),
-          button.builder(actionHandler, 'save', 'Save Scenario')
-        ]),
+        gameBoard.renderCanvas(state.scenario, state.scenario.initialRobots.map(gameBoard.robotFromInitial), clickEventHandler(state.clickAction, actionHandler)),
+        renderEditorActionbar(actionHandler),
         m)
   } else {
     return frame([h('h1', 'Scenario Editor:'), button.group(backToLobby)],
@@ -39,6 +26,37 @@ function render(state, actionHandler) {
         undefined,
         m)
   }
+}
+
+function clickEventHandler(clickAction, actionHandler){
+  if(clickAction === 'TogglePit')
+    return {onClickTile: (x, y) => actionHandler({togglePit: {x, y}})}
+  else if(clickAction === 'SetTarget')
+    return {onClickTile: (x, y) => actionHandler({setTarget: {x, y}})}
+  else if(clickAction === 'ToggleInitialRobot')
+    return {onClickTile: (x, y) => actionHandler({toggleInitialRobot: {x, y}})}
+  else if(clickAction === 'RotateRobot')
+    return {onClickTile: (x, y) => actionHandler({rotateRobot: {x, y}})}
+  else
+    return {}
+}
+
+function renderEditorActionbar(actionHandler){
+  return [
+    h('div.control-panel', [
+      button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
+      button.builder(actionHandler, {setClickAction: 'SetTarget'}, 'Target'),
+      button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
+      button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
+    ]),
+    h('div.control-panel', [
+      button.builder(actionHandler, 'width--', 'W-'),
+      button.builder(actionHandler, 'width++', 'W+'),
+      button.builder(actionHandler, 'height--', 'H-'),
+      button.builder(actionHandler, 'height++', 'H+'),
+      button.builder(actionHandler, 'save', 'Save Scenario')
+    ])
+  ]
 }
 
 function renderScenarioList(player, scenarios, actionHandler) {
@@ -59,24 +77,6 @@ function renderScenarioList(player, scenarios, actionHandler) {
     h('h4', 'Select a scenario: '),
     h('table', [header, ...rows])
   ])
-}
-
-function doubleInput(label, input1, input2) {
-  return h('div.field.is-horizontal',
-    [
-      h('div.field-label.is-normal',
-        h('label.label', label)
-      ),
-      h('div.field-body', [
-        h('div.field', h('p.control', input1)),
-        h('div.field', h('p.control', input2)),
-      ])
-    ]
-  )
-}
-
-function label(text) {
-  return h('label.label', text)
 }
 
 function backToLobbyButton(actionHandler) {

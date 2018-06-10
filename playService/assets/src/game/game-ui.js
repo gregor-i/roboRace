@@ -17,7 +17,7 @@ function render(state, actionHandler) {
     m = modal(renderPlayerList(state), closeAction)
   else if (state.modal && state.modal.type === 'previewScenario')
     m = modal(h('div.modal-maximized',
-        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial)),
+        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial), {}),
         ),
         closeAction)
 
@@ -48,7 +48,7 @@ function render(state, actionHandler) {
           button.builder(actionHandler, {setModal: 'log'}, 'Logs'),
           button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
         ]),
-        gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), state.animationStart, state.animations),
+        gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), {animationStart:state.animationStart, frames:state.animations}),
         renderActionButtons(state, game, actionHandler),
         m)
   } else {
@@ -121,7 +121,7 @@ function renderActionButtons(state, game, actionHandler) {
     const image = images.action(Object.keys(action)[0])
     return h('div.action', {
       class: {'action-used': isUsed, 'action-focused': isFocused},
-      on: !isUsed ?  {click: [actionHandler, {focusAction: index}]} : {}
+      on: !isUsed ?  {click: () => actionHandler({focusAction: index})} : {}
     }, h('img', {props: {src: image.src}}))
   }
 
