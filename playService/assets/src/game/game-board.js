@@ -190,10 +190,36 @@ function onClickCanvas(scenario, options) {
             bestY = y
           }
 
+      const angle = Math.atan2(top(bestX, bestY) - eventY, left(bestX, bestY) - eventX)
+      // 0 = left
+      // Math.PI = Right
+      const directionHelper = Math.floor((angle/ Math.PI * 3 + 6) % 6)
+      let direction
+      switch(directionHelper){
+        case 0:
+          direction = {UpLeft: {}}
+          break;
+        case 1:
+          direction = {Up: {}}
+          break;
+        case 2:
+          direction = {UpRight: {}}
+          break;
+        case 3:
+          direction = {DownRight: {}}
+          break;
+        case 4:
+          direction = {Down: {}}
+          break;
+        case 5:
+          direction = {DownLeft: {}}
+          break;
+      }
+
       if(Math.sqrt(dist(bestX, bestY)) > tile/2)
           console.log('clicked outside')
       else
-        options.onClickTile(bestX, bestY)
+        options.onClickTile(bestX, bestY, direction)
     }
   else
     return null

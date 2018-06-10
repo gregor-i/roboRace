@@ -67,6 +67,25 @@ function actions(state, action) {
     if (state.scenario.initialRobots.find(r => r.position.x === x && r.position.y === y))
       state.scenario.initialRobots = state.scenario.initialRobots.map(r => r.position.x === x && r.position.y === y ? {position: r.position, direction: rot(r.direction)} : r)
     return Promise.resolve(state)
+  }else if(action.toggleWall){
+    let {x, y, direction} = action.toggleWall
+    if (direction.Up) {
+      y--
+      direction = {Down: {}}
+    } else if (direction.UpLeft) {
+      x--
+      direction = {DownRight: {}}
+    } else if (direction.DownLeft) {
+      x--
+      y++
+      direction = {UpRight: {}}
+    }
+    const p = w => w.position.x === x && w.position.y === y && Object.keys(w.direction)[0] === Object.keys(direction)[0]
+    if (state.scenario.walls.find(p))
+      state.scenario.walls = state.scenario.walls.filter(w => !p(w))
+    else
+      state.scenario.walls = [...state.scenario.walls, {position : {x, y}, direction}]
+    return Promise.resolve(state)
 
   } else if (action === 'save') {
     editorService.postScenario(state.scenario)

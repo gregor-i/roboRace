@@ -29,7 +29,9 @@ function render(state, actionHandler) {
 }
 
 function clickEventHandler(clickAction, actionHandler){
-  if(clickAction === 'TogglePit')
+  if(clickAction === 'ToggleWall')
+    return {onClickTile: (x, y, direction) => actionHandler({toggleWall: {x, y, direction}})}
+  else if(clickAction === 'TogglePit')
     return {onClickTile: (x, y) => actionHandler({togglePit: {x, y}})}
   else if(clickAction === 'SetTarget')
     return {onClickTile: (x, y) => actionHandler({setTarget: {x, y}})}
@@ -44,6 +46,7 @@ function clickEventHandler(clickAction, actionHandler){
 function renderEditorActionbar(actionHandler){
   return [
     h('div.control-panel', [
+      button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
       button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
       button.builder(actionHandler, {setClickAction: 'SetTarget'}, 'Target'),
       button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),

@@ -18235,6 +18235,25 @@ function actions(state, action) {
     if (state.scenario.initialRobots.find(r => r.position.x === x && r.position.y === y))
       state.scenario.initialRobots = state.scenario.initialRobots.map(r => r.position.x === x && r.position.y === y ? {position: r.position, direction: rot(r.direction)} : r)
     return Promise.resolve(state)
+  }else if(action.toggleWall){
+    let {x, y, direction} = action.toggleWall
+    if (direction.Up) {
+      y--
+      direction = {Down: {}}
+    } else if (direction.UpLeft) {
+      x--
+      direction = {DownRight: {}}
+    } else if (direction.DownLeft) {
+      x--
+      y++
+      direction = {UpRight: {}}
+    }
+    const p = w => w.position.x === x && w.position.y === y && Object.keys(w.direction)[0] === Object.keys(direction)[0]
+    if (state.scenario.walls.find(p))
+      state.scenario.walls = state.scenario.walls.filter(w => !p(w))
+    else
+      state.scenario.walls = [...state.scenario.walls, {position : {x, y}, direction}]
+    return Promise.resolve(state)
 
   } else if (action === 'save') {
     editorService.postScenario(state.scenario)
@@ -18310,7 +18329,9 @@ function render(state, actionHandler) {
 }
 
 function clickEventHandler(clickAction, actionHandler){
-  if(clickAction === 'TogglePit')
+  if(clickAction === 'ToggleWall')
+    return {onClickTile: (x, y, direction) => actionHandler({toggleWall: {x, y, direction}})}
+  else if(clickAction === 'TogglePit')
     return {onClickTile: (x, y) => actionHandler({togglePit: {x, y}})}
   else if(clickAction === 'SetTarget')
     return {onClickTile: (x, y) => actionHandler({setTarget: {x, y}})}
@@ -18325,6 +18346,7 @@ function clickEventHandler(clickAction, actionHandler){
 function renderEditorActionbar(actionHandler){
   return [
     h('div.control-panel', [
+      button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
       button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
       button.builder(actionHandler, {setClickAction: 'SetTarget'}, 'Target'),
       button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
@@ -18657,10 +18679,36 @@ function onClickCanvas(scenario, options) {
             bestY = y
           }
 
+      const angle = Math.atan2(top(bestX, bestY) - eventY, left(bestX, bestY) - eventX)
+      // 0 = left
+      // Math.PI = Right
+      const directionHelper = Math.floor((angle/ Math.PI * 3 + 6) % 6)
+      let direction
+      switch(directionHelper){
+        case 0:
+          direction = {UpLeft: {}}
+          break;
+        case 1:
+          direction = {Up: {}}
+          break;
+        case 2:
+          direction = {UpRight: {}}
+          break;
+        case 3:
+          direction = {DownRight: {}}
+          break;
+        case 4:
+          direction = {Down: {}}
+          break;
+        case 5:
+          direction = {DownLeft: {}}
+          break;
+      }
+
       if(Math.sqrt(dist(bestX, bestY)) > tile/2)
           console.log('clicked outside')
       else
-        options.onClickTile(bestX, bestY)
+        options.onClickTile(bestX, bestY, direction)
     }
   else
     return null
