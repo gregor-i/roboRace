@@ -1,7 +1,7 @@
 package repo
 
 import anorm._
-import gameLogic.GameState
+import gameLogic.{GameFinished, GameRunning, GameStarting, GameState, InitialGame}
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
@@ -10,8 +10,19 @@ import play.api.db.Database
 
 case class GameRow(id: String, owner: String, game: GameState)
 
+object GameRow {
+  private val orderingState: Ordering[GameState] = Ordering.Int.on {
+    case InitialGame => 0
+    case _: GameStarting => 1
+    case _: GameRunning => 2
+    case _: GameFinished => 3
+  }
+
+  implicit val ordering: Ordering[GameRow] = Ordering.Tuple2(orderingState, Ordering.String).on(row => (row.game, row.id))
+}
+
 @Singleton
-class GameRepository @Inject()(db: Database){
+class GameRepository @Inject()(db: Database) {
   private val rowParser: RowParser[Option[GameRow]] = for {
     id <- SqlParser.str("id")
     owner <- SqlParser.str("owner")

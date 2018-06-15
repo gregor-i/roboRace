@@ -1,7 +1,5 @@
 package controller
 
-import java.util.UUID
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
@@ -24,15 +22,8 @@ class LobbyController @Inject()(gameRepo: GameRepository)
 
   private val (sink, source) = SinkSourceCache.createPair()
 
-  def stateDescription(gameState:GameState): String = gameState match{
-    case InitialGame => "New"
-    case GameStarting(sc, pls) => s"Starting(players = ${pls.map(_.name).mkString(", ")})"
-    case GameRunning(cycle, cs, pls) => s"Running(cycle = $cycle, players = ${pls.map(_.name).mkString(", ")})"
-    case GameFinished(pls, sc) => s"Finished(players = ${pls.sortBy(_.finished.get.rank).map(pl => s"${pl.finished.get.rank}. ${pl.name}").mkString(", ")})"
-  }
-
   def list() = Action {
-    Ok(gameRepo.list().map(row => GameOverview(row.id, row.owner, stateDescription(row.game))).asJson)
+    Ok(gameList().asJson)
   }
 
   def create() = Action { request =>
@@ -41,8 +32,7 @@ class LobbyController @Inject()(gameRepo: GameRepository)
       case Some(player) =>
         val row = GameRow(id = Utils.newShortId(), owner = player, game = InitialGame)
         gameRepo.save(row)
-        val event: LobbyEvent = GameCreated(GameOverview(row.id, row.owner, stateDescription(row.game)))
-        Source.single(event.asJson.noSpaces).runWith(sink)
+        Source.single(gameList().asJson.noSpaces).runWith(sink)
         Created(row.asJson)
     }
   }
@@ -54,7 +44,7 @@ class LobbyController @Inject()(gameRepo: GameRepository)
       case (Some(row), Some(player)) if row.owner != player => Unauthorized
       case (Some(_), Some(_)) =>
         gameRepo.delete(id)
-        Source.single((GameDeleted(id):LobbyEvent).asJson.noSpaces).runWith(sink)
+        Source.single(gameList().asJson.noSpaces).runWith(sink)
         NoContent
     }
   }
@@ -62,10 +52,16 @@ class LobbyController @Inject()(gameRepo: GameRepository)
   def sse() = Action {
     Ok.chunked(source via EventSource.flow).as(ContentTypes.EVENT_STREAM)
   }
-}
 
-sealed trait LobbyEvent
-case class GameDeleted(id: String) extends LobbyEvent
-case class GameCreated(gameOverview: GameOverview) extends LobbyEvent
+  def stateDescription(gameState:GameState): String = gameState match{
+    case InitialGame => "New"
+    case GameStarting(sc, pls) => s"Starting(players = ${pls.map(_.name).mkString(", ")})"
+    case GameRunning(cycle, cs, pls) => s"Running(cycle = $cycle, players = ${pls.map(_.name).mkString(", ")})"
+    case GameFinished(pls, sc) => s"Finished(players = ${pls.sortBy(_.finished.get.rank).map(pl => s"${pl.finished.get.rank}. ${pl.name}").mkString(", ")})"
+  }
+
+  def gameList() =
+    gameRepo.list().sorted.map(row => GameOverview(row.id, row.owner, stateDescription(row.game)))
+}
 
 case class GameOverview(id: String, owner: String, state: String)

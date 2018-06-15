@@ -30,16 +30,8 @@ function Lobby(element, player) {
 
     function lobbyEventHandler(state){
         return function(event){
-            const data = JSON.parse(event.data)
-            if(data.GameDeleted){
-                state.games = state.games.filter(game => game.id !== data.GameDeleted.id)
-                renderState(state)
-            }else if(data.GameCreated){
-                state.games = [...state.games, data.GameCreated.gameOverview]
-                renderState(state)
-            }else {
-                console.error("unhandled lobby event", data)
-            }
+          state.games = JSON.parse(event.data)
+          renderState(state)
         }
     }
 
