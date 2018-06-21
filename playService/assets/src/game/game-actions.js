@@ -6,9 +6,9 @@ function actions(state, action) {
   if (action.leaveGame)
     window.location.href = "/"
   else if (action.joinGame)
-    gameService.joinGame(action.joinGame, state.player)
+    gameService.joinGame(action.joinGame)
   else if (action.readyForGame)
-    gameService.readyForGame(action.readyForGame, state.player)
+    gameService.readyForGame(action.readyForGame)
   else if (action.selectScenario)
     gameService.defineScenario(state.gameId, action.selectScenario)
   else if (action.focusAction !== undefined) {
@@ -20,7 +20,7 @@ function actions(state, action) {
     let slot = action.defineInstruction.slot
     state.slots[slot] = action.defineInstruction.value
     if (_.range(constants.numberOfInstructionsPerCycle).every(i => state.slots[i] >= 0))
-      gameService.defineInstruction(state.gameId, state.player, action.defineInstruction.cycle, state.slots)
+      gameService.defineInstruction(state.gameId, action.defineInstruction.cycle, state.slots)
     delete state.focusAction
     return Promise.resolve(state)
   } else if (action.replayAnimations) {

@@ -12,17 +12,17 @@ function sendCommand(gameId, command) {
     }))
 }
 
-function defineInstruction(gameId, player, cycle, instructions) {
-    return sendCommand(gameId, {ChooseInstructions: {player, cycle, instructions}})
+function defineInstruction(gameId, cycle, instructions) {
+    return sendCommand(gameId, {ChooseInstructions: {cycle, instructions}})
         .then(parseJson)
 }
 
-function joinGame(gameId, playerName) {
-    return sendCommand(gameId, {RegisterForGame: {playerName}})
+function joinGame(gameId) {
+    return sendCommand(gameId, {RegisterForGame: {}})
 }
 
-function readyForGame(gameId, playerName){
-    return sendCommand(gameId, {ReadyForGame: {playerName}})
+function readyForGame(gameId){
+    return sendCommand(gameId, {ReadyForGame: {}})
 }
 
 function defineScenario(gameId, scenario) {

@@ -29,9 +29,10 @@ class GameController @Inject()(repo: GameRepository)
   }
 
   def sendCommand(id: String) = Action(circe.tolerantJson[Command]) { request =>
-    repo.get(id) match {
-      case Some(gameRow) =>
-        request.body.apply(gameRow.game) match {
+    (repo.get(id), Utils.playerName(request)) match {
+      case (Some(gameRow), Some(player)) =>
+        val command = request.body
+        command(player, gameRow.game) match {
           case CommandAccepted(afterCommand) =>
             val afterCycle = Cycle(afterCommand)
             repo.save(gameRow.copy(game = afterCycle.state))
@@ -46,7 +47,8 @@ class GameController @Inject()(repo: GameRepository)
           case CommandRejected(reason) =>
             BadRequest(reason.asJson)
         }
-      case None => NotFound
+      case (_, None) => Unauthorized
+      case (None, _) => NotFound
     }
   }
 

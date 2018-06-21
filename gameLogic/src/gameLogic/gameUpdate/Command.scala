@@ -1,18 +1,23 @@
 package gameLogic
 package gameUpdate
 
-sealed trait Command extends (GameState => CommandResponse) {
-  def apply(gameState: GameState): CommandResponse = gameState match {
-    case InitialGame => ifInitial
-    case g: GameStarting => ifStarting(g)
-    case g: GameRunning => ifRunning(g)
-    case g: GameFinished => ifFinished(g)
+sealed trait Command extends ((String, GameState) => CommandResponse) {
+  def apply(player: String, gameState: GameState): CommandResponse = gameState match {
+    case InitialGame => ifInitial(player)
+    case g: GameStarting => ifStarting(player, g)
+    case g: GameRunning => ifRunning(player, g)
+    case g: GameFinished => ifFinished(player, g)
   }
 
-  def ifInitial: CommandResponse = CommandRejected(WrongState)
-  def ifStarting: GameStarting => CommandResponse = _ => CommandRejected(WrongState)
-  def ifRunning: GameRunning => CommandResponse = _ => CommandRejected(WrongState)
-  def ifFinished: GameFinished => CommandResponse = _ => CommandRejected(WrongState)
+  type IfInitial = String => CommandResponse
+  type IfStarting = (String, GameStarting) => CommandResponse
+  type IfRunning = (String, GameRunning) => CommandResponse
+  type IfFinished = (String, GameFinished) => CommandResponse
+
+  def ifInitial: IfInitial = _ => CommandRejected(WrongState)
+  def ifStarting: IfStarting = (_, _) => CommandRejected(WrongState)
+  def ifRunning: IfRunning = (_, _) => CommandRejected(WrongState)
+  def ifFinished: IfFinished = (_, _) => CommandRejected(WrongState)
 }
 
 sealed trait CommandResponse
@@ -20,41 +25,41 @@ case class CommandRejected(reason: RejectionReason) extends CommandResponse
 case class CommandAccepted(newState: GameState) extends CommandResponse
 
 case class DefineScenario(scenario: GameScenario) extends Command {
-  override def ifInitial: CommandResponse =
-    CommandAccepted(GameStarting(scenario, Nil))
+  override def ifInitial: IfInitial =
+    _ => CommandAccepted(GameStarting(scenario, Nil))
 }
 
-case class RegisterForGame(playerName: String) extends Command {
-  override def ifStarting: GameStarting => CommandResponse = {
-    case g if g.players.exists(_.name == playerName) =>
+case object RegisterForGame extends Command {
+  override def ifStarting: IfStarting = {
+    case (player, g) if g.players.exists(_.name == player) =>
       CommandRejected(PlayerAlreadyRegistered)
-    case g if g.players.size >= g.scenario.initialRobots.size =>
+    case (_, g) if g.players.size >= g.scenario.initialRobots.size =>
       CommandRejected(TooMuchPlayersRegistered)
-    case g =>
-      CommandAccepted(GameStarting.players.modify(players => players :+ StartingPlayer(players.size, playerName, ready = false))(g))
+    case (player, g) =>
+      CommandAccepted(GameStarting.players.modify(players => players :+ StartingPlayer(players.size, player, ready = false))(g))
   }
 }
 
-case class ReadyForGame(playerName: String) extends Command {
-  override def ifStarting: GameStarting => CommandResponse = {
-    case g if !g.players.exists(_.name == playerName) =>
+case object ReadyForGame extends Command {
+  override def ifStarting: IfStarting = {
+    case (player, g) if !g.players.exists(_.name == player) =>
       CommandRejected(PlayerNotFound)
-    case g =>
-      CommandAccepted((GameStarting.player(playerName) composeLens StartingPlayer.ready).set(true)(g))
+    case (player, g) =>
+      CommandAccepted((GameStarting.player(player) composeLens StartingPlayer.ready).set(true)(g))
   }
 }
 
-case class ChooseInstructions(player: String, cycle: Int, instructions: Seq[Int]) extends Command {
-  override def ifRunning: GameRunning => CommandResponse = {
-    case g if g.cycle != cycle =>
+case class ChooseInstructions(cycle: Int, instructions: Seq[Int]) extends Command {
+  override def ifRunning: IfRunning = {
+    case (_, g) if g.cycle != cycle =>
       CommandRejected(WrongCycle)
-    case g if !g.players.exists(_.name == player) =>
+    case (player, g) if !g.players.exists(_.name == player) =>
       CommandRejected(PlayerNotFound)
-    case g if instructions.size != Constants.instructionsPerCycle ||
+    case (_, g) if instructions.size != Constants.instructionsPerCycle ||
       instructions.distinct.size != Constants.instructionsPerCycle ||
       instructions.forall(i => 0 > i || i > Constants.instructionOptionsPerCycle) =>
       CommandRejected(InvalidActionChoice)
-    case g =>
+    case (player, g) =>
       CommandAccepted(GameRunning.player(player).modify(p => p.copy(instructions = instructions.map(p.instructionOptions)))(g))
   }
 }
