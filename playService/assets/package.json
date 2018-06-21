@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bulma": "^0.7.1",
     "js-cookie": "^2.2.0",
     "lodash": "^4.17.5",
     "snabbdom": "^0.7.0"
@@ -10,7 +11,8 @@
   },
   "scripts": {
     "watch": "nodemon --watch . -e json,js --exec \"npm run build\"",
-    "build": "npm run build-js",
+    "build": "npm run build-js && npm run build-css",
+    "build-css": "cp node_modules/bulma/css/bulma.min.css ../public/bulma.min.css",
     "build-js": "browserify -e src/index.js  > ../public/robo-race.js"
   }
 }

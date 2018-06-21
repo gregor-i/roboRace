@@ -1,6 +1,5 @@
 package controller
 
-import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
 
 class UiController() extends InjectedController {
