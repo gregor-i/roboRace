@@ -1,8 +1,8 @@
 package gameLogic
 package gameUpdate
 
-sealed trait Command extends ((String, GameState) => CommandResponse) {
-  def apply(player: String, gameState: GameState): CommandResponse = gameState match {
+sealed trait Command {
+  def apply(player: String): GameState => CommandResponse = {
     case InitialGame => ifInitial(player)
     case g: GameStarting => ifStarting(player, g)
     case g: GameRunning => ifRunning(player, g)
@@ -37,6 +37,15 @@ case object RegisterForGame extends Command {
       CommandRejected(TooMuchPlayersRegistered)
     case (player, g) =>
       CommandAccepted(GameStarting.players.modify(players => players :+ StartingPlayer(players.size, player, ready = false))(g))
+  }
+}
+
+case object DeregisterForGame extends Command {
+  override def ifStarting: IfStarting = {
+    case (player, g) if g.players.forall(_.name != player) =>
+      CommandRejected(PlayerNotRegistered)
+    case (player, g) =>
+      CommandAccepted(GameStarting.players.modify(_.filter(_.name != player).zipWithIndex.map{case (player, index) => player.copy(index =index)})(g))
   }
 }
 

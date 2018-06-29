@@ -32,7 +32,7 @@ class GameController @Inject()(repo: GameRepository)
     (repo.get(id), Utils.playerName(request)) match {
       case (Some(gameRow), Some(player)) =>
         val command = request.body
-        command(player, gameRow.game) match {
+        command(player)(gameRow.game) match {
           case CommandAccepted(afterCommand) =>
             val afterCycle = Cycle(afterCommand)
             repo.save(gameRow.copy(game = afterCycle.state))

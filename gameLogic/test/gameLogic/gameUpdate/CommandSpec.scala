@@ -3,45 +3,61 @@ package gameUpdate
 
 import org.scalatest.{FunSuite, Matchers}
 
-class CommandSpec extends FunSuite with Matchers with TestData {
-  val starting = startingStateHelper()
-  val withPlayer1 = startingStateHelper(false)
-  val withPlayer1And2 = startingStateHelper(false, false)
-  val withPlayer1Ready = startingStateHelper(true, false)
-  val withPlayer1And2Ready = startingStateHelper(true, true)
+class CommandSpec extends FunSuite with Matchers with UpdateChain {
 
   test("RegisterForGame: add players") {
-    val after1 = RegisterForGame(p1, starting).newState
-    after1 shouldBe withPlayer1
-    val after2 = RegisterForGame(p2, after1).newState
-    after2 shouldBe withPlayer1And2
+    updateChain(InitialGame)(
+      DefineScenario(GameScenario.default)(p1).accepted,
+      RegisterForGame(p1).accepted,
+      RegisterForGame(p2).accepted
+    ) shouldBe GameStarting(
+      scenario = GameScenario.default,
+      players = List(StartingPlayer(0, p1, false), StartingPlayer(1, p2, false))
+    )
   }
 
   test("RegisterForGame: reject players with the same name") {
-    RegisterForGame(p1, withPlayer1).rejectedReason shouldBe PlayerAlreadyRegistered
+    updateChain(InitialGame)(
+      DefineScenario(GameScenario.default)(p1).accepted,
+      RegisterForGame(p1).accepted,
+      RegisterForGame(p1).rejected(PlayerAlreadyRegistered)
+    ) shouldBe GameStarting(
+      scenario = GameScenario.default,
+      players = List(StartingPlayer(0, p1, false))
+    )
   }
 
   test("RegisterForGame: reject players if there are to many") {
-    val filledGame = starting.copy(scenario = s.copy(initialRobots = List.empty))
-    RegisterForGame(p1, filledGame).rejectedReason shouldBe TooMuchPlayersRegistered
+    val emptyScenario = GameScenario.default.copy(initialRobots = List.empty)
+    updateChain(InitialGame)(
+      DefineScenario(emptyScenario)(p1).accepted,
+      RegisterForGame(p1).rejected(TooMuchPlayersRegistered)
+    ) shouldBe GameStarting(
+      scenario = emptyScenario,
+      players = List.empty
+    )
+  }
+
+  test("DeregisterForGame: unregister players") {
+    updateChain(InitialGame)(
+      DefineScenario(GameScenario.default)(p1).accepted,
+      RegisterForGame(p1).accepted,
+      RegisterForGame(p2).accepted,
+      DeregisterForGame(p1).accepted
+    ) shouldBe GameStarting(scenario = GameScenario.default, players = List(StartingPlayer(0, p2, false)))
   }
 
   test("ReadyForGame: start game if all players are ready") {
-    val after1 = ReadyForGame(p1, withPlayer1And2).newState
-    after1 shouldBe withPlayer1Ready
-    val after2 = ReadyForGame(p2, withPlayer1Ready).newState
-    after2 shouldBe withPlayer1And2Ready
+    updateChain(InitialGame)(
+      DefineScenario(GameScenario.default)(p1).accepted,
+      RegisterForGame(p1).accepted,
+      RegisterForGame(p2).accepted,
+      ReadyForGame(p1).accepted,
+      ReadyForGame(p2).accepted
+    ) shouldBe GameStarting(
+      scenario = GameScenario.default,
+      players = List(StartingPlayer(0, p1, true), StartingPlayer(1, p2, true))
+    )
   }
 
-  implicit class CommandResponseHelper(val r: CommandResponse) {
-    def newState: GameState = {
-      r shouldBe a [CommandAccepted]
-      r.asInstanceOf[CommandAccepted].newState
-    }
-
-    def rejectedReason: RejectionReason = {
-      r shouldBe a [CommandRejected]
-      r.asInstanceOf[CommandRejected].reason
-    }
-  }
 }

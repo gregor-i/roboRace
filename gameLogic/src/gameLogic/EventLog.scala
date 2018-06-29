@@ -16,6 +16,7 @@ case object AllPlayersFinished extends EventLog("All players reached the target"
 
 sealed trait RejectionReason
 case object PlayerAlreadyRegistered extends RejectionReason
+case object PlayerNotRegistered extends RejectionReason
 case object NoPlayersRegistered extends RejectionReason
 case object TooMuchPlayersRegistered extends RejectionReason
 case object WrongCycle extends RejectionReason
