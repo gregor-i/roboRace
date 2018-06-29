@@ -16,7 +16,7 @@ class CycleSpec extends FunSuite with Matchers with TestData {
       player.instructions shouldBe Seq()
       player.finished shouldBe None
       player.robot shouldBe s.initialRobots(player.index)
-      player.possibleInstructions.size shouldBe Constants.instructionOptionsPerCycle
+      player.instructionOptions.size shouldBe Constants.instructionOptionsPerCycle
     }
   }
 
