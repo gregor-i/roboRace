@@ -64,6 +64,8 @@ case class ChooseInstructions(cycle: Int, instructions: Seq[Int]) extends Comman
       CommandRejected(WrongCycle)
     case (player, g) if !g.players.exists(_.name == player) =>
       CommandRejected(PlayerNotFound)
+    case (player, g) if g.players.find(_.name == player).exists(_.finished.isDefined) =>
+      CommandRejected(PlayerAlreadyFinished)
     case (_, g) if instructions.size != Constants.instructionsPerCycle ||
       instructions.distinct.size != Constants.instructionsPerCycle ||
       instructions.forall(i => 0 > i || i > Constants.instructionOptionsPerCycle) =>
@@ -77,8 +79,10 @@ case object RageQuit extends Command {
   override def ifRunning: IfRunning = {
     case (player, g) if !g.players.exists(_.name == player) =>
       CommandRejected(PlayerNotFound)
+    case (player, g) if g.players.find(_.name == player).exists(_.finished.isDefined) =>
+      CommandRejected(PlayerAlreadyFinished)
     case (player, g) =>
       CommandAccepted((GameRunning.player(player) composeLens RunningPlayer.finished)
-        .set(Some(FinishedStatistic(g.players.size, g.cycle, true)))(g))
+        .set(Some(FinishedStatistic(g.players.count(_.finished.isEmpty), g.cycle, true)))(g))
   }
 }
