@@ -72,3 +72,13 @@ case class ChooseInstructions(cycle: Int, instructions: Seq[Int]) extends Comman
       CommandAccepted(GameRunning.player(player).modify(p => p.copy(instructions = instructions.map(p.instructionOptions)))(g))
   }
 }
+
+case object RageQuit extends Command {
+  override def ifRunning: IfRunning = {
+    case (player, g) if !g.players.exists(_.name == player) =>
+      CommandRejected(PlayerNotFound)
+    case (player, g) =>
+      CommandAccepted((GameRunning.player(player) composeLens RunningPlayer.finished)
+        .set(Some(FinishedStatistic(g.players.size, g.cycle, true)))(g))
+  }
+}

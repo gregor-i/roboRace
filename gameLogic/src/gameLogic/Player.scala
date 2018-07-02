@@ -20,5 +20,4 @@ case class StartingPlayer(index: Int,
                           name: String,
                           ready: Boolean) extends Player
 
-@Lenses
-case class FinishedStatistic(rank: Int, cycle: Int)
+case class FinishedStatistic(rank: Int, cycle: Int, rageQuitted: Boolean)

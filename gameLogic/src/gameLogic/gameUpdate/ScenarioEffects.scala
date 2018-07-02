@@ -38,7 +38,7 @@ object ScenarioEffects {
     } match {
       case None => Logged.pure(game)
       case Some(player) =>
-        val stats = FinishedStatistic(rank = game.players.count(_.finished.isDefined) + 1, cycle = game.cycle)
+        val stats = FinishedStatistic(rank = game.players.count(_.finished.isDefined) + 1, cycle = game.cycle, rageQuitted = false)
         val playerFinished = PlayerFinished(player.name, stats)
 
         (GameRunning.player(player.name) composeLens RunningPlayer.finished)
