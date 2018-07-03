@@ -29,15 +29,15 @@ function player(index){
     }
 }
 
-const MoveForward = image('/assets/action_MoveForward.png')
-const MoveBackward = image('/assets/action_MoveBackward.png')
+const MoveForward = image('/assets/action-move-forward.png')
+const MoveBackward = image('/assets/action-move-backward.png')
 // const StepRight = image('/assets/action_StepRight.png')
 // const StepLeft = image('/assets/action_StepLeft.png')
-const MoveTwiceForward = image('/assets/action_MoveTwiceForward.png')
-const TurnRight = image('/assets/action_TurnRight.png')
-const TurnLeft = image('/assets/action_TurnLeft.png')
-const UTurn = image('/assets/action_UTurn.png')
-const Sleep = image('/assets/action_Sleep.png')
+const MoveTwiceForward = image('/assets/action-move-forward-twice.png')
+const TurnRight = image('/assets/action-turn-right-60.png')
+const TurnLeft = image('/assets/action-turn-left-60.png')
+const UTurn = image('/assets/action-turn-left-180.png')
+const Sleep = image('/assets/action-sleep.png')
 
 function action(name) {
   switch (name){

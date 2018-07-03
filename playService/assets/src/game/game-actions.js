@@ -11,8 +11,8 @@ function actions(state, action) {
     gameService.readyForGame(action.readyForGame)
   else if (action.selectScenario)
     gameService.defineScenario(state.gameId, action.selectScenario)
-  else if (action.focusAction !== undefined) {
-    state.focusAction = action.focusAction
+  else if (action.focusSlot !== undefined) {
+    state.focusedSlot = action.focusSlot
     return Promise.resolve(state)
   } else if (action.defineInstruction) {
     if (!state.slots)
@@ -20,7 +20,13 @@ function actions(state, action) {
     let slot = action.defineInstruction.slot
     state.slots[slot] = action.defineInstruction.value
     if (_.range(constants.numberOfInstructionsPerCycle).every(i => state.slots[i] >= 0))
-      gameService.defineInstruction(state.gameId, action.defineInstruction.cycle, state.slots)
+      gameService.defineInstruction(state.gameId, state.game.GameRunning.cycle, state.slots)
+    else {
+      state.focusedSlot = state.focusedSlot || 0
+      while (state.slots[state.focusedSlot] >= 0) {
+        state.focusedSlot = (state.focusedSlot + 1) % constants.numberOfInstructionsPerCycle
+      }
+    }
     delete state.focusAction
     return Promise.resolve(state)
   } else if (action.replayAnimations) {

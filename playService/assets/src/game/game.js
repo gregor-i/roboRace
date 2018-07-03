@@ -39,9 +39,11 @@ function Game(element, player, gameId){
             state.animationStart = new Date()
             state.animations = gameBoard.framesFromEvents(state.game, events)
 
+
             state.game = newGameState
             state.logs = state.logs.concat(data.textLog)
             if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) state.slots = []
+            state.focusedSlot = undefined
             renderState(state)
         }
     }

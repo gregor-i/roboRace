@@ -32,7 +32,6 @@ body {
 }
 
 .frame-footer {
-    background-color: grey;
     padding: 0.5em;
     flex-grow: 0;
     flex-shrink: 0;
@@ -57,37 +56,80 @@ body {
     color: white;
 }
 
-.slot, .action {
-    width: 52px;
-    height: 52px;
+.slot {
     display: inline-block;
-    border-radius: 3px;
-    margin: 2px;
-    background: lightgrey;
+    width: 48px;
+    height: 64px;
+    border-radius: 4px;
+    border: solid 2px rgba(0, 0, 0, 0.54);
+    background-color: rgba(255, 255, 255, 0.37);
+    vertical-align: middle;
+    margin: 4px;
+
+    font-family: Roboto;
+    font-size: 32px;
+    font-weight: 500;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    text-align: center;
+    color: #9b9b9b;
 }
 
-.slot img, .action img {
-    display: block;
-    width: 50px;
-    height: 50px;
+.slot-filled{
+    background-color: #ffffff;
 }
+
+.slot-filled img{
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    margin-top: 8px;
+}
+
+.slot-focused{
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 9px 0 #1d97e2;
+    border: solid 2px #1d97e2;
+}
+
 
 .action {
-    border: 1px solid blue;
+    display:inline-block;
+    width: 80px;
+    height: 96px;
+    border-radius: 4px;
+    background-color: #ffffff;
+    box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.54);
+    margin: 4px;
+    position: relative;
 }
 
-.slot {
-    border: 1px solid red;
+.action img{
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    margin-top:8px;
 }
 
-.slot-selected {
-    border: 1px solid green;
-}
-
-.action-used {
-    border: 1px solid lightgrey;
-}
-
-.action-focused {
-    border: 1px dashed blue;
+.action .badge{
+    width: 20px;
+    height: 20px;
+    font-family: Roboto;
+    font-size: 14px;
+    font-weight: 500;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    text-align: center;
+    color: #ffffff;
+    background-color: #1d97e2;
+    position: absolute;
+    right:5px;
+    bottom:5px;
+    border-radius: 50%;
+    padding-top:2px;
 }

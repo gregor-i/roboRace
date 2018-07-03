@@ -18111,15 +18111,15 @@ function player(index){
     }
 }
 
-const MoveForward = image('/assets/action_MoveForward.png')
-const MoveBackward = image('/assets/action_MoveBackward.png')
+const MoveForward = image('/assets/action-move-forward.png')
+const MoveBackward = image('/assets/action-move-backward.png')
 // const StepRight = image('/assets/action_StepRight.png')
 // const StepLeft = image('/assets/action_StepLeft.png')
-const MoveTwiceForward = image('/assets/action_MoveTwiceForward.png')
-const TurnRight = image('/assets/action_TurnRight.png')
-const TurnLeft = image('/assets/action_TurnLeft.png')
-const UTurn = image('/assets/action_UTurn.png')
-const Sleep = image('/assets/action_Sleep.png')
+const MoveTwiceForward = image('/assets/action-move-forward-twice.png')
+const TurnRight = image('/assets/action-turn-right-60.png')
+const TurnLeft = image('/assets/action-turn-left-60.png')
+const UTurn = image('/assets/action-turn-left-180.png')
+const Sleep = image('/assets/action-sleep.png')
 
 function action(name) {
   switch (name){
@@ -18458,8 +18458,8 @@ function actions(state, action) {
     gameService.readyForGame(action.readyForGame)
   else if (action.selectScenario)
     gameService.defineScenario(state.gameId, action.selectScenario)
-  else if (action.focusAction !== undefined) {
-    state.focusAction = action.focusAction
+  else if (action.focusSlot !== undefined) {
+    state.focusedSlot = action.focusSlot
     return Promise.resolve(state)
   } else if (action.defineInstruction) {
     if (!state.slots)
@@ -18467,7 +18467,13 @@ function actions(state, action) {
     let slot = action.defineInstruction.slot
     state.slots[slot] = action.defineInstruction.value
     if (_.range(constants.numberOfInstructionsPerCycle).every(i => state.slots[i] >= 0))
-      gameService.defineInstruction(state.gameId, action.defineInstruction.cycle, state.slots)
+      gameService.defineInstruction(state.gameId, state.game.GameRunning.cycle, state.slots)
+    else {
+      state.focusedSlot = state.focusedSlot || 0
+      while (state.slots[state.focusedSlot] >= 0) {
+        state.focusedSlot = (state.focusedSlot + 1) % constants.numberOfInstructionsPerCycle
+      }
+    }
     delete state.focusAction
     return Promise.resolve(state)
   } else if (action.replayAnimations) {
@@ -18953,35 +18959,46 @@ function renderScenarioList(scenarios, actionHandler) {
 
 function renderActionButtons(state, game, actionHandler) {
   const player = game.players.find((player) => player.name === state.player)
+  const focusedSlot = state.focusedSlot || 0
 
-  function instructionOptions(action, index) {
-    const isFocused = state.focusAction === index
-    const isUsed = state.slots.find(s => s === index) !== undefined
-    const image = images.action(Object.keys(action)[0])
-    return h('div.action', {
-      class: {'action-used': isUsed, 'action-focused': isFocused},
-      on: !isUsed ?  {click: () => actionHandler({focusAction: index})} : {}
-    }, h('img', {props: {src: image.src}}))
+  let instructionTypes = []
+  let instr = _.clone(player.instructionOptions)
+  while(instr.length !== 0) {
+    let head = instr[0]
+    let type = Object.keys(head)[0]
+    instructionTypes.push(type)
+    instr = _.dropWhile(instr, i => i[type])
+  }
+
+  function instructionCard(type) {
+    function unusedAndThisType(opt, index) {
+      return opt[type] && !_.some(state.slots, slot => slot === index)
+    }
+
+    const image = images.action(type)
+    const count = player.instructionOptions.filter(unusedAndThisType).length
+    const unusedIndex = _.findIndex(player.instructionOptions, unusedAndThisType)
+    const on = {click: () => actionHandler({defineInstruction: {slot: focusedSlot, value: unusedIndex,  cycle: state.cycle}})}
+
+    if(count === 0)
+      return null
+    else if(count == 1)
+      return h('div.action', {on}, h('img', {props: {src: image.src}}))
+    else
+      return h('div.action', {on}, [h('img', {props: {src: image.src}}), h('div.badge', count)])
   }
 
   function instructionSlot(index) {
     const instruction = state.slots[index]
-    const eventListener = state.focusAction !== undefined ? {
-      on: {
-        click: [actionHandler, {
-          defineInstruction: {
-            slot: index,
-            value: state.focusAction,
-            cycle: state.game.GameRunning.cycle
-          }
-        }]
-      }} : {}
+    const focused = focusedSlot === index
+    const props = {class: {"slot-focused": focused},
+    on:{click: () => actionHandler({focusSlot: index})}}
     if (instruction !== undefined) {
       const image = images.action(Object.keys(player.instructionOptions[instruction])[0])
-      return h('div.slot.slot-selected', eventListener,
+      return h('div.slot.slot-filled', props,
           h('img', {props: {src: image.src}}))
     } else {
-      return h('div.slot', eventListener)
+      return h('div.slot', props, index+1)
     }
   }
 
@@ -18991,8 +19008,8 @@ function renderActionButtons(state, game, actionHandler) {
     return h('div.control-panel', h('div.text', 'target reached'))
   } else {
     return [
-      h('div.control-panel', player.instructionOptions.map(instructionOptions)),
-      h('div.control-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot))
+      h('div.control-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot)),
+      h('div.control-panel', instructionTypes.map(instructionCard))
     ]
   }
 }
@@ -19048,9 +19065,11 @@ function Game(element, player, gameId){
             state.animationStart = new Date()
             state.animations = gameBoard.framesFromEvents(state.game, events)
 
+
             state.game = newGameState
             state.logs = state.logs.concat(data.textLog)
             if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) state.slots = []
+            state.focusedSlot = undefined
             renderState(state)
         }
     }

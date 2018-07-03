@@ -114,35 +114,46 @@ function renderScenarioList(scenarios, actionHandler) {
 
 function renderActionButtons(state, game, actionHandler) {
   const player = game.players.find((player) => player.name === state.player)
+  const focusedSlot = state.focusedSlot || 0
 
-  function instructionOptions(action, index) {
-    const isFocused = state.focusAction === index
-    const isUsed = state.slots.find(s => s === index) !== undefined
-    const image = images.action(Object.keys(action)[0])
-    return h('div.action', {
-      class: {'action-used': isUsed, 'action-focused': isFocused},
-      on: !isUsed ?  {click: () => actionHandler({focusAction: index})} : {}
-    }, h('img', {props: {src: image.src}}))
+  let instructionTypes = []
+  let instr = _.clone(player.instructionOptions)
+  while(instr.length !== 0) {
+    let head = instr[0]
+    let type = Object.keys(head)[0]
+    instructionTypes.push(type)
+    instr = _.dropWhile(instr, i => i[type])
+  }
+
+  function instructionCard(type) {
+    function unusedAndThisType(opt, index) {
+      return opt[type] && !_.some(state.slots, slot => slot === index)
+    }
+
+    const image = images.action(type)
+    const count = player.instructionOptions.filter(unusedAndThisType).length
+    const unusedIndex = _.findIndex(player.instructionOptions, unusedAndThisType)
+    const on = {click: () => actionHandler({defineInstruction: {slot: focusedSlot, value: unusedIndex,  cycle: state.cycle}})}
+
+    if(count === 0)
+      return null
+    else if(count == 1)
+      return h('div.action', {on}, h('img', {props: {src: image.src}}))
+    else
+      return h('div.action', {on}, [h('img', {props: {src: image.src}}), h('div.badge', count)])
   }
 
   function instructionSlot(index) {
     const instruction = state.slots[index]
-    const eventListener = state.focusAction !== undefined ? {
-      on: {
-        click: [actionHandler, {
-          defineInstruction: {
-            slot: index,
-            value: state.focusAction,
-            cycle: state.game.GameRunning.cycle
-          }
-        }]
-      }} : {}
+    const focused = focusedSlot === index
+    const props = {class: {"slot-focused": focused},
+    on:{click: () => actionHandler({focusSlot: index})}}
     if (instruction !== undefined) {
       const image = images.action(Object.keys(player.instructionOptions[instruction])[0])
-      return h('div.slot.slot-selected', eventListener,
+      return h('div.slot.slot-filled', props,
           h('img', {props: {src: image.src}}))
     } else {
-      return h('div.slot', eventListener)
+      return h('div.slot', props, index+1)
     }
   }
 
@@ -152,8 +163,8 @@ function renderActionButtons(state, game, actionHandler) {
     return h('div.control-panel', h('div.text', 'target reached'))
   } else {
     return [
-      h('div.control-panel', player.instructionOptions.map(instructionOptions)),
-      h('div.control-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot))
+      h('div.control-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot)),
+      h('div.control-panel', instructionTypes.map(instructionCard))
     ]
   }
 }
