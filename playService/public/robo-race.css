@@ -48,8 +48,19 @@ body {
     flex-grow: 1;
 }
 
-.control-panel {
+.slots-panel {
     text-align: center;
+    overflow-x: auto;
+    white-space: nowrap;
+    overflow-y: hidden;
+}
+
+.cards-panel {
+    text-align: center;
+    height: 104px;
+    overflow-x: auto;
+    white-space: nowrap;
+    overflow-y: hidden;
 }
 
 .control-panel .text {
@@ -117,19 +128,17 @@ body {
 .action .badge{
     width: 20px;
     height: 20px;
+    border-radius: 50%;
     font-family: Roboto;
+    font-weight: 700;
     font-size: 14px;
-    font-weight: 500;
-    font-style: normal;
-    font-stretch: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    text-align: center;
     color: #ffffff;
     background-color: #1d97e2;
     position: absolute;
     right:5px;
     bottom:5px;
-    border-radius: 50%;
     padding-top:2px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

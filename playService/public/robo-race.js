@@ -18982,8 +18982,6 @@ function renderActionButtons(state, game, actionHandler) {
 
     if(count === 0)
       return null
-    else if(count == 1)
-      return h('div.action', {on}, h('img', {props: {src: image.src}}))
     else
       return h('div.action', {on}, [h('img', {props: {src: image.src}}), h('div.badge', count)])
   }
@@ -19008,8 +19006,8 @@ function renderActionButtons(state, game, actionHandler) {
     return h('div.control-panel', h('div.text', 'target reached'))
   } else {
     return [
-      h('div.control-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot)),
-      h('div.control-panel', instructionTypes.map(instructionCard))
+      h('div.slots-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot)),
+      h('div.cards-panel', instructionTypes.map(instructionCard))
     ]
   }
 }
