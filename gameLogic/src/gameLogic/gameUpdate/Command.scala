@@ -25,8 +25,10 @@ case class CommandRejected(reason: RejectionReason) extends CommandResponse
 case class CommandAccepted(newState: GameState) extends CommandResponse
 
 case class DefineScenario(scenario: GameScenario) extends Command {
-  override def ifInitial: IfInitial =
-    _ => CommandAccepted(GameStarting(scenario, Nil))
+  override def ifInitial: IfInitial = {
+    case _ if !GameScenario.validation(scenario) => CommandRejected(InvalidScenario)
+    case player => CommandAccepted(GameStarting(scenario, List(StartingPlayer(0, player, ready = false))))
+  }
 }
 
 case object RegisterForGame extends Command {

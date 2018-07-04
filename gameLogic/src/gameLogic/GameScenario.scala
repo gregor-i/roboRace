@@ -11,6 +11,9 @@ object GameScenario {
   private def robot(x: Int, y: Int, direction: Direction): Robot = Robot(Position(x, y), direction)
   private def wall(x: Int, y: Int, direction: WallDirection): Wall = Wall(Position(x, y), direction)
 
+  def validation(gameScenario: GameScenario): Boolean =
+    gameScenario.initialRobots.nonEmpty
+
   val default = GameScenario(
     width = 7,
     height = 9,

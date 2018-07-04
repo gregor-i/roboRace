@@ -15,6 +15,7 @@ case class StartNextCycle(cycle: Int) extends EventLog("starting next cycle")
 case object AllPlayersFinished extends EventLog("All players reached the target")
 
 sealed trait RejectionReason
+case object InvalidScenario extends RejectionReason
 case object PlayerAlreadyRegistered extends RejectionReason
 case object PlayerNotRegistered extends RejectionReason
 case object NoPlayersRegistered extends RejectionReason

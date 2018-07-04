@@ -8,7 +8,6 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("should start game if all players are ready") {
     val c0 = updateChain(InitialGame)(
       DefineScenario(GameScenario.default)(p1).accepted.anyEvents,
-      RegisterForGame(p1).accepted.noEvents,
       RegisterForGame(p2).accepted.noEvents,
       RegisterForGame(p3).accepted.noEvents,
       ReadyForGame(p1).accepted.noEvents,
@@ -29,7 +28,6 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("should start the next cycle when all player choose their action") {
     updateChain(InitialGame)(
       DefineScenario(GameScenario.default)(p1).accepted.anyEvents,
-      RegisterForGame(p1).accepted.noEvents,
       RegisterForGame(p2).accepted.noEvents,
       RegisterForGame(p3).accepted.noEvents,
       ReadyForGame(p1).accepted.noEvents,
