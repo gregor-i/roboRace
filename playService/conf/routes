@@ -10,7 +10,7 @@ GET           /api/games/:id/events               controller.GameController.sse(
 
 GET           /api/scenarios                      controller.ScenarioController.get()
 POST          /api/scenarios                      controller.ScenarioController.post()
-DELETE        /api/scenarios/:id                   controller.ScenarioController.delete(id: String)
+DELETE        /api/scenarios/:id                  controller.ScenarioController.delete(id: String)
 
 #Frontend
 GET           /                                   controller.UiController.lobby()
@@ -20,7 +20,8 @@ GET           /game/:id                           controller.UiController.game(i
 
 GET           /assets/*file                       controllers.Assets.at(file)
 
-POST          /admin/post-default-scenario        controller.ScenarioController.postDefault()
-
 #Admin
+GET           /admin                              controller.AdminController.ui()
 GET           /admin/config                       controller.AdminController.config()
+POST          /admin/post-default-scenario        controller.AdminController.postDefault()
+POST          /admin/garbage-collect              controller.AdminController.garbageCollect()

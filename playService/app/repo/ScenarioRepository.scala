@@ -8,22 +8,22 @@ import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
 import play.api.db.Database
 
-case class ScenarioRow(id: String, owner: String, scenario:GameScenario)
+case class ScenarioRow(id: String, owner: String, scenario: Option[GameScenario])
 
 @Singleton
 class ScenarioRepository @Inject()(db: Database){
-  private val rowParser: RowParser[Option[ScenarioRow]] = for {
+  private val rowParser: RowParser[ScenarioRow] = for {
     id <- SqlParser.str("id")
     owner <- SqlParser.str("owner")
     maybeScenario <- SqlParser.str("scenario").map(data => decode[GameScenario](data).toOption)
-  } yield maybeScenario.map(scenario => ScenarioRow(id, owner, scenario))
+  } yield ScenarioRow(id, owner, maybeScenario)
 
   def get(id: String): Option[ScenarioRow] =
     db.withConnection { implicit con =>
       SQL"""SELECT *
             FROM scenarios
             WHERE id = $id"""
-        .as(rowParser.singleOpt).flatten
+        .as(rowParser.singleOpt)
     }
 
   def list(): Seq[ScenarioRow] =
@@ -31,11 +31,11 @@ class ScenarioRepository @Inject()(db: Database){
       SQL"""SELECT *
             FROM scenarios
             ORDER BY id"""
-        .as(rowParser.*).flatten
+        .as(rowParser.*)
     }
 
   def save(row: ScenarioRow): Int = db.withConnection { implicit con =>
-    val data = row.scenario.asJson.noSpaces
+    val data = row.scenario.map(_.asJson.noSpaces)
     SQL"""INSERT INTO scenarios (id, owner, scenario)
           VALUES (${row.id}, ${row.owner}, $data)
           ON CONFLICT (id) DO UPDATE

@@ -18,19 +18,15 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
   def post() = Action(circe.tolerantJson[GameScenario]) { request =>
     Utils.playerName(request) match {
       case None => Unauthorized
+      case _ if !GameScenario.validation(request.body) => BadRequest
       case Some(player) =>
         val row = ScenarioRow(
           id = Utils.newShortId(),
           owner = player,
-          scenario = request.body)
+          scenario = Some(request.body))
         repo.save(row)
         Created(row.asJson)
     }
-  }
-
-  def postDefault() = Action{
-    repo.save(ScenarioRow("default", "system", GameScenario.default))
-    NoContent
   }
 
   def delete(id: String) = Action{ request =>
@@ -38,7 +34,7 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
       case (None, _) => NotFound
       case (_, None) => Unauthorized
       case (Some(row), Some(player)) if row.owner != player => Unauthorized
-      case (Some(row), Some(player)) => repo.delete(row.id)
+      case (Some(row), Some(_)) => repo.delete(row.id)
         NoContent
     }
   }
