@@ -42,15 +42,16 @@ function render(state, actionHandler) {
         m)
   } else if (state.game.GameRunning || state.game.GameFinished) {
     const game = state.game.GameRunning || state.game.GameFinished
-    return frame(header('Game ' + state.gameId, [
-          backToLobby,
-          button.builder.disabled(!state.animations || state.animations.length === 0)(actionHandler, {replayAnimations: state.animations}, 'Replay Animations'),
-          button.builder(actionHandler, {setModal: 'log'}, 'Logs'),
-          button.builder(actionHandler, {setModal: 'playerList'}, 'Player List')
-        ]),
-        gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), {animationStart:state.animationStart, frames:state.animations}),
-        renderActionButtons(state, game, actionHandler),
-        m)
+    return h('div', [
+      fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
+      fab('.fab-left-1', images.iconReplayAnimation, [actionHandler, {replayAnimations: state.animations}]),
+      fab('.fab-left-2', images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),
+      h('div.game-board', gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), {
+        animationStart: state.animationStart,
+        frames: state.animations
+      })),
+      renderActionButtons(state, game, actionHandler),
+      m])
   } else {
     return frame(header('GameState \'undefined\' is currently not supported.', [
           backToLobby,
@@ -61,12 +62,17 @@ function render(state, actionHandler) {
   }
 }
 
+function fab(classes, image, onclick){
+  return h('div.fab'+classes, {on: {click: onclick}},
+      h('img', {props: {src: image.src}}))
+}
+
 function header(title, buttons) {
   return button.group(buttons)
 }
 
 function renderPlayerList(state) {
-  var players = []
+  let players = []
   if (state.game.GameStarting)
     players = state.game.GameStarting.players
   else if (state.game.GameRunning)
@@ -74,7 +80,7 @@ function renderPlayerList(state) {
   else if (state.game.GameFinished)
     players = state.game.GameFinished.players
 
-  var rows = players.map(function (player) {
+  let rows = players.map(function (player) {
     return h('tr', [
       h('td', h('img', {
         props: {src: images.player(player.index).src},
@@ -133,12 +139,9 @@ function renderActionButtons(state, game, actionHandler) {
     const image = images.action(type)
     const count = player.instructionOptions.filter(unusedAndThisType).length
     const unusedIndex = _.findIndex(player.instructionOptions, unusedAndThisType)
-    const on = {click: () => actionHandler({defineInstruction: {slot: focusedSlot, value: unusedIndex,  cycle: state.cycle}})}
-
-    if(count === 0)
-      return null
-    else
-      return h('div.action', {on}, [h('img', {props: {src: image.src}}), h('div.badge', count)])
+    return h('div.action',
+        {on: {click: count !== 0 ? () => actionHandler({defineInstruction: {slot: focusedSlot, value: unusedIndex}}) : undefined}},
+        [h('img', {props: {src: image.src}}), h('div.badge', count)])
   }
 
   function instructionSlot(index) {
@@ -160,10 +163,10 @@ function renderActionButtons(state, game, actionHandler) {
   } else if (player.finished) {
     return h('div.control-panel', h('div.text', 'target reached'))
   } else {
-    return [
+    return h('div.footer-group', [
       h('div.slots-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot)),
       h('div.cards-panel', instructionTypes.map(instructionCard))
-    ]
+    ])
   }
 }
 
