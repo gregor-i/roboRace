@@ -18090,7 +18090,6 @@ const iconClose = image('/assets/ic-close.png')
 const iconGamerlist = image('/assets/ic-gamerlist.png')
 const iconReplayAnimation = image('/assets/ic-replay-animation.png')
 
-// https://materialdesignicons.com/icon/apple-keyboard-caps
 const player1 = image('/assets/player1.png')
 const player2 = image('/assets/player2.png')
 const player3 = image('/assets/player3.png')
@@ -18580,10 +18579,10 @@ function drawCanvas(canvas, scenario, robots) {
       centerOn(x, y, () => {
         if (scenario.pits.find(p => p.x === x && p.y === y))
           return
-        ctx.fillStyle = 'rgb(240, 248, 255)'
 
-        ctx.fill(s.hex)
-        ctx.stroke(s.hex)
+       ctx.fillStyle = 'rgb(240, 248, 255)'
+       ctx.fill(s.hex)
+       ctx.stroke(s.hex)
       })
 
   // target:
@@ -18615,7 +18614,7 @@ function drawCanvas(canvas, scenario, robots) {
     centerOn(robot.x, robot.y, () => {
       ctx.globalAlpha = robot.alpha
       ctx.rotate(robot.rotation)
-      ctx.drawImage(images.player(robot.index), -tile / 4, -tile / 4, tile / 2, tile / 2)
+      ctx.drawImage(images.player(robot.index), -tile / 2, -tile / 2, tile , tile )
     })
   )
 }
@@ -19007,9 +19006,9 @@ function renderActionButtons(state, game, actionHandler) {
   }
 
   if (!player) {
-    return h('div.control-panel', h('div.text', 'observer mode'))
+    return h('div.status-panel', h('div.text', 'observer mode'))
   } else if (player.finished) {
-    return h('div.control-panel', h('div.text', 'target reached'))
+    return h('div.status-panel', h('div.text', 'target reached'))
   } else {
     return h('div.footer-group', [
       h('div.slots-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot)),

@@ -159,9 +159,9 @@ function renderActionButtons(state, game, actionHandler) {
   }
 
   if (!player) {
-    return h('div.control-panel', h('div.text', 'observer mode'))
+    return h('div.status-panel', h('div.text', 'observer mode'))
   } else if (player.finished) {
-    return h('div.control-panel', h('div.text', 'target reached'))
+    return h('div.status-panel', h('div.text', 'target reached'))
   } else {
     return h('div.footer-group', [
       h('div.slots-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot)),

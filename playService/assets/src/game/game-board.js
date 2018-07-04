@@ -82,10 +82,10 @@ function drawCanvas(canvas, scenario, robots) {
       centerOn(x, y, () => {
         if (scenario.pits.find(p => p.x === x && p.y === y))
           return
-        ctx.fillStyle = 'rgb(240, 248, 255)'
 
-        ctx.fill(s.hex)
-        ctx.stroke(s.hex)
+       ctx.fillStyle = 'rgb(240, 248, 255)'
+       ctx.fill(s.hex)
+       ctx.stroke(s.hex)
       })
 
   // target:
@@ -117,7 +117,7 @@ function drawCanvas(canvas, scenario, robots) {
     centerOn(robot.x, robot.y, () => {
       ctx.globalAlpha = robot.alpha
       ctx.rotate(robot.rotation)
-      ctx.drawImage(images.player(robot.index), -tile / 4, -tile / 4, tile / 2, tile / 2)
+      ctx.drawImage(images.player(robot.index), -tile / 2, -tile / 2, tile , tile )
     })
   )
 }

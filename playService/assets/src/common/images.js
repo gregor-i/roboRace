@@ -8,7 +8,6 @@ const iconClose = image('/assets/ic-close.png')
 const iconGamerlist = image('/assets/ic-gamerlist.png')
 const iconReplayAnimation = image('/assets/ic-replay-animation.png')
 
-// https://materialdesignicons.com/icon/apple-keyboard-caps
 const player1 = image('/assets/player1.png')
 const player2 = image('/assets/player2.png')
 const player3 = image('/assets/player3.png')
