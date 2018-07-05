@@ -5,12 +5,6 @@ import monocle.function.Each.each
 
 object Cycle{
   def apply(gameState: GameState): Logged[GameState] = gameState match {
-    case g: GameStarting if g.players.forall(_.ready) && g.players.nonEmpty =>
-      GameRunning(
-        cycle = 0,
-        players = g.players.map(player => RunningPlayer(player.index, player.name, g.scenario.initialRobots(player.index), Seq.empty, DealOptions.initial, None)),
-        scenario = g.scenario).log(GameStarted())
-
     case g: GameRunning if g.players.forall(player => player.finished.isDefined || player.instructions.size == Constants.instructionsPerCycle) =>
       for {
         afterPlayerActions <- execAllActions(g)

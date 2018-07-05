@@ -1,6 +1,6 @@
 package repo
 
-import gameLogic.{GameScenario, GameStarting, InitialGame}
+import gameLogic.GameScenario
 import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 

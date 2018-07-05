@@ -3,7 +3,7 @@ package controller
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import gameLogic.{GameFinished, GameRunning, GameStarting, GameState, InitialGame}
+import gameLogic.{GameFinished, GameRunning, GameState, InitialGame}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.Inject
@@ -55,7 +55,6 @@ class LobbyController @Inject()(gameRepo: GameRepository)
 
   def stateDescription(gameState:GameState): String = gameState match{
     case InitialGame => "New"
-    case GameStarting(sc, pls) => s"Starting(players = ${pls.map(_.name).mkString(", ")})"
     case GameRunning(cycle, cs, pls) => s"Running(cycle = $cycle, players = ${pls.map(_.name).mkString(", ")})"
     case GameFinished(pls, sc) => s"Finished(players = ${pls.sortBy(_.finished.get.rank).map(pl => s"${pl.finished.get.rank}. ${pl.name}").mkString(", ")})"
   }

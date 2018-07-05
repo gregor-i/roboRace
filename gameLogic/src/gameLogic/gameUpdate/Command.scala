@@ -4,20 +4,17 @@ package gameUpdate
 sealed trait Command {
   def apply(player: String): GameState => CommandResponse = {
     case InitialGame => ifInitial(player)
-    case g: GameStarting => ifStarting(player, g)
-    case g: GameRunning => ifRunning(player, g)
-    case g: GameFinished => ifFinished(player, g)
+    case g: GameRunning => ifRunning(player)(g)
+    case g: GameFinished => ifFinished(player)(g)
   }
 
   type IfInitial = String => CommandResponse
-  type IfStarting = (String, GameStarting) => CommandResponse
-  type IfRunning = (String, GameRunning) => CommandResponse
-  type IfFinished = (String, GameFinished) => CommandResponse
+  type IfRunning = String => GameRunning => CommandResponse
+  type IfFinished = String => GameFinished => CommandResponse
 
   def ifInitial: IfInitial = _ => CommandRejected(WrongState)
-  def ifStarting: IfStarting = (_, _) => CommandRejected(WrongState)
-  def ifRunning: IfRunning = (_, _) => CommandRejected(WrongState)
-  def ifFinished: IfFinished = (_, _) => CommandRejected(WrongState)
+  def ifRunning: IfRunning = _ => _ => CommandRejected(WrongState)
+  def ifFinished: IfFinished = _ => _ => CommandRejected(WrongState)
 }
 
 sealed trait CommandResponse
@@ -26,65 +23,69 @@ case class CommandAccepted(newState: GameState) extends CommandResponse
 
 case class DefineScenario(scenario: GameScenario) extends Command {
   override def ifInitial: IfInitial = {
-    case _ if !GameScenario.validation(scenario) => CommandRejected(InvalidScenario)
-    case player => CommandAccepted(GameStarting(scenario, List(StartingPlayer(0, player, ready = false))))
+    case _ if !GameScenario.validation(scenario) =>
+      CommandRejected(InvalidScenario)
+    case player =>
+      val newPlayer = RunningPlayer(index = 0,
+        name = player,
+        robot = scenario.initialRobots(0),
+        instructions = Seq.empty,
+        instructionOptions = DealOptions.initial,
+        finished = None
+      )
+      CommandAccepted(GameRunning(0, scenario, List(newPlayer)))
   }
 }
 
 case object RegisterForGame extends Command {
-  override def ifStarting: IfStarting = {
-    case (player, g) if g.players.exists(_.name == player) =>
+  override def ifRunning: IfRunning = player => {
+    case game if game.cycle != 0 =>
+      CommandRejected(WrongCycle)
+    case game if game.players.exists(_.name == player) =>
       CommandRejected(PlayerAlreadyRegistered)
-    case (_, g) if g.players.size >= g.scenario.initialRobots.size =>
+    case game if game.players.size >= game.scenario.initialRobots.size =>
       CommandRejected(TooMuchPlayersRegistered)
-    case (player, g) =>
-      CommandAccepted(GameStarting.players.modify(players => players :+ StartingPlayer(players.size, player, ready = false))(g))
+    case game =>
+      val newPlayer = RunningPlayer(index = game.players.size,
+        name = player,
+        robot = game.scenario.initialRobots(game.players.size),
+        instructions = Seq.empty,
+        instructionOptions = DealOptions.initial,
+        finished = None
+      )
+      CommandAccepted(GameRunning.players.modify(players => players :+ newPlayer)(game))
   }
 }
 
 case object DeregisterForGame extends Command {
-  override def ifStarting: IfStarting = {
-    case (player, g) if g.players.forall(_.name != player) =>
-      CommandRejected(PlayerNotRegistered)
-    case (player, g) =>
-      CommandAccepted(GameStarting.players.modify(_.filter(_.name != player).zipWithIndex.map{case (player, index) => player.copy(index =index)})(g))
-  }
-}
-
-case object ReadyForGame extends Command {
-  override def ifStarting: IfStarting = {
-    case (player, g) if !g.players.exists(_.name == player) =>
+  override def ifRunning: IfRunning = player => {
+    case game if !game.players.exists(_.name == player) =>
       CommandRejected(PlayerNotFound)
-    case (player, g) =>
-      CommandAccepted((GameStarting.player(player) composeLens StartingPlayer.ready).set(true)(g))
+    case game if game.players.find(_.name == player).exists(_.finished.isDefined) =>
+      CommandRejected(PlayerAlreadyFinished)
+
+    case game if game.cycle == 0 =>
+      CommandAccepted(GameRunning.players.modify(_.filter(_.name != player).zipWithIndex.map{case (player, index) => player.copy(index =index)})(game))
+    case game =>
+      CommandAccepted((GameRunning.player(player) composeLens RunningPlayer.finished)
+        .set(Some(FinishedStatistic(game.players.count(_.finished.isEmpty), game.cycle, true)))(game))
   }
 }
 
 case class ChooseInstructions(cycle: Int, instructions: Seq[Int]) extends Command {
-  override def ifRunning: IfRunning = {
-    case (_, g) if g.cycle != cycle =>
+  override def ifRunning: IfRunning = player => {
+    case game if game.cycle != cycle =>
       CommandRejected(WrongCycle)
-    case (player, g) if !g.players.exists(_.name == player) =>
+    case game if !game.players.exists(_.name == player) =>
       CommandRejected(PlayerNotFound)
-    case (player, g) if g.players.find(_.name == player).exists(_.finished.isDefined) =>
+    case game if game.players.find(_.name == player).exists(_.finished.isDefined) =>
       CommandRejected(PlayerAlreadyFinished)
-    case (_, g) if instructions.size != Constants.instructionsPerCycle ||
+    case game if instructions.size != Constants.instructionsPerCycle ||
       instructions.distinct.size != Constants.instructionsPerCycle ||
       instructions.forall(i => 0 > i && i > Constants.instructionOptionsPerCycle) =>
       CommandRejected(InvalidActionChoice)
-    case (player, g) =>
-      CommandAccepted(GameRunning.player(player).modify(p => p.copy(instructions = instructions.map(p.instructionOptions)))(g))
+    case game =>
+      CommandAccepted(GameRunning.player(player).modify(p => p.copy(instructions = instructions.map(p.instructionOptions)))(game))
   }
 }
 
-case object RageQuit extends Command {
-  override def ifRunning: IfRunning = {
-    case (player, g) if !g.players.exists(_.name == player) =>
-      CommandRejected(PlayerNotFound)
-    case (player, g) if g.players.find(_.name == player).exists(_.finished.isDefined) =>
-      CommandRejected(PlayerAlreadyFinished)
-    case (player, g) =>
-      CommandAccepted((GameRunning.player(player) composeLens RunningPlayer.finished)
-        .set(Some(FinishedStatistic(g.players.count(_.finished.isEmpty), g.cycle, true)))(g))
-  }
-}

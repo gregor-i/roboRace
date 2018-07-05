@@ -1,6 +1,6 @@
 package repo
 
-import gameLogic.{GameScenario, GameStarting, InitialGame}
+import gameLogic.{GameRunning, GameScenario, InitialGame}
 import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -8,7 +8,7 @@ class GameRepositorySpec extends FunSuite with Matchers with GuiceOneAppPerSuite
   def repo = app.injector.instanceOf[GameRepository]
 
   val g1 = GameRow("initial", "player", InitialGame)
-  val g2 = GameRow("starting", "player", GameStarting(GameScenario.default, List.empty))
+  val g2 = GameRow("starting", "player", GameRunning(0, GameScenario.default, List.empty))
 
   override def beforeEach = {
     repo.list().foreach(row => repo.delete(row.id))

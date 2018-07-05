@@ -1,7 +1,7 @@
 package repo
 
 import anorm._
-import gameLogic.{GameFinished, GameRunning, GameStarting, GameState, InitialGame}
+import gameLogic.{GameFinished, GameRunning, GameState, InitialGame}
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
@@ -13,9 +13,8 @@ case class GameRow(id: String, owner: String, game: GameState)
 object GameRow {
   private val orderingState: Ordering[GameState] = Ordering.Int.on {
     case InitialGame => 0
-    case _: GameStarting => 1
-    case _: GameRunning => 2
-    case _: GameFinished => 3
+    case _: GameRunning => 1
+    case _: GameFinished => 2
   }
 
   implicit val ordering: Ordering[GameRow] = Ordering.Tuple2(orderingState, Ordering.String).on(row => (row.game, row.id))

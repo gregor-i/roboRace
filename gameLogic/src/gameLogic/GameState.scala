@@ -9,14 +9,6 @@ sealed trait GameState
 case object InitialGame extends GameState
 
 @Lenses
-case class GameStarting(scenario: GameScenario,
-                        players: List[StartingPlayer]) extends GameState
-
-object GameStarting{
-  def player(name: String): Optional[GameStarting, StartingPlayer] = players.composeOptional(OptionalWhere.where(_.name == name))
-}
-
-@Lenses
 case class GameRunning(cycle: Int,
                        scenario: GameScenario,
                        players: List[RunningPlayer]) extends GameState

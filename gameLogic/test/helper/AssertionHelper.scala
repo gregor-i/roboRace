@@ -1,6 +1,6 @@
 package helper
 
-import gameLogic.{GameFinished, GameRunning, GameStarting, GameState}
+import gameLogic.{GameFinished, GameRunning, GameState}
 import org.scalatest.{Assertion, Matchers}
 
 trait AssertionHelper {
@@ -9,13 +9,6 @@ trait AssertionHelper {
   def assert(f: GameState => Assertion): GameState => GameState =
     state => {
       f(state)
-      state
-    }
-
-  def assertStarting(f: GameStarting => Assertion): GameState => GameState =
-    state => {
-      state shouldBe a[GameStarting]
-      f(state.asInstanceOf[GameStarting])
       state
     }
 
