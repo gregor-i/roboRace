@@ -1,17 +1,17 @@
 package gameLogic
 
-case class GameScenario(width: Int, height: Int,
-                        beaconPosition: Position,
-                        targetPosition: Position,
-                        initialRobots: Seq[Robot],
-                        walls: Seq[Wall],
-                        pits: Seq[Position])
+case class Scenario(width: Int, height: Int,
+                    beaconPosition: Position,
+                    targetPosition: Position,
+                    initialRobots: Seq[Robot],
+                    walls: Seq[Wall],
+                    pits: Seq[Position])
 
-object GameScenario {
+object Scenario {
   private def robot(x: Int, y: Int, direction: Direction): Robot = Robot(Position(x, y), direction)
   private def wall(x: Int, y: Int, direction: WallDirection): Wall = Wall(Position(x, y), direction)
 
-  def validation(gameScenario: GameScenario): Boolean = {
+  def validation(gameScenario: Scenario): Boolean = {
     val tiles = for {
       x <- 0 until gameScenario.width
       y <- 0 until gameScenario.height
@@ -35,7 +35,7 @@ object GameScenario {
     ).forall(identity)
   }
 
-  val default = GameScenario(
+  val default = Scenario(
     width = 7,
     height = 9,
     beaconPosition = Position(3, 8),

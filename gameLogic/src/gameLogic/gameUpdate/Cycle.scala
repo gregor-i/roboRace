@@ -4,17 +4,15 @@ package gameUpdate
 import monocle.function.Each.each
 
 object Cycle{
-  def apply(gameState: GameState): Logged[GameState] = gameState match {
-    case g: GameRunning if g.players.forall(player => player.finished.isDefined || player.instructions.size == Constants.instructionsPerCycle) =>
+  def apply(gameState: Game): Logged[Game] = gameState match {
+    case g: Game if g.players.forall(player => player.finished.isDefined || player.instructions.size == Constants.instructionsPerCycle) =>
       for {
         afterPlayerActions <- execAllActions(g)
         afterEffects <- ScenarioEffects.afterCycle(afterPlayerActions)
         nextState <- afterEffects match {
-          case running if running.players.forall(_.finished.isDefined) =>
-            GameFinished(running.players, scenario = running.scenario).log(AllPlayersFinished)
           case running =>
-            val o1 = GameRunning.players composeTraversal each composeLens RunningPlayer.instructionOptions set DealOptions()
-            val o2 = GameRunning.cycle modify (_ + 1)
+            val o1 = Game.players composeTraversal each composeLens RunningPlayer.instructionOptions set DealOptions()
+            val o2 = Game.cycle modify (_ + 1)
             o1.andThen(o2)(running).log(StartNextCycle(running.cycle + 1))
         }
       } yield nextState
@@ -22,7 +20,7 @@ object Cycle{
     case _ => Logged.pure(gameState)
   }
 
-  private def execAllActions(gameRunning: GameRunning): Logged[GameRunning] =
+  private def execAllActions(gameRunning: Game): Logged[Game] =
     calcNextPlayer(gameRunning) match {
       case Some(nextPlayer) => for {
         afterAction <- applyAction(gameRunning, nextPlayer)
@@ -31,7 +29,7 @@ object Cycle{
       case None => Logged.pure(gameRunning)
     }
 
-  private def calcNextPlayer(gameState: GameRunning): Option[RunningPlayer] = {
+  private def calcNextPlayer(gameState: Game): Option[RunningPlayer] = {
     val beacon = gameState.scenario.beaconPosition
 
     def nextPlayerWeight(player: RunningPlayer): (Int, Double, Double) = {
@@ -50,7 +48,7 @@ object Cycle{
     }
   }
 
-  private def applyAction(game: GameRunning, player: RunningPlayer): Logged[GameRunning] = {
+  private def applyAction(game: Game, player: RunningPlayer): Logged[Game] = {
     val instruction = player.instructions.head
     for {
       _ <- ().log(RobotAction(player.name, instruction))
@@ -63,6 +61,6 @@ object Cycle{
 
         case Sleep => Logged.pure(game)
       }
-    } yield (GameRunning.player(player.name) composeLens RunningPlayer.instructions).modify(_.drop(1))(afterInstruction)
+    } yield (Game.player(player.name) composeLens RunningPlayer.instructions).modify(_.drop(1))(afterInstruction)
   }
 }

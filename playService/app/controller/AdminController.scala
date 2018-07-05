@@ -1,7 +1,7 @@
 package controller
 
 import com.typesafe.config.ConfigValue
-import gameLogic.GameScenario
+import gameLogic.Scenario
 import io.circe.Encoder
 import io.circe.syntax._
 import javax.inject.Inject
@@ -23,13 +23,13 @@ class AdminController @Inject()(configuration: Configuration,
   }
 
   def postDefault() = Action{
-    scenarioRepo.save(ScenarioRow("default", "system", Some(GameScenario.default)))
+    scenarioRepo.save(ScenarioRow("default", "system", Some(Scenario.default)))
     NoContent
   }
 
   def garbageCollect() = Action{
     val deletedScenarios = scenarioRepo.list()
-      .filter(row => row.scenario.fold(true)(sc => !GameScenario.validation(sc)))
+      .filter(row => row.scenario.fold(true)(sc => !Scenario.validation(sc)))
       .map(row => scenarioRepo.delete(row.id))
       .sum
 

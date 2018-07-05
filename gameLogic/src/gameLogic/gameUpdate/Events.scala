@@ -4,21 +4,21 @@ package gameUpdate
 import Robot._
 
 object Events {
-  private def robot(playerName: String) = GameRunning.player(playerName) composeLens RunningPlayer.robot
+  private def robot(playerName: String) = Game.player(playerName) composeLens RunningPlayer.robot
 
-  def move(player: RunningPlayer, nextPos: Position)(game: GameRunning): Logged[GameRunning] =
+  def move(player: RunningPlayer, nextPos: Position)(game: Game): Logged[Game] =
     (robot(player.name) composeLens position)
       .set(nextPos)(game)
       .log(RobotMoves(player.name, nextPos))
 
-  def turn(player: RunningPlayer, nextDirection: Direction)(game: GameRunning): Logged[GameRunning] =
+  def turn(player: RunningPlayer, nextDirection: Direction)(game: Game): Logged[Game] =
     (robot(player.name) composeLens direction)
       .set(nextDirection)(game)
       .log(RobotTurns(player.name, nextDirection))
 
-  def reset(player: RunningPlayer, initialRobot: Robot)(game: GameRunning): Logged[GameRunning] =
+  def reset(player: RunningPlayer, initialRobot: Robot)(game: Game): Logged[Game] =
     robot(player.name).set(initialRobot)
-      .andThen((GameRunning.player(player.name) composeLens RunningPlayer.instructions).set(List.empty))
+      .andThen((Game.player(player.name) composeLens RunningPlayer.instructions).set(List.empty))
       .apply(game)
       .log(RobotReset(player.name, initialRobot))
 

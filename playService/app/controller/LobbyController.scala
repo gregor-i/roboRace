@@ -3,7 +3,8 @@ package controller
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import gameLogic.{GameFinished, GameRunning, GameState, InitialGame}
+import gameLogic.gameUpdate.{CommandAccepted, CommandRejected, CreateGame}
+import gameLogic.{Game, Scenario, Game}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.Inject
@@ -26,14 +27,19 @@ class LobbyController @Inject()(gameRepo: GameRepository)
     Ok(gameList().asJson)
   }
 
-  def create() = Action { request =>
+  def create() = Action(circe.tolerantJson[Scenario]) { request =>
     Utils.playerName(request) match {
       case None => Unauthorized
       case Some(player) =>
-        val row = GameRow(id = Utils.newShortId(), owner = player, game = InitialGame)
-        gameRepo.save(row)
-        Source.single(gameList().asJson.noSpaces).runWith(sink)
-        Created(row.asJson)
+        CreateGame(request.body)(player) match {
+          case CommandRejected(reason) =>
+            BadRequest(reason)
+          case CommandAccepted(game) =>
+            val row = GameRow(id = Utils.newShortId(), owner = player, game = game)
+            gameRepo.save(row)
+            Source.single(gameList().asJson.noSpaces).runWith(sink)
+            Created(row.asJson)
+        }
     }
   }
 
@@ -53,10 +59,8 @@ class LobbyController @Inject()(gameRepo: GameRepository)
     Ok.chunked(source via EventSource.flow).as(ContentTypes.EVENT_STREAM)
   }
 
-  def stateDescription(gameState:GameState): String = gameState match{
-    case InitialGame => "New"
-    case GameRunning(cycle, cs, pls) => s"Running(cycle = $cycle, players = ${pls.map(_.name).mkString(", ")})"
-    case GameFinished(pls, sc) => s"Finished(players = ${pls.sortBy(_.finished.get.rank).map(pl => s"${pl.finished.get.rank}. ${pl.name}").mkString(", ")})"
+  def stateDescription(gameState:Game): String = gameState match{
+    case Game(cycle, cs, pls) => s"Running(cycle = $cycle, players = ${pls.map(_.name).mkString(", ")})"
   }
 
   def gameList() =

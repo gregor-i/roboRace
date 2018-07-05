@@ -1,21 +1,21 @@
 package repo
 
 import anorm._
-import gameLogic.{GameScenario, GameState}
+import gameLogic.{Scenario, Game}
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
 import play.api.db.Database
 
-case class ScenarioRow(id: String, owner: String, scenario: Option[GameScenario])
+case class ScenarioRow(id: String, owner: String, scenario: Option[Scenario])
 
 @Singleton
 class ScenarioRepository @Inject()(db: Database){
   private val rowParser: RowParser[ScenarioRow] = for {
     id <- SqlParser.str("id")
     owner <- SqlParser.str("owner")
-    maybeScenario <- SqlParser.str("scenario").map(data => decode[GameScenario](data).toOption)
+    maybeScenario <- SqlParser.str("scenario").map(data => decode[Scenario](data).toOption)
   } yield ScenarioRow(id, owner, maybeScenario)
 
   def get(id: String): Option[ScenarioRow] =

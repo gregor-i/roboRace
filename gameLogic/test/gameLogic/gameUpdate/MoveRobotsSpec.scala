@@ -4,8 +4,8 @@ package gameUpdate
 import org.scalatest.{FunSuite, Matchers}
 
 class MoveRobotsSpec extends FunSuite with Matchers {
-  val c0 = GameRunning(0,
-    GameScenario(10, 10,
+  val c0 = Game(0,
+    Scenario(10, 10,
       Position(9, 9),
       Position(9, 8),
       List(

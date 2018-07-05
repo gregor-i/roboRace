@@ -1,20 +1,18 @@
 package repo
 
 import anorm._
-import gameLogic.{GameFinished, GameRunning, GameState, InitialGame}
+import gameLogic.{Game, Game}
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
 import play.api.db.Database
 
-case class GameRow(id: String, owner: String, game: GameState)
+case class GameRow(id: String, owner: String, game: Game)
 
 object GameRow {
-  private val orderingState: Ordering[GameState] = Ordering.Int.on {
-    case InitialGame => 0
-    case _: GameRunning => 1
-    case _: GameFinished => 2
+  private val orderingState: Ordering[Game] = Ordering.Int.on {
+    case _: Game => 1
   }
 
   implicit val ordering: Ordering[GameRow] = Ordering.Tuple2(orderingState, Ordering.String).on(row => (row.game, row.id))
@@ -25,7 +23,7 @@ class GameRepository @Inject()(db: Database) {
   private val rowParser: RowParser[Option[GameRow]] = for {
     id <- SqlParser.str("id")
     owner <- SqlParser.str("owner")
-    maybeGame <- SqlParser.str("game").map(data => decode[GameState](data).toOption)
+    maybeGame <- SqlParser.str("game").map(data => decode[Game](data).toOption)
   } yield maybeGame.map(game => GameRow(id, owner, game))
 
   def get(id: String): Option[GameRow] =

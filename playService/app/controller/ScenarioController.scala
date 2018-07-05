@@ -1,6 +1,6 @@
 package controller
 
-import gameLogic.GameScenario
+import gameLogic.Scenario
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
@@ -15,11 +15,11 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
     Ok(repo.list().asJson)
   }
 
-  def post() = Action(circe.tolerantJson[GameScenario]) { request =>
+  def post() = Action(circe.tolerantJson[Scenario]) { request =>
     Utils.playerName(request) match {
-      case None => Unauthorized
-      case _ if !GameScenario.validation(request.body) => BadRequest
-      case Some(player) =>
+      case None                                    => Unauthorized
+      case _ if !Scenario.validation(request.body) => BadRequest
+      case Some(player)                            =>
         val row = ScenarioRow(
           id = Utils.newShortId(),
           owner = player,

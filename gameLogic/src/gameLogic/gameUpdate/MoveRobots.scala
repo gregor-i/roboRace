@@ -2,8 +2,8 @@ package gameLogic
 package gameUpdate
 
 object MoveRobots {
-  def apply(player: RunningPlayer, instruction: MoveInstruction, game: GameRunning): Logged[GameRunning] = {
-    def move(direction: Direction, gameRunning: GameRunning): Logged[GameRunning] ={
+  def apply(player: RunningPlayer, instruction: MoveInstruction, game: Game): Logged[Game] = {
+    def move(direction: Direction, gameRunning: Game): Logged[Game] ={
       val p = gameRunning.players.find(_.name == player.name).get
       if (movementIsAllowed(gameRunning, p.robot.position, direction)) {
         for{
@@ -29,7 +29,7 @@ object MoveRobots {
   }
 
 
-  def pushRobots(position: Position, direction: Direction, gameRunning: GameRunning): Logged[GameRunning] =
+  def pushRobots(position: Position, direction: Direction, gameRunning: Game): Logged[Game] =
     gameRunning.players.find(_.robot.position == position) match {
       case Some(player) =>
         val nextPos = direction(position)
@@ -41,7 +41,7 @@ object MoveRobots {
     }
 
 
-  private def movementIsAllowed(game: GameRunning, position: Position, direction: Direction): Boolean = {
+  private def movementIsAllowed(game: Game, position: Position, direction: Direction): Boolean = {
     val walls = game.scenario.walls
     val blockedByWall = direction match {
       case Up        => walls.contains(Wall(Up(position), Down))
