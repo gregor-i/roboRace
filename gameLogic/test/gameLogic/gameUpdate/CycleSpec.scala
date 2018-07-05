@@ -6,23 +6,25 @@ import org.scalatest.{FunSuite, Matchers}
 
 class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("should start game if all players are ready") {
-    val c0 = updateChain(InitialGame)(
+    updateChain(InitialGame)(
       DefineScenario(GameScenario.default)(p1).accepted.anyEvents,
       RegisterForGame(p2).accepted.noEvents,
       RegisterForGame(p3).accepted.noEvents,
       ReadyForGame(p1).accepted.noEvents,
       ReadyForGame(p2).accepted.noEvents,
-      ReadyForGame(p3).accepted.logged(_ shouldBe Seq(GameStarted()))
-    ).asInstanceOf[GameRunning]
-
-    c0.players.map(_.name) shouldBe List(p1, p2, p3)
-    c0.cycle shouldBe 0
-    for (player <- c0.players) {
-      player.instructions shouldBe Seq()
-      player.finished shouldBe None
-      player.robot shouldBe GameScenario.default.initialRobots(player.index)
-      player.instructionOptions.size shouldBe Constants.instructionOptionsPerCycle
-    }
+      ReadyForGame(p3).accepted.logged(_ shouldBe Seq(GameStarted())),
+      assertRunning{ game =>
+        game.players.map(_.name) shouldBe List(p1, p2, p3)
+        game.cycle shouldBe 0
+        for (player <- game.players) {
+          player.instructions shouldBe Seq()
+          player.finished shouldBe None
+          player.robot shouldBe GameScenario.default.initialRobots(player.index)
+          player.instructionOptions shouldBe DealOptions.initial
+        }
+        succeed
+      }
+    )
   }
 
   test("should start the next cycle when all player choose their action") {

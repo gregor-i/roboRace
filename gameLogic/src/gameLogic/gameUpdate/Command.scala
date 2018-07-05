@@ -70,7 +70,7 @@ case class ChooseInstructions(cycle: Int, instructions: Seq[Int]) extends Comman
       CommandRejected(PlayerAlreadyFinished)
     case (_, g) if instructions.size != Constants.instructionsPerCycle ||
       instructions.distinct.size != Constants.instructionsPerCycle ||
-      instructions.forall(i => 0 > i || i > Constants.instructionOptionsPerCycle) =>
+      instructions.forall(i => 0 > i && i > Constants.instructionOptionsPerCycle) =>
       CommandRejected(InvalidActionChoice)
     case (player, g) =>
       CommandAccepted(GameRunning.player(player).modify(p => p.copy(instructions = instructions.map(p.instructionOptions)))(g))
