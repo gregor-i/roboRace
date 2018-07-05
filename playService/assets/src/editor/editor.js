@@ -26,27 +26,14 @@ function Editor(element, player, scenarioId) {
     }
   }
 
-  service.loadAllScenarios().then(function (scenarios) {
-    const scenario = scenarios.find(row => row.id === scenarioId)
-    if(scenario !== undefined)
-      renderState({
-        player,
-        scenarios,
-        scenario: scenario.scenario,
-        scenarioId: scenario.id,
-        scenarioOwner: scenario.owner,
-        modal: undefined
-      }, element)
-    else
-      renderState({
-        player,
-        scenarios,
-        scenario: undefined,
-        scenarioId: undefined,
-        scenarioOwner: undefined,
-        modal: undefined
-      }, element)
-  })
+  service.loadSingleScenario(scenarioId).then((scenario) =>
+    renderState({
+      player,
+      scenario: scenario.scenario,
+      scenarioId: scenario.id,
+      scenarioOwner: scenario.owner
+    }, element)
+  ).catch(err => window.location.href = '/')
 
   return this
 }

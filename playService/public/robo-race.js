@@ -18163,7 +18163,7 @@ const defaultHeader = {
 }
 
 function header(additional){
-  return _.merge(defaultHeader, additional)
+  return _.merge({}, defaultHeader, additional)
 }
 
 module.exports = header
@@ -18175,14 +18175,6 @@ const constants = require('../common/constants')
 function actions(state, action) {
   if (action.backToLobby) {
     window.location.href = "/"
-  } else if (action.setModal) {
-    state.modal = action.setModal
-    return Promise.resolve(state)
-  } else if (action.closeModal) {
-    delete state.modal
-    return Promise.resolve(state)
-  } else if (action.editScenario) {
-    window.location.href = "/editor/" + action.editScenario.id
   }else if (action.deleteScenario) {
     editorService.deleteScenario(action.deleteScenario)
 
@@ -18243,11 +18235,14 @@ function actions(state, action) {
       y--
       direction = {Down: {}}
     } else if (direction.UpLeft) {
+      if(x %2 === 0  && x !== 0)
+        y--
       x--
       direction = {DownRight: {}}
     } else if (direction.DownLeft) {
+      if(x %2 === 1 || x === 0)
+        y++
       x--
-      y++
       direction = {UpRight: {}}
     }
     const p = w => w.position.x === x && w.position.y === y && Object.keys(w.direction)[0] === Object.keys(direction)[0]
@@ -18276,6 +18271,11 @@ function loadAllScenarios() {
       .then(parseJson)
 }
 
+function loadSingleScenario(id){
+  return fetch('/api/scenarios/' + id, headers({}))
+    .then(parseJson)
+}
+
 function postScenario(scenario) {
   return fetch('/api/scenarios', headers({
     method: 'POST',
@@ -18295,57 +18295,40 @@ function parseJson(resp) {
 
 module.exports = {
   loadAllScenarios,
+  loadSingleScenario,
   postScenario,
   deleteScenario
 }
 
 },{"../common/service-headers":18}],21:[function(require,module,exports){
-const _ = require('lodash')
 const h = require('snabbdom/h').default
 const button = require('../common/button')
 const frame = require('../common/frame')
-const modal = require('../common/modal')
 const gameBoard = require('../game/game-board')
 
 function render(state, actionHandler) {
-  let m = null
-  const closeAction = [actionHandler, {closeModal: true}]
-  if (state.modal && state.modal.type === 'previewScenario')
-    m = modal(h('div.modal-maximized',
-        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial), {}),
-        ), closeAction)
-
-  const backToLobby = backToLobbyButton(actionHandler)
-
-  if(state.scenario) {
-    return frame([h('h1', 'Scenario Editor: ' + state.scenarioId), button.group(backToLobby)],
-        gameBoard.renderCanvas(state.scenario, state.scenario.initialRobots.map(gameBoard.robotFromInitial), clickEventHandler(state.clickAction, actionHandler)),
-        renderEditorActionbar(actionHandler),
-        m)
-  } else {
-    return frame([h('h1', 'Scenario Editor:'), button.group(backToLobby)],
-        h('div.content',renderScenarioList(state.player, state.scenarios, actionHandler)),
-        undefined,
-        m)
-  }
+  return frame([h('h1', 'Scenario Editor: ' + state.scenarioId), button.group(backToLobbyButton(actionHandler))],
+    gameBoard.renderCanvas(state.scenario, state.scenario.initialRobots.map(gameBoard.robotFromInitial), clickEventHandler(state.clickAction, actionHandler)),
+    renderEditorActionbar(actionHandler),
+    null)
 }
 
-function clickEventHandler(clickAction, actionHandler){
-  if(clickAction === 'ToggleWall')
+function clickEventHandler(clickAction, actionHandler) {
+  if (clickAction === 'ToggleWall')
     return {onClickTile: (x, y, direction) => actionHandler({toggleWall: {x, y, direction}})}
-  else if(clickAction === 'TogglePit')
+  else if (clickAction === 'TogglePit')
     return {onClickTile: (x, y) => actionHandler({togglePit: {x, y}})}
-  else if(clickAction === 'SetTarget')
+  else if (clickAction === 'SetTarget')
     return {onClickTile: (x, y) => actionHandler({setTarget: {x, y}})}
-  else if(clickAction === 'ToggleInitialRobot')
+  else if (clickAction === 'ToggleInitialRobot')
     return {onClickTile: (x, y) => actionHandler({toggleInitialRobot: {x, y}})}
-  else if(clickAction === 'RotateRobot')
+  else if (clickAction === 'RotateRobot')
     return {onClickTile: (x, y) => actionHandler({rotateRobot: {x, y}})}
   else
     return {}
 }
 
-function renderEditorActionbar(actionHandler){
+function renderEditorActionbar(actionHandler) {
   return [
     h('div.control-panel', [
       button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
@@ -18364,33 +18347,13 @@ function renderEditorActionbar(actionHandler){
   ]
 }
 
-function renderScenarioList(player, scenarios, actionHandler) {
-  const header = h('tr', [h('th', 'Id'), h('th', 'owner'), h('th', 'actions')])
-
-  const rows = scenarios.map(row =>
-      h('tr', [
-        h('td', row.id),
-        h('td', row.owner),
-        h('td', button.group(
-            button.primary(actionHandler, {editScenario: row}, 'Edit this Scenario'),
-            button.builder(actionHandler, {setModal: {type: 'previewScenario', scenario:row.scenario}}, 'Preview'),
-            button.builder.disabled(row.owner !== player)(actionHandler, {deleteScenario: row.id}, 'Delete')
-        ))
-      ]))
-
-  return h('div', [
-    h('h4', 'Select a scenario: '),
-    h('table', [header, ...rows])
-  ])
-}
-
 function backToLobbyButton(actionHandler) {
   return button.link(actionHandler, {backToLobby: true}, 'Back to Lobby')
 }
 
 module.exports = render
 
-},{"../common/button":13,"../common/frame":15,"../common/modal":17,"../game/game-board":24,"lodash":2,"snabbdom/h":3}],22:[function(require,module,exports){
+},{"../common/button":13,"../common/frame":15,"../game/game-board":24,"snabbdom/h":3}],22:[function(require,module,exports){
 const snabbdom = require('snabbdom')
 const patch = snabbdom.init([
   require('snabbdom/modules/eventlisteners').default,
@@ -18419,27 +18382,14 @@ function Editor(element, player, scenarioId) {
     }
   }
 
-  service.loadAllScenarios().then(function (scenarios) {
-    const scenario = scenarios.find(row => row.id === scenarioId)
-    if(scenario !== undefined)
-      renderState({
-        player,
-        scenarios,
-        scenario: scenario.scenario,
-        scenarioId: scenario.id,
-        scenarioOwner: scenario.owner,
-        modal: undefined
-      }, element)
-    else
-      renderState({
-        player,
-        scenarios,
-        scenario: undefined,
-        scenarioId: undefined,
-        scenarioOwner: undefined,
-        modal: undefined
-      }, element)
-  })
+  service.loadSingleScenario(scenarioId).then((scenario) =>
+    renderState({
+      player,
+      scenario: scenario.scenario,
+      scenarioId: scenario.id,
+      scenarioOwner: scenario.owner
+    }, element)
+  ).catch(err => window.location.href = '/')
 
   return this
 }
@@ -18456,10 +18406,6 @@ function actions(state, action) {
     window.location.href = "/"
   else if (action.joinGame)
     gameService.joinGame(action.joinGame)
-  else if (action.readyForGame)
-    gameService.readyForGame(action.readyForGame)
-  else if (action.selectScenario)
-    gameService.defineScenario(state.gameId, action.selectScenario)
   else if (action.focusSlot !== undefined) {
     state.focusedSlot = action.focusSlot
     return Promise.resolve(state)
@@ -18469,7 +18415,7 @@ function actions(state, action) {
     let slot = action.defineInstruction.slot
     state.slots[slot] = action.defineInstruction.value
     if (_.range(constants.numberOfInstructionsPerCycle).every(i => state.slots[i] >= 0))
-      gameService.defineInstruction(state.gameId, state.game.GameRunning.cycle, state.slots)
+      gameService.defineInstruction(state.gameId, state.game.cycle, state.slots)
     else {
       state.focusedSlot = state.focusedSlot || 0
       while (state.slots[state.focusedSlot] >= 0) {
@@ -18758,37 +18704,35 @@ function directionToRotation(direction) {
 }
 
 function framesFromEvents(oldGameState, events) {
-  if (oldGameState.GameRunning) {
-    function indexByName(name) {
-      return oldGameState.GameRunning.players.find((player) => player.name === name).index
-    }
-
-    let state = oldGameState.GameRunning.players.map(robotFromPlayer)
-    let frames = []
-
-    for (let j = 0; j < events.length; j++) {
-      if (events[j].RobotAction) {
-        frames.push(_.cloneDeep(state))
-      } else if (events[j].RobotMoves) {
-        let i = indexByName(events[j].RobotMoves.playerName)
-        state[i].x = events[j].RobotMoves.to.x
-        state[i].y = events[j].RobotMoves.to.y
-      } else if (events[j].RobotTurns) {
-        let i = indexByName(events[j].RobotTurns.playerName)
-        state[i].rotation = directionToRotation(events[j].RobotTurns.to)
-      } else if (events[j].RobotReset) {
-        let i = indexByName(events[j].RobotReset.playerName)
-        state[i].x = events[j].RobotReset.to.position.x
-        state[i].y = events[j].RobotReset.to.position.y
-        state[i].rotation = events[j].RobotReset.to.direction
-      } else if (events[j].PlayerFinished) {
-        let i = indexByName(events[j].PlayerFinished.playerName)
-        state[i].alpha = 0.0
-      }
-    }
-    frames.push(_.cloneDeep(state))
-    return frames
+  function indexByName(name) {
+    return oldGameState.players.find((player) => player.name === name).index
   }
+
+  let state = oldGameState.players.map(robotFromPlayer)
+  let frames = []
+
+  for (let j = 0; j < events.length; j++) {
+    if (events[j].RobotAction) {
+      frames.push(_.cloneDeep(state))
+    } else if (events[j].RobotMoves) {
+      let i = indexByName(events[j].RobotMoves.playerName)
+      state[i].x = events[j].RobotMoves.to.x
+      state[i].y = events[j].RobotMoves.to.y
+    } else if (events[j].RobotTurns) {
+      let i = indexByName(events[j].RobotTurns.playerName)
+      state[i].rotation = directionToRotation(events[j].RobotTurns.to)
+    } else if (events[j].RobotReset) {
+      let i = indexByName(events[j].RobotReset.playerName)
+      state[i].x = events[j].RobotReset.to.position.x
+      state[i].y = events[j].RobotReset.to.position.y
+      state[i].rotation = events[j].RobotReset.to.direction
+    } else if (events[j].PlayerFinished) {
+      let i = indexByName(events[j].PlayerFinished.playerName)
+      state[i].alpha = 0.0
+    }
+  }
+  frames.push(_.cloneDeep(state))
+  return frames
 }
 
 module.exports = {
@@ -18850,7 +18794,6 @@ const h = require('snabbdom/h').default
 const constants = require('../common/constants')
 const button = require('../common/button')
 const modal = require('../common/modal')
-const frame = require('../common/frame')
 const gameBoard = require('./game-board')
 const images = require('../common/images')
 
@@ -18868,45 +18811,17 @@ function render(state, actionHandler) {
         ),
         closeAction)
 
-  const backToLobby = button.link(actionHandler, {leaveGame: true}, 'Back to Lobby')
-
-  if (state.game.InitialGame) {
-    return frame(header('Initial Game', [
-          backToLobby,
-        ]),
-        h('div.content', renderScenarioList(state.scenarios, actionHandler)),
-        undefined,
-        m)
-  } else if (state.game.GameStarting) {
-    const game = state.game.GameStarting
-    return frame(header('Game ' + state.gameId, [
-          backToLobby,
-          button.builder.primary().disabled(!!game.players.find(player => player.name === state.player))(actionHandler, {joinGame: state.gameId}, 'Join Game'),
-          button.builder.disabled(_.get(game.players.find(player => player.name === state.player), 'ready')).primary()(actionHandler, {readyForGame: state.gameId}, 'Ready')
-        ]),
-        h('div.content', renderPlayerList(state)),
-        undefined,
-        m)
-  } else if (state.game.GameRunning || state.game.GameFinished) {
-    const game = state.game.GameRunning || state.game.GameFinished
-    return h('div', [
-      fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
-      fab('.fab-left-1', images.iconReplayAnimation, [actionHandler, {replayAnimations: state.animations}]),
-      fab('.fab-left-2', images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),
-      h('div.game-board', gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), {
-        animationStart: state.animationStart,
-        frames: state.animations
-      })),
-      renderActionButtons(state, game, actionHandler),
-      m])
-  } else {
-    return frame(header('GameState \'undefined\' is currently not supported.', [
-          backToLobby,
-        ]),
-        undefined,
-        undefined,
-        m)
-  }
+  const game = state.game
+  return h('div', [
+    fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
+    fab('.fab-left-1', images.iconReplayAnimation, [actionHandler, {replayAnimations: state.animations}]),
+    fab('.fab-left-2', images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),
+    h('div.game-board', gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), {
+      animationStart: state.animationStart,
+      frames: state.animations
+    })),
+    renderActionButtons(state, game, actionHandler),
+    m])
 }
 
 function fab(classes, image, onclick){
@@ -18914,20 +18829,8 @@ function fab(classes, image, onclick){
       h('img', {props: {src: image.src}}))
 }
 
-function header(title, buttons) {
-  return button.group(buttons)
-}
-
 function renderPlayerList(state) {
-  let players = []
-  if (state.game.GameStarting)
-    players = state.game.GameStarting.players
-  else if (state.game.GameRunning)
-    players = state.game.GameRunning.players
-  else if (state.game.GameFinished)
-    players = state.game.GameFinished.players
-
-  let rows = players.map(function (player) {
+  let rows = state.game.players.map(function (player) {
     return h('tr', [
       h('td', h('img', {
         props: {src: images.player(player.index).src},
@@ -18946,37 +18849,9 @@ function renderPlayerList(state) {
   ])
 }
 
-function renderScenarioList(scenarios, actionHandler) {
-  const header = h('tr', [h('th', 'Id'), h('th', 'owner'), h('th', 'actions')])
-
-  const rows = scenarios.map(row =>
-      h('tr', [
-        h('td', row.id),
-        h('td', row.owner),
-        h('td', button.group(
-            button.primary(actionHandler, {selectScenario: row.scenario}, 'Select this Scenario'),
-            button.builder(actionHandler, {setModal: {type: 'previewScenario', scenario:row.scenario}}, 'Preview')
-        ))
-      ]))
-
-  return h('div', [
-    h('h4', 'Select a scenario: '),
-    h('table', [header, ...rows])
-  ])
-}
-
 function renderActionButtons(state, game, actionHandler) {
-  const player = game.players.find((player) => player.name === state.player)
   const focusedSlot = state.focusedSlot || 0
-
-  let instructionTypes = []
-  let instr = _.clone(player.instructionOptions)
-  while(instr.length !== 0) {
-    let head = instr[0]
-    let type = Object.keys(head)[0]
-    instructionTypes.push(type)
-    instr = _.dropWhile(instr, i => i[type])
-  }
+  const player = game.players.find((player) => player.name === state.player)
 
   function instructionCard(type) {
     function unusedAndThisType(opt, index) {
@@ -18994,8 +18869,10 @@ function renderActionButtons(state, game, actionHandler) {
   function instructionSlot(index) {
     const instruction = state.slots[index]
     const focused = focusedSlot === index
-    const props = {class: {"slot-focused": focused},
-    on:{click: () => actionHandler({focusSlot: index})}}
+    const props = {
+      class: {"slot-focused": focused},
+      on: {click: () => actionHandler({focusSlot: index})}
+    }
     if (instruction !== undefined) {
       const image = images.action(Object.keys(player.instructionOptions[instruction])[0])
       return h('div.slot.slot-filled', props,
@@ -19005,11 +18882,25 @@ function renderActionButtons(state, game, actionHandler) {
     }
   }
 
-  if (!player) {
+  if (!player && game.cycle === 0) {
+    return h('div.footer-group', [
+      h('div.slots-panel', 'observer mode'),
+      h('div.cards-panel', button.builder.primary()(actionHandler, {joinGame: state.gameId}, 'Join Game'))
+    ])
+  } else if (!player) {
     return h('div.status-panel', h('div.text', 'observer mode'))
   } else if (player.finished) {
     return h('div.status-panel', h('div.text', 'target reached'))
   } else {
+    let instructionTypes = []
+    let instr = _.clone(player.instructionOptions)
+    while(instr.length !== 0) {
+      let head = instr[0]
+      let type = Object.keys(head)[0]
+      instructionTypes.push(type)
+      instr = _.dropWhile(instr, i => i[type])
+    }
+
     return h('div.footer-group', [
       h('div.slots-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot)),
       h('div.cards-panel', instructionTypes.map(instructionCard))
@@ -19026,13 +18917,13 @@ function renderLog(logs) {
 
 module.exports = render
 
-},{"../common/button":13,"../common/constants":14,"../common/frame":15,"../common/images":16,"../common/modal":17,"./game-board":24,"lodash":2,"snabbdom/h":3}],27:[function(require,module,exports){
+},{"../common/button":13,"../common/constants":14,"../common/images":16,"../common/modal":17,"./game-board":24,"lodash":2,"snabbdom/h":3}],27:[function(require,module,exports){
 var snabbdom = require('snabbdom')
 var patch = snabbdom.init([
-    require('snabbdom/modules/eventlisteners').default,
-    require('snabbdom/modules/props').default,
-    require('snabbdom/modules/class').default,
-    require('snabbdom/modules/style').default
+  require('snabbdom/modules/eventlisteners').default,
+  require('snabbdom/modules/props').default,
+  require('snabbdom/modules/class').default,
+  require('snabbdom/modules/style').default
 ])
 
 var gameUi = require('./game-ui')
@@ -19041,65 +18932,61 @@ var editorService = require('../editor/editor-service')
 var actions = require('./game-actions')
 var gameBoard = require('./game-board')
 
-function Game(element, player, gameId){
-    var node = element
+function Game(element, player, gameId) {
+  var node = element
 
-    function renderState(state) {
-        state.eventSource.onmessage = gameEventHandler(state)
+  function renderState(state) {
+    state.eventSource.onmessage = gameEventHandler(state)
 
-        window.currentState = state
-        node = patch(node, gameUi(state, actionHandler(state)))
+    window.currentState = state
+    node = patch(node, gameUi(state, actionHandler(state)))
+  }
+
+  function actionHandler(state) {
+    return function (action) {
+      const promise = actions(state, action)
+      if (promise && promise.then)
+        promise.then(renderState)
     }
+  }
 
-    function actionHandler(state) {
-        return function(action) {
-            const promise = actions(state, action)
-            if (promise && promise.then)
-                promise.then(renderState)
-        }
+  function gameEventHandler(state) {
+    return function (event) {
+      const data = JSON.parse(event.data)
+      const newGameState = data.state
+      const events = data.events
+
+      state.animationStart = new Date()
+      state.animations = gameBoard.framesFromEvents(state.game, events)
+
+
+      state.game = newGameState
+      state.logs = state.logs.concat(data.textLog)
+      if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) {
+        state.slots = []
+        state.focusedSlot = undefined
+      }
+      renderState(state)
     }
+  }
 
-    function gameEventHandler(state){
-        return function(event){
-            const data = JSON.parse(event.data)
-            const newGameState = data.state
-            const events = data.events
-
-            state.animationStart = new Date()
-            state.animations = gameBoard.framesFromEvents(state.game, events)
-
-
-            state.game = newGameState
-            state.logs = state.logs.concat(data.textLog)
-            if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) {
-              state.slots = []
-              state.focusedSlot = undefined
-            }
-            renderState(state)
-        }
-    }
-
-    editorService.loadAllScenarios().then(function (scenarios) {
-        return gameService.getState(gameId).then(function (gameRow) {
-            renderState({
-                player, gameId,
-                game: gameRow.game,
-                eventSource: gameService.updates(gameId),
-                slots: [],
-                logs: [],
-                modal: 'none',
-                scenarios: scenarios,
-                animations: [],
-                animationStart: undefined
-            }, element)
-        }).catch(function (ex) {
-            console.error(ex)
-        })
+  return gameService.getState(gameId)
+    .then(gameRow => {
+      renderState({
+        player, gameId,
+        game: gameRow.game,
+        eventSource: gameService.updates(gameId),
+        slots: [],
+        logs: [],
+        modal: 'none',
+        animations: [],
+        animationStart: undefined
+      }, element)
     }).catch(function (ex) {
-        console.error(ex)
+      console.error(ex)
     })
 
-    return this
+  return this
 }
 
 module.exports = Game
@@ -19180,23 +19067,32 @@ const lobbyService = require('./lobby-service')
 const Cookie = require('js-cookie')
 
 function actions(state, action) {
-    if (action.createGame) {
-        lobbyService.createGame()
-    } else if (action.deleteGame) {
-      lobbyService.deleteGame(action.deleteGame)
-    }else if (action.redirectTo) {
-        window.location.href = action.redirectTo
-    } else if (action.definePlayerName) {
-        const name = action.definePlayerName
-        Cookie.set('playerName', name)
-        return Promise.resolve(Object.assign({}, state, {player: name}))
-    }else if(action.resetUserName){
-        Cookie.remove('playerName')
-        delete state.player
-        return Promise.resolve(state)
-    } else {
-        console.error("unknown action", action)
-    }
+  if (action.createGame) {
+    lobbyService.createGame(action.createGame)
+      .then(resp => window.location.href = "/game/" + (resp.id))
+  } else if (action.previewScenario) {
+    state.previewScenario = action.previewScenario
+    return Promise.resolve(state)
+  }else if(action.closeModal) {
+    state.previewScenario = null
+    return Promise.resolve(state)
+  }else if(action.editScenario){
+    window.location.href = "/editor/" + action.editScenario
+  } else if (action.deleteGame) {
+    lobbyService.deleteGame(action.deleteGame)
+  } else if (action.redirectTo) {
+    window.location.href = action.redirectTo
+  } else if (action.definePlayerName) {
+    const name = action.definePlayerName
+    Cookie.set('playerName', name)
+    return Promise.resolve(Object.assign({}, state, {player: name}))
+  } else if (action.resetUserName) {
+    Cookie.remove('playerName')
+    delete state.player
+    return Promise.resolve(state)
+  } else {
+    console.error("unknown action", action)
+  }
 }
 
 module.exports = actions
@@ -19209,8 +19105,11 @@ function getAllGames() {
     .then(parseJson)
 }
 
-function createGame() {
-  return fetch("/api/games", headers({method: "POST"}))
+function createGame(scenario) {
+  return fetch("/api/games", headers({
+    method: "POST",
+    body: JSON.stringify(scenario)
+  })).then(parseJson)
 }
 
 function deleteGame(gameId) {
@@ -19233,21 +19132,34 @@ module.exports = {
 }
 
 },{"../common/service-headers":18}],32:[function(require,module,exports){
-var h = require('snabbdom/h').default
-var button = require('../common/button')
-var modal = require('../common/modal')
-var frame = require('../common/frame')
+const h = require('snabbdom/h').default
+const button = require('../common/button')
+const modal = require('../common/modal')
+const frame = require('../common/frame')
+const gameBoard = require('../game/game-board')
+
 
 function render(state, actionHandler) {
-    return frame([h('h1', 'Robo Race - Game Lobby:'), button.group(
-        button.builder.primary()(actionHandler, {createGame: true}, 'New Game'),
-        button.builder(actionHandler, {redirectTo: '/editor'}, 'Scenario Editor'),
-        button.builder(actionHandler, {resetUserName: true}, 'Logout')
-        )],
-        h('div.content', renderGameTable(state, state.games, actionHandler)),
-        undefined,
-        renderLoginModal(state.player, actionHandler)
-    )
+  let m = null
+  if (!state.player) {
+    m = renderLoginModal(state.player, actionHandler)
+  } else if (state.previewScenario) {
+    m = modal(h('div.modal-maximized',
+      gameBoard.renderCanvas(state.previewScenario, state.previewScenario.initialRobots.map(gameBoard.robotFromInitial), {}),
+    ), [actionHandler, {closeModal: true}])
+  }
+
+
+  return frame([h('h1', 'Robo Race - Game Lobby:'), button.group(
+    button.builder(actionHandler, {resetUserName: true}, 'Logout')
+    )],
+    h('div.content', [
+      renderGameTable(state, state.games, actionHandler),
+      renderScenarioList(state.player, state.scenarios, actionHandler)
+    ]),
+    undefined,
+    m
+  )
 }
 
 function renderGameTable(state, games, actionHandler) {
@@ -19263,15 +19175,44 @@ function renderGameTable(state, games, actionHandler) {
     h('td', row.owner),
     h('td', row.state),
     h('td', button.group(
-        button.builder.primary()(actionHandler, {redirectTo: '/game/' + row.id}, 'Enter'),
-        button.builder.disabled(row.owner !== state.player)(actionHandler, {deleteGame: row.id}, 'Delete')
+      button.builder.primary()(actionHandler, {redirectTo: '/game/' + row.id}, 'Enter'),
+      button.builder.disabled(row.owner !== state.player)(actionHandler, {deleteGame: row.id}, 'Delete')
     ))
   ]))
 
-  return h('table', [header, ...rows])
+  return h('div', [
+    h('h4', 'Game List: '),
+    h('table', [header, ...rows])
+  ])
+}
+
+function renderScenarioList(player, scenarios, actionHandler) {
+  const header = h('tr', [h('th', 'Id'), h('th', 'owner'), h('th', 'actions')])
+
+  const rows = scenarios.map(row =>
+    h('tr', [
+      h('td', row.id),
+      h('td', row.owner),
+      h('td', button.group(
+        button.primary(actionHandler, {createGame: row.scenario}, 'Start Game'),
+        button.builder(actionHandler, {editScenario: row.id}, 'Edit'),
+        button.builder(actionHandler, {previewScenario: row.scenario}, 'Preview'),
+        button.builder.disabled(row.owner !== player)(actionHandler, {deleteScenario: row.id}, 'Delete')
+      ))
+    ]))
+
+  return h('div', [
+    h('h4', 'Scenario List: '),
+    h('table', [header, ...rows])
+  ])
 }
 
 function renderLoginModal(player, actionHandler) {
+  function submit() {
+    if (input.elm.value)
+      actionHandler({definePlayerName: input.elm.value})
+  }
+
   let input = h('input.input.is-primary', {
       props: {
         placeholder: 'Name',
@@ -19286,70 +19227,63 @@ function renderLoginModal(player, actionHandler) {
     }
   )
 
-  function submit() {
-    var player = input.elm.value
-    if (player)
-      actionHandler({definePlayerName: player})
-  }
-
-  if (!player) {
-    return modal([
-      h('h3', 'Login'),
-      input,
-      h('a.button.is-primary', {on: {click: submit}}, 'Enter')
-    ])
-  } else {
-    return undefined
-  }
+  return modal([
+    h('h3', 'Login'),
+    input,
+    h('a.button.is-primary', {on: {click: submit}}, 'Enter')
+  ])
 }
 
 module.exports = render
 
-},{"../common/button":13,"../common/frame":15,"../common/modal":17,"snabbdom/h":3}],33:[function(require,module,exports){
-var snabbdom = require('snabbdom')
-var patch = snabbdom.init([
-    require('snabbdom/modules/eventlisteners').default,
-    require('snabbdom/modules/props').default,
-    require('snabbdom/modules/class').default,
-    require('snabbdom/modules/style').default
+},{"../common/button":13,"../common/frame":15,"../common/modal":17,"../game/game-board":24,"snabbdom/h":3}],33:[function(require,module,exports){
+const snabbdom = require('snabbdom')
+const patch = snabbdom.init([
+  require('snabbdom/modules/eventlisteners').default,
+  require('snabbdom/modules/props').default,
+  require('snabbdom/modules/class').default,
+  require('snabbdom/modules/style').default
 ])
 
-var lobbyUi = require('./lobby-ui')
-var lobbyService = require('./lobby-service')
-var actions = require('./lobby-actions')
+const lobbyUi = require('./lobby-ui')
+const lobbyService = require('./lobby-service')
+const editorService = require('../editor/editor-service')
+const actions = require('./lobby-actions')
 
 function Lobby(element, player) {
-    var node = element
-    const lobbyUpdates = lobbyService.updates()
+  let node = element
+  const lobbyUpdates = lobbyService.updates()
 
-    function renderState(state) {
-        lobbyUpdates.onmessage = lobbyEventHandler(state)
-        window.currentState = state
-        node = patch(node, lobbyUi(state, actionHandler(state)))
+  function renderState(state) {
+    lobbyUpdates.onmessage = lobbyEventHandler(state)
+    window.currentState = state
+    node = patch(node, lobbyUi(state, actionHandler(state)))
+  }
+
+  function actionHandler(state) {
+    return function (action) {
+      const promise = actions(state, action)
+      if (promise && promise.then)
+        promise.then(renderState)
     }
+  }
 
-    function actionHandler(state) {
-        return function(action) {
-            const promise = actions(state, action)
-            if (promise && promise.then)
-                promise.then(renderState)
-        }
+  function lobbyEventHandler(state) {
+    return function (event) {
+      state.games = JSON.parse(event.data)
+      renderState(state)
     }
+  }
 
-    function lobbyEventHandler(state){
-        return function(event){
-          state.games = JSON.parse(event.data)
-          renderState(state)
-        }
-    }
+  lobbyService.getAllGames().then((games) =>
+    editorService.loadAllScenarios().then((scenarios) =>
+      renderState({player, games, scenarios}, element)
+    )
+  )
 
-    lobbyService.getAllGames().then(function (games) {
-        renderState({player, games}, element)
-    })
-
-    return this
+  return this
 }
 
 module.exports = Lobby
 
-},{"./lobby-actions":30,"./lobby-service":31,"./lobby-ui":32,"snabbdom":10,"snabbdom/modules/class":6,"snabbdom/modules/eventlisteners":7,"snabbdom/modules/props":8,"snabbdom/modules/style":9}]},{},[29]);
+},{"../editor/editor-service":20,"./lobby-actions":30,"./lobby-service":31,"./lobby-ui":32,"snabbdom":10,"snabbdom/modules/class":6,"snabbdom/modules/eventlisteners":7,"snabbdom/modules/props":8,"snabbdom/modules/style":9}]},{},[29]);

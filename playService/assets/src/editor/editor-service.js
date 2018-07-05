@@ -5,6 +5,11 @@ function loadAllScenarios() {
       .then(parseJson)
 }
 
+function loadSingleScenario(id){
+  return fetch('/api/scenarios/' + id, headers({}))
+    .then(parseJson)
+}
+
 function postScenario(scenario) {
   return fetch('/api/scenarios', headers({
     method: 'POST',
@@ -24,6 +29,7 @@ function parseJson(resp) {
 
 module.exports = {
   loadAllScenarios,
+  loadSingleScenario,
   postScenario,
   deleteScenario
 }

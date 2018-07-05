@@ -9,6 +9,7 @@ POST          /api/games/:id/commands             controller.GameController.send
 GET           /api/games/:id/events               controller.GameController.sse(id: String)
 
 GET           /api/scenarios                      controller.ScenarioController.get()
+GET           /api/scenarios/:id                  controller.ScenarioController.getSingle(id:String)
 POST          /api/scenarios                      controller.ScenarioController.post()
 DELETE        /api/scenarios/:id                  controller.ScenarioController.delete(id: String)
 

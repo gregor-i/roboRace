@@ -5,14 +5,6 @@ const constants = require('../common/constants')
 function actions(state, action) {
   if (action.backToLobby) {
     window.location.href = "/"
-  } else if (action.setModal) {
-    state.modal = action.setModal
-    return Promise.resolve(state)
-  } else if (action.closeModal) {
-    delete state.modal
-    return Promise.resolve(state)
-  } else if (action.editScenario) {
-    window.location.href = "/editor/" + action.editScenario.id
   }else if (action.deleteScenario) {
     editorService.deleteScenario(action.deleteScenario)
 
@@ -73,11 +65,14 @@ function actions(state, action) {
       y--
       direction = {Down: {}}
     } else if (direction.UpLeft) {
+      if(x %2 === 0  && x !== 0)
+        y--
       x--
       direction = {DownRight: {}}
     } else if (direction.DownLeft) {
+      if(x %2 === 1 || x === 0)
+        y++
       x--
-      y++
       direction = {UpRight: {}}
     }
     const p = w => w.position.x === x && w.position.y === y && Object.keys(w.direction)[0] === Object.keys(direction)[0]

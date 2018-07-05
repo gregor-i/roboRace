@@ -5,6 +5,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import gameLogic.gameUpdate.{CommandAccepted, CommandRejected, CreateGame}
 import gameLogic.{Game, Scenario}
+import io.circe.JsonObject
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.Inject
@@ -60,7 +61,12 @@ class LobbyController @Inject()(gameRepo: GameRepository)
   }
 
   def stateDescription(gameState:Game): String = gameState match{
-    case Game(cycle, cs, pls) => s"Running(cycle = $cycle, players = ${pls.map(_.name).mkString(", ")})"
+    case game if game.cycle == 0 && game.players.length < game.scenario.initialRobots.length =>
+      s"Open for new Player. ${game.players.length} / ${game.scenario.initialRobots.length}"
+    case game if game.cycle != 0 && game.players.forall(_.finished.isDefined) =>
+      s"Game finished"
+    case _ =>
+      s"Game in Progress"
   }
 
   def gameList() =

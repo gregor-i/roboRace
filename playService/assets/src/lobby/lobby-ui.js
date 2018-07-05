@@ -1,18 +1,31 @@
-var h = require('snabbdom/h').default
-var button = require('../common/button')
-var modal = require('../common/modal')
-var frame = require('../common/frame')
+const h = require('snabbdom/h').default
+const button = require('../common/button')
+const modal = require('../common/modal')
+const frame = require('../common/frame')
+const gameBoard = require('../game/game-board')
+
 
 function render(state, actionHandler) {
-    return frame([h('h1', 'Robo Race - Game Lobby:'), button.group(
-        button.builder.primary()(actionHandler, {createGame: true}, 'New Game'),
-        button.builder(actionHandler, {redirectTo: '/editor'}, 'Scenario Editor'),
-        button.builder(actionHandler, {resetUserName: true}, 'Logout')
-        )],
-        h('div.content', renderGameTable(state, state.games, actionHandler)),
-        undefined,
-        renderLoginModal(state.player, actionHandler)
-    )
+  let m = null
+  if (!state.player) {
+    m = renderLoginModal(state.player, actionHandler)
+  } else if (state.previewScenario) {
+    m = modal(h('div.modal-maximized',
+      gameBoard.renderCanvas(state.previewScenario, state.previewScenario.initialRobots.map(gameBoard.robotFromInitial), {}),
+    ), [actionHandler, {closeModal: true}])
+  }
+
+
+  return frame([h('h1', 'Robo Race - Game Lobby:'), button.group(
+    button.builder(actionHandler, {resetUserName: true}, 'Logout')
+    )],
+    h('div.content', [
+      renderGameTable(state, state.games, actionHandler),
+      renderScenarioList(state.player, state.scenarios, actionHandler)
+    ]),
+    undefined,
+    m
+  )
 }
 
 function renderGameTable(state, games, actionHandler) {
@@ -28,15 +41,44 @@ function renderGameTable(state, games, actionHandler) {
     h('td', row.owner),
     h('td', row.state),
     h('td', button.group(
-        button.builder.primary()(actionHandler, {redirectTo: '/game/' + row.id}, 'Enter'),
-        button.builder.disabled(row.owner !== state.player)(actionHandler, {deleteGame: row.id}, 'Delete')
+      button.builder.primary()(actionHandler, {redirectTo: '/game/' + row.id}, 'Enter'),
+      button.builder.disabled(row.owner !== state.player)(actionHandler, {deleteGame: row.id}, 'Delete')
     ))
   ]))
 
-  return h('table', [header, ...rows])
+  return h('div', [
+    h('h4', 'Game List: '),
+    h('table', [header, ...rows])
+  ])
+}
+
+function renderScenarioList(player, scenarios, actionHandler) {
+  const header = h('tr', [h('th', 'Id'), h('th', 'owner'), h('th', 'actions')])
+
+  const rows = scenarios.map(row =>
+    h('tr', [
+      h('td', row.id),
+      h('td', row.owner),
+      h('td', button.group(
+        button.primary(actionHandler, {createGame: row.scenario}, 'Start Game'),
+        button.builder(actionHandler, {editScenario: row.id}, 'Edit'),
+        button.builder(actionHandler, {previewScenario: row.scenario}, 'Preview'),
+        button.builder.disabled(row.owner !== player)(actionHandler, {deleteScenario: row.id}, 'Delete')
+      ))
+    ]))
+
+  return h('div', [
+    h('h4', 'Scenario List: '),
+    h('table', [header, ...rows])
+  ])
 }
 
 function renderLoginModal(player, actionHandler) {
+  function submit() {
+    if (input.elm.value)
+      actionHandler({definePlayerName: input.elm.value})
+  }
+
   let input = h('input.input.is-primary', {
       props: {
         placeholder: 'Name',
@@ -51,21 +93,11 @@ function renderLoginModal(player, actionHandler) {
     }
   )
 
-  function submit() {
-    var player = input.elm.value
-    if (player)
-      actionHandler({definePlayerName: player})
-  }
-
-  if (!player) {
-    return modal([
-      h('h3', 'Login'),
-      input,
-      h('a.button.is-primary', {on: {click: submit}}, 'Enter')
-    ])
-  } else {
-    return undefined
-  }
+  return modal([
+    h('h3', 'Login'),
+    input,
+    h('a.button.is-primary', {on: {click: submit}}, 'Enter')
+  ])
 }
 
 module.exports = render

@@ -15,6 +15,13 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
     Ok(repo.list().asJson)
   }
 
+  def getSingle(id: String) = Action {
+    repo.get(id) match {
+      case None => NotFound
+      case Some(row) => Ok(row.asJson)
+    }
+  }
+
   def post() = Action(circe.tolerantJson[Scenario]) { request =>
     Utils.playerName(request) match {
       case None                                    => Unauthorized

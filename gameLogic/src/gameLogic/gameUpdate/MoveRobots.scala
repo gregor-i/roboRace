@@ -55,7 +55,7 @@ object MoveRobots {
       false
     //        if (game.scenario.beaconPosition == position.move(direction))
     //          false
-    else if (game.players.exists(_.robot.position == direction(position)))
+    else if (game.players.exists(player => player.robot.position == direction(position) && player.finished.isEmpty))
       movementIsAllowed(game, direction(position), direction)
     else
       true

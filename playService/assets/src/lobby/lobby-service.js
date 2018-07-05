@@ -5,8 +5,11 @@ function getAllGames() {
     .then(parseJson)
 }
 
-function createGame() {
-  return fetch("/api/games", headers({method: "POST"}))
+function createGame(scenario) {
+  return fetch("/api/games", headers({
+    method: "POST",
+    body: JSON.stringify(scenario)
+  })).then(parseJson)
 }
 
 function deleteGame(gameId) {

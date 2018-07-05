@@ -261,37 +261,35 @@ function directionToRotation(direction) {
 }
 
 function framesFromEvents(oldGameState, events) {
-  if (oldGameState.GameRunning) {
-    function indexByName(name) {
-      return oldGameState.GameRunning.players.find((player) => player.name === name).index
-    }
-
-    let state = oldGameState.GameRunning.players.map(robotFromPlayer)
-    let frames = []
-
-    for (let j = 0; j < events.length; j++) {
-      if (events[j].RobotAction) {
-        frames.push(_.cloneDeep(state))
-      } else if (events[j].RobotMoves) {
-        let i = indexByName(events[j].RobotMoves.playerName)
-        state[i].x = events[j].RobotMoves.to.x
-        state[i].y = events[j].RobotMoves.to.y
-      } else if (events[j].RobotTurns) {
-        let i = indexByName(events[j].RobotTurns.playerName)
-        state[i].rotation = directionToRotation(events[j].RobotTurns.to)
-      } else if (events[j].RobotReset) {
-        let i = indexByName(events[j].RobotReset.playerName)
-        state[i].x = events[j].RobotReset.to.position.x
-        state[i].y = events[j].RobotReset.to.position.y
-        state[i].rotation = events[j].RobotReset.to.direction
-      } else if (events[j].PlayerFinished) {
-        let i = indexByName(events[j].PlayerFinished.playerName)
-        state[i].alpha = 0.0
-      }
-    }
-    frames.push(_.cloneDeep(state))
-    return frames
+  function indexByName(name) {
+    return oldGameState.players.find((player) => player.name === name).index
   }
+
+  let state = oldGameState.players.map(robotFromPlayer)
+  let frames = []
+
+  for (let j = 0; j < events.length; j++) {
+    if (events[j].RobotAction) {
+      frames.push(_.cloneDeep(state))
+    } else if (events[j].RobotMoves) {
+      let i = indexByName(events[j].RobotMoves.playerName)
+      state[i].x = events[j].RobotMoves.to.x
+      state[i].y = events[j].RobotMoves.to.y
+    } else if (events[j].RobotTurns) {
+      let i = indexByName(events[j].RobotTurns.playerName)
+      state[i].rotation = directionToRotation(events[j].RobotTurns.to)
+    } else if (events[j].RobotReset) {
+      let i = indexByName(events[j].RobotReset.playerName)
+      state[i].x = events[j].RobotReset.to.position.x
+      state[i].y = events[j].RobotReset.to.position.y
+      state[i].rotation = events[j].RobotReset.to.direction
+    } else if (events[j].PlayerFinished) {
+      let i = indexByName(events[j].PlayerFinished.playerName)
+      state[i].alpha = 0.0
+    }
+  }
+  frames.push(_.cloneDeep(state))
+  return frames
 }
 
 module.exports = {

@@ -5,7 +5,7 @@ const defaultHeader = {
 }
 
 function header(additional){
-  return _.merge(defaultHeader, additional)
+  return _.merge({}, defaultHeader, additional)
 }
 
 module.exports = header
