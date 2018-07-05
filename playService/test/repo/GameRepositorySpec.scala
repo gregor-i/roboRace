@@ -7,8 +7,8 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 class GameRepositorySpec extends FunSuite with Matchers with GuiceOneAppPerSuite with BeforeAndAfterEach{
   def repo = app.injector.instanceOf[GameRepository]
 
-  val g1 = GameRow("initial", "player", Game(2, Scenario.default, List.empty))
-  val g2 = GameRow("starting", "player", Game(0, Scenario.default, List.empty))
+  val g1 = GameRow("initial", "player", Some(Game(2, Scenario.default, List.empty)))
+  val g2 = GameRow("starting", "player", Some(Game(0, Scenario.default, List.empty)))
 
   override def beforeEach = {
     repo.list().foreach(row => repo.delete(row.id))

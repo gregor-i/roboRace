@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import gameLogic.gameUpdate.{CommandAccepted, CommandRejected, CreateGame}
-import gameLogic.{Game, Scenario, Game}
+import gameLogic.{Game, Scenario}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.Inject
@@ -33,9 +33,9 @@ class LobbyController @Inject()(gameRepo: GameRepository)
       case Some(player) =>
         CreateGame(request.body)(player) match {
           case CommandRejected(reason) =>
-            BadRequest(reason)
+            BadRequest(reason.asJson)
           case CommandAccepted(game) =>
-            val row = GameRow(id = Utils.newShortId(), owner = player, game = game)
+            val row = GameRow(id = Utils.newShortId(), owner = player, game = Some(game))
             gameRepo.save(row)
             Source.single(gameList().asJson.noSpaces).runWith(sink)
             Created(row.asJson)
@@ -64,7 +64,9 @@ class LobbyController @Inject()(gameRepo: GameRepository)
   }
 
   def gameList() =
-    gameRepo.list().sorted.map(row => GameOverview(row.id, row.owner, stateDescription(row.game)))
+    gameRepo.list()
+      .filter(_.game.isDefined)
+      .map(row => GameOverview(row.id, row.owner, stateDescription(row.game.get)))
 }
 
 case class GameOverview(id: String, owner: String, state: String)

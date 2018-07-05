@@ -8,10 +8,11 @@ import javax.inject.Inject
 import play.api.Configuration
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
-import repo.{ScenarioRepository, ScenarioRow}
+import repo.{GameRepository, ScenarioRepository, ScenarioRow}
 
 class AdminController @Inject()(configuration: Configuration,
-                                scenarioRepo: ScenarioRepository) extends InjectedController with Circe {
+                                scenarioRepo: ScenarioRepository,
+                                gameRepo: GameRepository) extends InjectedController with Circe {
   implicit val encodeConfigVal: Encoder[ConfigValue] = Encoder.encodeString.contramap[ConfigValue](_.unwrapped.toString)
 
   def ui() = Action{
@@ -33,6 +34,11 @@ class AdminController @Inject()(configuration: Configuration,
       .map(row => scenarioRepo.delete(row.id))
       .sum
 
-    Ok(s"deleted: $deletedScenarios scenarios")
+    val deletedGames = gameRepo.list()
+      .filter(row => row.game.isEmpty)
+      .map(row => gameRepo.delete(row.id))
+      .sum
+
+    Ok(s"deleted: $deletedScenarios scenarios, $deletedGames games")
   }
 }
