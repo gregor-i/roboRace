@@ -10,27 +10,29 @@ function actions(state, action) {
   else if (action.focusSlot !== undefined) {
     state.focusedSlot = action.focusSlot
     return Promise.resolve(state)
-  }else if(action.resetSlot){
-    console.log("reset")
+  } else if (action.resetSlot) {
     return gameService.resetInstruction(state.gameId, state.game.cycle, action.slot)
+        .then(newGameState => {
+          state.game = newGameState.state
+          return state
+        })
   } else if (action.setInstruction) {
-    // todo: update focus
-    // state.focusedSlot = state.focusedSlot || 0
-    // let o = state.focusedSlot
-    // for(let i = 0; i< constants.numberOfInstructionsPerCycle; i++){
-    //   if( state.slots[(i+o) % constants.numberOfInstructionsPerCycle] === null) {
-    //     state.focusedSlot = (i+o) % constants.numberOfInstructionsPerCycle
-    //     break;
-    //   }
-    // }
     return gameService.setInstruction(state.gameId, state.game.cycle, action.slot, action.instruction)
+        .then(newGameState => {
+          state.game = newGameState.state
+          const slots = newGameState.state.players.find(p => p.name === state.player).instructionSlots
+          state.focusedSlot = _.range(constants.numberOfInstructionsPerCycle)
+              .map(i => (i + (state.focusedSlot || 0)) % constants.numberOfInstructionsPerCycle)
+              .find(i => slots[i] === null)
+          return state
+        })
   } else if (action.replayAnimations) {
     state.animationStart = new Date()
     return Promise.resolve(state)
   } else if (action.setModal) {
     state.modal = action.setModal
     return Promise.resolve(state)
-  }else if (action.closeModal){
+  } else if (action.closeModal) {
     delete state.modal
     return Promise.resolve(state)
   } else {
