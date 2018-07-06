@@ -19063,6 +19063,7 @@ document.addEventListener('DOMContentLoaded', function () {
 },{"./editor/editor":22,"./game/game":27,"./lobby/lobby":33,"js-cookie":1}],30:[function(require,module,exports){
 const _ = require('lodash')
 const lobbyService = require('./lobby-service')
+const editorService = require('../editor/editor-service')
 const Cookie = require('js-cookie')
 
 function actions(state, action) {
@@ -19079,6 +19080,9 @@ function actions(state, action) {
     window.location.href = "/editor/" + action.editScenario
   } else if (action.deleteGame) {
     lobbyService.deleteGame(action.deleteGame)
+  }else if(action.deleteScenario){
+    editorService.deleteScenario(action.id)
+      .then(() => window.location.reload())
   } else if (action.redirectTo) {
     window.location.href = action.redirectTo
   } else if (action.definePlayerName) {
@@ -19096,7 +19100,7 @@ function actions(state, action) {
 
 module.exports = actions
 
-},{"./lobby-service":31,"js-cookie":1,"lodash":2}],31:[function(require,module,exports){
+},{"../editor/editor-service":20,"./lobby-service":31,"js-cookie":1,"lodash":2}],31:[function(require,module,exports){
 const headers = require('../common/service-headers')
 
 function getAllGames() {
@@ -19196,7 +19200,7 @@ function renderScenarioList(player, scenarios, actionHandler) {
         button.primary(actionHandler, {createGame: row.scenario}, 'Start Game'),
         button.builder(actionHandler, {editScenario: row.id}, 'Edit'),
         button.builder(actionHandler, {previewScenario: row.scenario}, 'Preview'),
-        button.builder.disabled(row.owner !== player)(actionHandler, {deleteScenario: row.id}, 'Delete')
+        button.builder.disabled(row.owner !== player)(actionHandler, {deleteScenario: true, id: row.id}, 'Delete')
       ))
     ]))
 

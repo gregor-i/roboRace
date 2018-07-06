@@ -1,5 +1,6 @@
 const _ = require('lodash')
 const lobbyService = require('./lobby-service')
+const editorService = require('../editor/editor-service')
 const Cookie = require('js-cookie')
 
 function actions(state, action) {
@@ -16,6 +17,9 @@ function actions(state, action) {
     window.location.href = "/editor/" + action.editScenario
   } else if (action.deleteGame) {
     lobbyService.deleteGame(action.deleteGame)
+  }else if(action.deleteScenario){
+    editorService.deleteScenario(action.id)
+      .then(() => window.location.reload())
   } else if (action.redirectTo) {
     window.location.href = action.redirectTo
   } else if (action.definePlayerName) {

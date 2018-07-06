@@ -63,7 +63,7 @@ function renderScenarioList(player, scenarios, actionHandler) {
         button.primary(actionHandler, {createGame: row.scenario}, 'Start Game'),
         button.builder(actionHandler, {editScenario: row.id}, 'Edit'),
         button.builder(actionHandler, {previewScenario: row.scenario}, 'Preview'),
-        button.builder.disabled(row.owner !== player)(actionHandler, {deleteScenario: row.id}, 'Delete')
+        button.builder.disabled(row.owner !== player)(actionHandler, {deleteScenario: true, id: row.id}, 'Delete')
       ))
     ]))
 
