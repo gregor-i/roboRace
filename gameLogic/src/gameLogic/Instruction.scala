@@ -29,4 +29,6 @@ object Instruction{
     case UTurn => 8
     case Sleep => 9
   }
+
+  val emptySlots = List.fill(Constants.instructionsPerCycle)(Option.empty[Int])
 }

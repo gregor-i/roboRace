@@ -21,7 +21,7 @@ case object RegisterForGame extends Command {
       val newPlayer = RunningPlayer(index = game.players.size,
         name = player,
         robot = game.scenario.initialRobots(game.players.size),
-        instructions = Seq.empty,
+        instructionSlots = Instruction.emptySlots,
         instructionOptions = DealOptions.initial,
         finished = None
       )
@@ -44,7 +44,7 @@ case object DeregisterForGame extends Command {
   }
 }
 
-case class ChooseInstructions(cycle: Int, instructions: Seq[Int]) extends Command {
+case class SetInstruction(cycle: Int, slot: Int, instruction: Int) extends Command {
   def apply(player: String): Game => CommandResponse = {
     case game if game.cycle != cycle =>
       CommandRejected(WrongCycle)
@@ -52,12 +52,29 @@ case class ChooseInstructions(cycle: Int, instructions: Seq[Int]) extends Comman
       CommandRejected(PlayerNotFound)
     case game if game.players.find(_.name == player).exists(_.finished.isDefined) =>
       CommandRejected(PlayerAlreadyFinished)
-    case game if instructions.size != Constants.instructionsPerCycle ||
-      instructions.distinct.size != Constants.instructionsPerCycle ||
-      instructions.forall(i => 0 > i && i > Constants.instructionOptionsPerCycle) =>
+    case game if 0 > slot || slot >= Constants.instructionsPerCycle =>
+      CommandRejected(InvalidSlot)
+    case game if 0 > instruction || instruction >= Constants.instructionOptionsPerCycle =>
       CommandRejected(InvalidActionChoice)
+    case game if game.players.find(_.name == player).get.instructionSlots.contains(Some(instruction)) =>
+      CommandRejected(ActionAlreadyUsed)
     case game =>
-      CommandAccepted(Game.player(player).modify(p => p.copy(instructions = instructions.map(p.instructionOptions)))(game))
+      CommandAccepted((Game.player(player) composeLens RunningPlayer.instructionSlots).modify(_.updated(slot, Some(instruction)))(game))
+  }
+}
+
+case class ResetInstruction(cycle: Int, slot: Int) extends Command {
+  def apply(player: String): Game => CommandResponse = {
+    case game if game.cycle != cycle =>
+      CommandRejected(WrongCycle)
+    case game if !game.players.exists(_.name == player) =>
+      CommandRejected(PlayerNotFound)
+    case game if game.players.find(_.name == player).exists(_.finished.isDefined) =>
+      CommandRejected(PlayerAlreadyFinished)
+    case game if 0 > slot || slot >= Constants.instructionsPerCycle =>
+      CommandRejected(InvalidSlot)
+    case game =>
+      CommandAccepted((Game.player(player) composeLens RunningPlayer.instructionSlots).modify(_.updated(slot, None))(game))
   }
 }
 

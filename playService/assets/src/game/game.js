@@ -43,7 +43,6 @@ function Game(element, player, gameId) {
       state.game = newGameState
       state.logs = state.logs.concat(data.textLog)
       if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) {
-        state.slots = []
         state.focusedSlot = undefined
       }
       renderState(state)
@@ -56,7 +55,6 @@ function Game(element, player, gameId) {
         player, gameId,
         game: gameRow.game,
         eventSource: gameService.updates(gameId),
-        slots: [],
         logs: [],
         modal: 'none',
         animations: [],

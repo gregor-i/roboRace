@@ -18409,21 +18409,20 @@ function actions(state, action) {
   else if (action.focusSlot !== undefined) {
     state.focusedSlot = action.focusSlot
     return Promise.resolve(state)
-  } else if (action.defineInstruction) {
-    if (!state.slots)
-      state.slots = []
-    let slot = action.defineInstruction.slot
-    state.slots[slot] = action.defineInstruction.value
-    if (_.range(constants.numberOfInstructionsPerCycle).every(i => state.slots[i] >= 0))
-      gameService.defineInstruction(state.gameId, state.game.cycle, state.slots)
-    else {
-      state.focusedSlot = state.focusedSlot || 0
-      while (state.slots[state.focusedSlot] >= 0) {
-        state.focusedSlot = (state.focusedSlot + 1) % constants.numberOfInstructionsPerCycle
-      }
-    }
-    delete state.focusAction
-    return Promise.resolve(state)
+  }else if(action.resetSlot){
+    console.log("reset")
+    return gameService.resetInstruction(state.gameId, state.game.cycle, action.slot)
+  } else if (action.setInstruction) {
+    // todo: update focus
+    // state.focusedSlot = state.focusedSlot || 0
+    // let o = state.focusedSlot
+    // for(let i = 0; i< constants.numberOfInstructionsPerCycle; i++){
+    //   if( state.slots[(i+o) % constants.numberOfInstructionsPerCycle] === null) {
+    //     state.focusedSlot = (i+o) % constants.numberOfInstructionsPerCycle
+    //     break;
+    //   }
+    // }
+    return gameService.setInstruction(state.gameId, state.game.cycle, action.slot, action.instruction)
   } else if (action.replayAnimations) {
     state.animationStart = new Date()
     return Promise.resolve(state)
@@ -18754,9 +18753,14 @@ function sendCommand(gameId, command) {
     }))
 }
 
-function defineInstruction(gameId, cycle, instructions) {
-    return sendCommand(gameId, {ChooseInstructions: {cycle, instructions}})
+function setInstruction(gameId, cycle, slot, instruction) {
+    return sendCommand(gameId, {SetInstruction: {cycle, slot, instruction}})
         .then(parseJson)
+}
+
+function resetInstruction(gameId, cycle, slot){
+  return sendCommand(gameId, {ResetInstruction: {cycle, slot}})
+      .then(parseJson)
 }
 
 function joinGame(gameId) {
@@ -18781,7 +18785,8 @@ function parseJson(resp) {
 
 module.exports = {
     getState,
-    defineInstruction,
+    setInstruction,
+    resetInstruction,
     defineScenario,
     readyForGame,
     joinGame,
@@ -18855,25 +18860,28 @@ function renderActionButtons(state, game, actionHandler) {
 
   function instructionCard(type) {
     function unusedAndThisType(opt, index) {
-      return opt[type] && !_.some(state.slots, slot => slot === index)
+      return opt[type] && !_.some(player.instructionSlots, slot => slot === index)
     }
 
     const image = images.action(type)
     const count = player.instructionOptions.filter(unusedAndThisType).length
     const unusedIndex = _.findIndex(player.instructionOptions, unusedAndThisType)
     return h('div.action',
-        {on: {click: count !== 0 ? () => actionHandler({defineInstruction: {slot: focusedSlot, value: unusedIndex}}) : undefined}},
+        {on: {click: count !== 0 ? () => actionHandler({setInstruction: true, slot: focusedSlot, instruction: unusedIndex}) : undefined}},
         [h('img', {props: {src: image.src}}), h('div.badge', count)])
   }
 
   function instructionSlot(index) {
-    const instruction = state.slots[index]
+    const instruction = player.instructionSlots[index]
     const focused = focusedSlot === index
     const props = {
       class: {"slot-focused": focused},
-      on: {click: () => actionHandler({focusSlot: index})}
+      on: {
+        dblclick: () => actionHandler({resetSlot: true, slot: index}),
+        click: () => actionHandler({focusSlot: index})
+      }
     }
-    if (instruction !== undefined) {
+    if (instruction !== undefined && instruction !== null) {
       const image = images.action(Object.keys(player.instructionOptions[instruction])[0])
       return h('div.slot.slot-filled', props,
           h('img', {props: {src: image.src}}))
@@ -18963,7 +18971,6 @@ function Game(element, player, gameId) {
       state.game = newGameState
       state.logs = state.logs.concat(data.textLog)
       if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) {
-        state.slots = []
         state.focusedSlot = undefined
       }
       renderState(state)
@@ -18976,7 +18983,6 @@ function Game(element, player, gameId) {
         player, gameId,
         game: gameRow.game,
         eventSource: gameService.updates(gameId),
-        slots: [],
         logs: [],
         modal: 'none',
         animations: [],

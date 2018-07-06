@@ -64,25 +64,28 @@ function renderActionButtons(state, game, actionHandler) {
 
   function instructionCard(type) {
     function unusedAndThisType(opt, index) {
-      return opt[type] && !_.some(state.slots, slot => slot === index)
+      return opt[type] && !_.some(player.instructionSlots, slot => slot === index)
     }
 
     const image = images.action(type)
     const count = player.instructionOptions.filter(unusedAndThisType).length
     const unusedIndex = _.findIndex(player.instructionOptions, unusedAndThisType)
     return h('div.action',
-        {on: {click: count !== 0 ? () => actionHandler({defineInstruction: {slot: focusedSlot, value: unusedIndex}}) : undefined}},
+        {on: {click: count !== 0 ? () => actionHandler({setInstruction: true, slot: focusedSlot, instruction: unusedIndex}) : undefined}},
         [h('img', {props: {src: image.src}}), h('div.badge', count)])
   }
 
   function instructionSlot(index) {
-    const instruction = state.slots[index]
+    const instruction = player.instructionSlots[index]
     const focused = focusedSlot === index
     const props = {
       class: {"slot-focused": focused},
-      on: {click: () => actionHandler({focusSlot: index})}
+      on: {
+        dblclick: () => actionHandler({resetSlot: true, slot: index}),
+        click: () => actionHandler({focusSlot: index})
+      }
     }
-    if (instruction !== undefined) {
+    if (instruction !== undefined && instruction !== null) {
       const image = images.action(Object.keys(player.instructionOptions[instruction])[0])
       return h('div.slot.slot-filled', props,
           h('img', {props: {src: image.src}}))

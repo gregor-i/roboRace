@@ -5,7 +5,7 @@ import monocle.function.Each.each
 
 object Cycle{
   def apply(gameState: Game): Logged[Game] = gameState match {
-    case g: Game if g.players.forall(player => player.finished.isDefined || player.instructions.size == Constants.instructionsPerCycle) =>
+    case g: Game if g.players.forall(player => player.finished.isDefined || player.instructionSlots.flatten.size == Constants.instructionsPerCycle) =>
       for {
         afterPlayerActions <- execAllActions(g)
         afterEffects <- ScenarioEffects.afterCycle(afterPlayerActions)
@@ -38,10 +38,10 @@ object Cycle{
       val dy = position.y - beacon.y
       val distance = Math.sqrt(dx * dx + dy * dy)
       val angle = Math.atan2(dx, dy)
-      (-player.instructions.size, distance, angle)
+      (-player.instructionSlots.flatten.size, distance, angle)
     }
 
-    if (gameState.players.forall(_.instructions.isEmpty)) {
+    if (gameState.players.forall(_.instructionSlots.flatten.isEmpty)) {
        None
     } else {
       Some(gameState.players.minBy(nextPlayerWeight))
@@ -49,7 +49,8 @@ object Cycle{
   }
 
   private def applyAction(game: Game, player: RunningPlayer): Logged[Game] = {
-    val instruction = player.instructions.head
+    val slot = player.instructionSlots.indexWhere(_.isDefined)
+    val instruction = player.instructionOptions(player.instructionSlots(slot).get)
     for {
       _ <- ().log(RobotAction(player.name, instruction))
       afterInstruction <- instruction match {
@@ -61,6 +62,6 @@ object Cycle{
 
         case Sleep => Logged.pure(game)
       }
-    } yield (Game.player(player.name) composeLens RunningPlayer.instructions).modify(_.drop(1))(afterInstruction)
+    } yield (Game.player(player.name) composeLens RunningPlayer.instructionSlots).modify(_.updated(slot, None))(afterInstruction)
   }
 }

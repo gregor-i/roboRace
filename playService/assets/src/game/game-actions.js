@@ -10,21 +10,20 @@ function actions(state, action) {
   else if (action.focusSlot !== undefined) {
     state.focusedSlot = action.focusSlot
     return Promise.resolve(state)
-  } else if (action.defineInstruction) {
-    if (!state.slots)
-      state.slots = []
-    let slot = action.defineInstruction.slot
-    state.slots[slot] = action.defineInstruction.value
-    if (_.range(constants.numberOfInstructionsPerCycle).every(i => state.slots[i] >= 0))
-      gameService.defineInstruction(state.gameId, state.game.cycle, state.slots)
-    else {
-      state.focusedSlot = state.focusedSlot || 0
-      while (state.slots[state.focusedSlot] >= 0) {
-        state.focusedSlot = (state.focusedSlot + 1) % constants.numberOfInstructionsPerCycle
-      }
-    }
-    delete state.focusAction
-    return Promise.resolve(state)
+  }else if(action.resetSlot){
+    console.log("reset")
+    return gameService.resetInstruction(state.gameId, state.game.cycle, action.slot)
+  } else if (action.setInstruction) {
+    // todo: update focus
+    // state.focusedSlot = state.focusedSlot || 0
+    // let o = state.focusedSlot
+    // for(let i = 0; i< constants.numberOfInstructionsPerCycle; i++){
+    //   if( state.slots[(i+o) % constants.numberOfInstructionsPerCycle] === null) {
+    //     state.focusedSlot = (i+o) % constants.numberOfInstructionsPerCycle
+    //     break;
+    //   }
+    // }
+    return gameService.setInstruction(state.gameId, state.game.cycle, action.slot, action.instruction)
   } else if (action.replayAnimations) {
     state.animationStart = new Date()
     return Promise.resolve(state)

@@ -12,9 +12,14 @@ function sendCommand(gameId, command) {
     }))
 }
 
-function defineInstruction(gameId, cycle, instructions) {
-    return sendCommand(gameId, {ChooseInstructions: {cycle, instructions}})
+function setInstruction(gameId, cycle, slot, instruction) {
+    return sendCommand(gameId, {SetInstruction: {cycle, slot, instruction}})
         .then(parseJson)
+}
+
+function resetInstruction(gameId, cycle, slot){
+  return sendCommand(gameId, {ResetInstruction: {cycle, slot}})
+      .then(parseJson)
 }
 
 function joinGame(gameId) {
@@ -39,7 +44,8 @@ function parseJson(resp) {
 
 module.exports = {
     getState,
-    defineInstruction,
+    setInstruction,
+    resetInstruction,
     defineScenario,
     readyForGame,
     joinGame,

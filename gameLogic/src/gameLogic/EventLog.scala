@@ -25,3 +25,5 @@ case object WrongCycle extends RejectionReason
 case object PlayerNotFound extends RejectionReason
 case object WrongState extends RejectionReason
 case object InvalidActionChoice extends RejectionReason
+case object ActionAlreadyUsed extends RejectionReason
+case object InvalidSlot extends RejectionReason
