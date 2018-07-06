@@ -10,6 +10,8 @@ case class RobotTurns(playerName: String, to: Direction) extends EventLog(s"'$pl
 case class MovementBlocked(playerName: String, position: Position, direction: Direction) extends EventLog(s"The movement of '$playerName' is blocked")
 case class RobotReset(playerName: String, to: Robot) extends EventLog(s"'$playerName' fell from the board and was resetted to ${to.position}")
 case class PlayerFinished(playerName: String, stats: FinishedStatistic) extends EventLog(s"'$playerName' reached the target as number ${stats.rank}")
+case class PlayerRageQuitted(playerName: String) extends EventLog(s"'$playerName' has left the game")
+case class PlayerJoinedGame(playerName: String) extends EventLog(s"'$playerName' has joined the game")
 
 case class StartNextCycle(cycle: Int) extends EventLog("starting next cycle")
 case object AllPlayersFinished extends EventLog("All players reached the target")

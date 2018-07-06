@@ -1,16 +1,16 @@
-var snabbdom = require('snabbdom')
-var patch = snabbdom.init([
+const _ = require('lodash')
+const snabbdom = require('snabbdom')
+const patch = snabbdom.init([
   require('snabbdom/modules/eventlisteners').default,
   require('snabbdom/modules/props').default,
   require('snabbdom/modules/class').default,
   require('snabbdom/modules/style').default
 ])
 
-var gameUi = require('./game-ui')
-var gameService = require('./game-service')
-var editorService = require('../editor/editor-service')
-var actions = require('./game-actions')
-var gameBoard = require('./game-board')
+const gameUi = require('./game-ui')
+const gameService = require('./game-service')
+const actions = require('./game-actions')
+const gameBoard = require('./game-board')
 
 function Game(element, player, gameId) {
   var node = element
@@ -32,17 +32,14 @@ function Game(element, player, gameId) {
 
   function gameEventHandler(state) {
     return function (event) {
-      const data = JSON.parse(event.data)
-      const newGameState = data.state
-      const events = data.events
+      const serverState = JSON.parse(event.data)
+      const oldState = state.game
+      const newEvents = _.drop(serverState.events, oldState.events.length)
 
       state.animationStart = new Date()
-      state.animations = gameBoard.framesFromEvents(state.game, events)
-
-
-      state.game = newGameState
-      state.logs = state.logs.concat(data.textLog)
-      if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) {
+      state.animations = gameBoard.framesFromEvents(oldState, newEvents)
+      state.game = serverState
+      if (newEvents.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) {
         state.focusedSlot = undefined
       }
       renderState(state)
@@ -55,7 +52,6 @@ function Game(element, player, gameId) {
         player, gameId,
         game: gameRow.game,
         eventSource: gameService.updates(gameId),
-        logs: [],
         modal: 'none',
         animations: [],
         animationStart: undefined

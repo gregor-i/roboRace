@@ -24,14 +24,7 @@ function resetInstruction(gameId, cycle, slot){
 
 function joinGame(gameId) {
     return sendCommand(gameId, {RegisterForGame: {}})
-}
-
-function readyForGame(gameId){
-    return sendCommand(gameId, {ReadyForGame: {}})
-}
-
-function defineScenario(gameId, scenario) {
-    return sendCommand(gameId, {DefineScenario: {scenario: scenario}})
+        .then(parseJson)
 }
 
 function updates(gameId) {
@@ -46,8 +39,6 @@ module.exports = {
     getState,
     setInstruction,
     resetInstruction,
-    defineScenario,
-    readyForGame,
     joinGame,
     updates
 }

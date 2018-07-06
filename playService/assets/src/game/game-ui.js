@@ -11,7 +11,7 @@ function render(state, actionHandler) {
   let m = null
   const closeAction = [actionHandler, {closeModal: true}]
   if (state.modal === 'log')
-    m = modal(renderLog(state.logs), closeAction)
+    m = modal(renderLog(state.game.events), closeAction)
   else if (state.modal === 'playerList')
     m = modal(renderPlayerList(state), closeAction)
   else if (state.modal && state.modal.type === 'previewScenario')
@@ -120,10 +120,10 @@ function renderActionButtons(state, game, actionHandler) {
   }
 }
 
-function renderLog(logs) {
+function renderLog(events) {
   return h('div', [
     h('h4', 'Log: '),
-    h('div', logs && logs.length ? logs.map(log => h('div', log)) : [])
+    h('div', events.map(log => h('div', log)))
   ])
 }
 

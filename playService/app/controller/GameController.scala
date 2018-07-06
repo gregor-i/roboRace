@@ -36,7 +36,7 @@ class GameController @Inject()(repo: GameRepository)
           case CommandAccepted(afterCommand) =>
             val afterCycle = Cycle(afterCommand)
             repo.save(row.copy(game = Some(afterCycle)))
-            if(afterCycle.events.nonEmpty)
+            if(afterCycle.events.size > row.game.get.events.size)
               Source.single(afterCycle.asJson.noSpaces)
                 .runWith(SinkSourceCache.sink(id))
             Ok(afterCycle.asJson)

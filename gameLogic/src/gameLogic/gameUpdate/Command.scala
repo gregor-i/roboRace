@@ -25,7 +25,10 @@ case object RegisterForGame extends Command {
         instructionOptions = DealOptions.initial,
         finished = None
       )
-      CommandAccepted(Game.players.modify(players => players :+ newPlayer)(game))
+      CommandAccepted(
+        Game.players.modify(players => players :+ newPlayer)(game)
+          .addLogs(PlayerJoinedGame(player))
+      )
   }
 }
 
@@ -37,10 +40,17 @@ case object DeregisterForGame extends Command {
       CommandRejected(PlayerAlreadyFinished)
 
     case game if game.cycle == 0 =>
-      CommandAccepted(Game.players.modify(_.filter(_.name != player).zipWithIndex.map{case (player, index) => player.copy(index =index)})(game))
+      CommandAccepted(
+        Game.players.modify(_.filter(_.name != player).zipWithIndex.map{case (player, index) => player.copy(index =index)})(game)
+        .addLogs(PlayerRageQuitted(player))
+      )
     case game =>
-      CommandAccepted((Game.player(player) composeLens RunningPlayer.finished)
-        .set(Some(FinishedStatistic(game.players.count(_.finished.isEmpty), game.cycle, true)))(game))
+      CommandAccepted(
+        (Game.player(player) composeLens RunningPlayer.finished)
+        .set(Some(FinishedStatistic(game.players.count(_.finished.isEmpty), game.cycle, true)))(game)
+          .addLogs(PlayerRageQuitted(player))
+      )
+
   }
 }
 

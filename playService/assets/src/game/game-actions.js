@@ -6,21 +6,25 @@ function actions(state, action) {
   if (action.leaveGame)
     window.location.href = "/"
   else if (action.joinGame)
-    gameService.joinGame(action.joinGame)
+    return gameService.joinGame(action.joinGame)
+        .then(newGameState => {
+          state.game = newGameState
+          return state
+        })
   else if (action.focusSlot !== undefined) {
     state.focusedSlot = action.focusSlot
     return Promise.resolve(state)
   } else if (action.resetSlot) {
     return gameService.resetInstruction(state.gameId, state.game.cycle, action.slot)
         .then(newGameState => {
-          state.game = newGameState.state
+          state.game = newGameState
           return state
         })
   } else if (action.setInstruction) {
     return gameService.setInstruction(state.gameId, state.game.cycle, action.slot, action.instruction)
         .then(newGameState => {
-          state.game = newGameState.state
-          const slots = newGameState.state.players.find(p => p.name === state.player).instructionSlots
+          state.game = newGameState
+          const slots = state.game.players.find(p => p.name === state.player).instructionSlots
           state.focusedSlot = _.range(constants.numberOfInstructionsPerCycle)
               .map(i => (i + (state.focusedSlot || 0)) % constants.numberOfInstructionsPerCycle)
               .find(i => slots[i] === null)

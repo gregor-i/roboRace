@@ -15,9 +15,4 @@ case class RunningPlayer(index: Int,
                          instructionOptions: Seq[Instruction],
                          finished: Option[FinishedStatistic]) extends Player
 
-@Lenses
-case class StartingPlayer(index: Int,
-                          name: String,
-                          ready: Boolean) extends Player
-
 case class FinishedStatistic(rank: Int, cycle: Int, rageQuitted: Boolean)

@@ -18405,21 +18405,25 @@ function actions(state, action) {
   if (action.leaveGame)
     window.location.href = "/"
   else if (action.joinGame)
-    gameService.joinGame(action.joinGame)
+    return gameService.joinGame(action.joinGame)
+        .then(newGameState => {
+          state.game = newGameState
+          return state
+        })
   else if (action.focusSlot !== undefined) {
     state.focusedSlot = action.focusSlot
     return Promise.resolve(state)
   } else if (action.resetSlot) {
     return gameService.resetInstruction(state.gameId, state.game.cycle, action.slot)
         .then(newGameState => {
-          state.game = newGameState.state
+          state.game = newGameState
           return state
         })
   } else if (action.setInstruction) {
     return gameService.setInstruction(state.gameId, state.game.cycle, action.slot, action.instruction)
         .then(newGameState => {
-          state.game = newGameState.state
-          const slots = newGameState.state.players.find(p => p.name === state.player).instructionSlots
+          state.game = newGameState
+          const slots = state.game.players.find(p => p.name === state.player).instructionSlots
           state.focusedSlot = _.range(constants.numberOfInstructionsPerCycle)
               .map(i => (i + (state.focusedSlot || 0)) % constants.numberOfInstructionsPerCycle)
               .find(i => slots[i] === null)
@@ -18767,14 +18771,7 @@ function resetInstruction(gameId, cycle, slot){
 
 function joinGame(gameId) {
     return sendCommand(gameId, {RegisterForGame: {}})
-}
-
-function readyForGame(gameId){
-    return sendCommand(gameId, {ReadyForGame: {}})
-}
-
-function defineScenario(gameId, scenario) {
-    return sendCommand(gameId, {DefineScenario: {scenario: scenario}})
+        .then(parseJson)
 }
 
 function updates(gameId) {
@@ -18789,8 +18786,6 @@ module.exports = {
     getState,
     setInstruction,
     resetInstruction,
-    defineScenario,
-    readyForGame,
     joinGame,
     updates
 }
@@ -18809,7 +18804,7 @@ function render(state, actionHandler) {
   let m = null
   const closeAction = [actionHandler, {closeModal: true}]
   if (state.modal === 'log')
-    m = modal(renderLog(state.logs), closeAction)
+    m = modal(renderLog(state.game.events), closeAction)
   else if (state.modal === 'playerList')
     m = modal(renderPlayerList(state), closeAction)
   else if (state.modal && state.modal.type === 'previewScenario')
@@ -18918,29 +18913,29 @@ function renderActionButtons(state, game, actionHandler) {
   }
 }
 
-function renderLog(logs) {
+function renderLog(events) {
   return h('div', [
     h('h4', 'Log: '),
-    h('div', logs && logs.length ? logs.map(log => h('div', log)) : [])
+    h('div', events.map(log => h('div', log)))
   ])
 }
 
 module.exports = render
 
 },{"../common/button":13,"../common/constants":14,"../common/images":16,"../common/modal":17,"./game-board":24,"lodash":2,"snabbdom/h":3}],27:[function(require,module,exports){
-var snabbdom = require('snabbdom')
-var patch = snabbdom.init([
+const _ = require('lodash')
+const snabbdom = require('snabbdom')
+const patch = snabbdom.init([
   require('snabbdom/modules/eventlisteners').default,
   require('snabbdom/modules/props').default,
   require('snabbdom/modules/class').default,
   require('snabbdom/modules/style').default
 ])
 
-var gameUi = require('./game-ui')
-var gameService = require('./game-service')
-var editorService = require('../editor/editor-service')
-var actions = require('./game-actions')
-var gameBoard = require('./game-board')
+const gameUi = require('./game-ui')
+const gameService = require('./game-service')
+const actions = require('./game-actions')
+const gameBoard = require('./game-board')
 
 function Game(element, player, gameId) {
   var node = element
@@ -18962,17 +18957,14 @@ function Game(element, player, gameId) {
 
   function gameEventHandler(state) {
     return function (event) {
-      const data = JSON.parse(event.data)
-      const newGameState = data.state
-      const events = data.events
+      const serverState = JSON.parse(event.data)
+      const oldState = state.game
+      const newEvents = _.drop(serverState.events, oldState.events.length)
 
       state.animationStart = new Date()
-      state.animations = gameBoard.framesFromEvents(state.game, events)
-
-
-      state.game = newGameState
-      state.logs = state.logs.concat(data.textLog)
-      if (events.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) {
+      state.animations = gameBoard.framesFromEvents(oldState, newEvents)
+      state.game = serverState
+      if (newEvents.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) {
         state.focusedSlot = undefined
       }
       renderState(state)
@@ -18985,7 +18977,6 @@ function Game(element, player, gameId) {
         player, gameId,
         game: gameRow.game,
         eventSource: gameService.updates(gameId),
-        logs: [],
         modal: 'none',
         animations: [],
         animationStart: undefined
@@ -18999,7 +18990,7 @@ function Game(element, player, gameId) {
 
 module.exports = Game
 
-},{"../editor/editor-service":20,"./game-actions":23,"./game-board":24,"./game-service":25,"./game-ui":26,"snabbdom":10,"snabbdom/modules/class":6,"snabbdom/modules/eventlisteners":7,"snabbdom/modules/props":8,"snabbdom/modules/style":9}],28:[function(require,module,exports){
+},{"./game-actions":23,"./game-board":24,"./game-service":25,"./game-ui":26,"lodash":2,"snabbdom":10,"snabbdom/modules/class":6,"snabbdom/modules/eventlisteners":7,"snabbdom/modules/props":8,"snabbdom/modules/style":9}],28:[function(require,module,exports){
 // left = 0
 function x(angle, size){
   return -Math.cos(degree(angle)) *size
