@@ -7,8 +7,8 @@ import org.scalatest.{FunSuite, Matchers}
 class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("should start game if all players are ready") {
     updateChain(createGame(Scenario.default)(p1))(
-      RegisterForGame(p2).accepted.noEvents,
-      RegisterForGame(p3).accepted.noEvents,
+      RegisterForGame(p2).accepted,
+      RegisterForGame(p3).accepted,
       dummyInstructions(0)(p1),
       dummyInstructions(0)(p2),
       dummyInstructions(0)(p3),
@@ -28,8 +28,8 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
 
   test("should start the next cycle when all player choose their action") {
     updateChain(createGame(Scenario.default)(p1))(
-      RegisterForGame(p2).accepted.noEvents,
-      RegisterForGame(p3).accepted.noEvents,
+      RegisterForGame(p2).accepted,
+      RegisterForGame(p3).accepted,
       dummyInstructions(0)(p1),
       dummyInstructions(0)(p2),
       dummyInstructions(0)(p3),

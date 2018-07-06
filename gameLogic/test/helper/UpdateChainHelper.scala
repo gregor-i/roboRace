@@ -15,7 +15,7 @@ trait UpdateChainHelper {
   def dummyInstructions(cycle: Int): String => Game => Game =
     player => game => updateChain(game)(
       (0 until Constants.instructionsPerCycle).map(i =>
-        SetInstruction(cycle, i, i)(player).accepted.anyEvents
+        SetInstruction(cycle, i, i)(player).accepted
       ):_*
     )
 

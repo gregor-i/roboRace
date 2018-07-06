@@ -4,29 +4,22 @@ package gameUpdate
 import monocle.function.Each.each
 
 object Cycle{
-  def apply(gameState: Game): Logged[Game] = gameState match {
+  def apply(gameState: Game): Game = gameState match {
     case g: Game if g.players.forall(player => player.finished.isDefined || player.instructionSlots.flatten.size == Constants.instructionsPerCycle) =>
-      for {
-        afterPlayerActions <- execAllActions(g)
-        afterEffects <- ScenarioEffects.afterCycle(afterPlayerActions)
-        nextState <- afterEffects match {
-          case running =>
-            val o1 = Game.players composeTraversal each composeLens RunningPlayer.instructionOptions set DealOptions()
-            val o2 = Game.cycle modify (_ + 1)
-            o1.andThen(o2)(running).log(StartNextCycle(running.cycle + 1))
-        }
-      } yield nextState
-
-    case _ => Logged.pure(gameState)
+      val afterPlayerActions = execAllActions(g)
+      val afterEffects = ScenarioEffects.afterCycle(afterPlayerActions)
+      val o1 = Game.players composeTraversal each composeLens RunningPlayer.instructionOptions set DealOptions()
+      val o2 = Game.cycle modify (_ + 1)
+      o1.andThen(o2)(afterEffects)
+        .addLogs(StartNextCycle(afterEffects.cycle + 1))
+    case _ => gameState
   }
 
-  private def execAllActions(gameRunning: Game): Logged[Game] =
+  private def execAllActions(gameRunning: Game): Game =
     calcNextPlayer(gameRunning) match {
-      case Some(nextPlayer) => for {
-        afterAction <- applyAction(gameRunning, nextPlayer)
-        afterRecursion <- execAllActions(afterAction)
-      } yield afterRecursion
-      case None => Logged.pure(gameRunning)
+      case Some(nextPlayer) =>
+        execAllActions(applyAction(gameRunning, nextPlayer))
+      case None => gameRunning
     }
 
   private def calcNextPlayer(gameState: Game): Option[RunningPlayer] = {
@@ -48,20 +41,19 @@ object Cycle{
     }
   }
 
-  private def applyAction(game: Game, player: RunningPlayer): Logged[Game] = {
+  private def applyAction(game: Game, player: RunningPlayer): Game = {
     val slot = player.instructionSlots.indexWhere(_.isDefined)
     val instruction = player.instructionOptions(player.instructionSlots(slot).get)
-    for {
-      _ <- ().log(RobotAction(player.name, instruction))
-      afterInstruction <- instruction match {
-        case TurnRight => Events.turn(player, player.robot.direction.right)(game)
-        case TurnLeft => Events.turn(player, player.robot.direction.left)(game)
-        case UTurn => Events.turn(player, player.robot.direction.back)(game)
+    val g1 =game.addLogs(RobotAction(player.name, instruction))
+    val afterInstruction = instruction match {
+      case TurnRight => Events.turn(player, player.robot.direction.right)(g1)
+      case TurnLeft => Events.turn(player, player.robot.direction.left)(g1)
+      case UTurn => Events.turn(player, player.robot.direction.back)(g1)
 
-        case move: MoveInstruction => MoveRobots(player, move, game)
+      case move: MoveInstruction => MoveRobots(player, move, g1)
 
-        case Sleep => Logged.pure(game)
-      }
-    } yield (Game.player(player.name) composeLens RunningPlayer.instructionSlots).modify(_.updated(slot, None))(afterInstruction)
+      case Sleep => g1
+    }
+    (Game.player(player.name) composeLens RunningPlayer.instructionSlots).modify(_.updated(slot, None))(afterInstruction)
   }
 }

@@ -16,7 +16,8 @@ object CreateGame {
             instructionOptions = DealOptions.initial,
             finished = None
           )
-        )
+        ),
+        events = Seq.empty
       ))
     else
       CommandRejected(InvalidScenario)

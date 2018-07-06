@@ -1,13 +1,13 @@
 package gameLogic.gameUpdate
 
-import gameLogic.{FinishedStatistic, Game, Logged, PlayerFinished, RobotReset, RunningPlayer}
+import gameLogic.{FinishedStatistic, Game, PlayerFinished, RunningPlayer}
 
 object ScenarioEffects {
 
-  def afterMoveAction(game: Game): Logged[Game] =
+  def afterMoveAction(game: Game): Game =
     fallenRobots(game)
 
-  private def fallenRobots(game: Game): Logged[Game] = {
+  private def fallenRobots(game: Game): Game = {
     val firstFallenPlayer = game.players.find {
       player =>
         val robot = player.robot
@@ -19,24 +19,21 @@ object ScenarioEffects {
     }
 
     firstFallenPlayer match {
-      case None => Logged.pure(game)
+      case None         => game
       case Some(player) =>
         val index = player.index
         val initial = game.scenario.initialRobots(index)
-        for {
-          clearedInitial <- MoveRobots.pushRobots(initial.position, initial.direction, game)
-          resettedFallen <- Events.reset(player, initial)(clearedInitial)
-          recursion <- fallenRobots(resettedFallen)
-        } yield recursion
-
+        val clearedInitial = MoveRobots.pushRobots(initial.position, initial.direction, game)
+        val resettedFallen = Events.reset(player, initial)(clearedInitial)
+        fallenRobots(resettedFallen)
     }
   }
 
-  def afterCycle(game: Game): Logged[Game] = {
+  def afterCycle(game: Game): Game = {
     game.players.find {
       player => player.robot.position == game.scenario.targetPosition && player.finished.isEmpty
     } match {
-      case None => Logged.pure(game)
+      case None => game
       case Some(player) =>
         val stats = FinishedStatistic(rank = game.players.count(_.finished.isDefined) + 1, cycle = game.cycle, rageQuitted = false)
         val playerFinished = PlayerFinished(player.name, stats)
@@ -44,7 +41,7 @@ object ScenarioEffects {
         (Game.player(player.name) composeLens RunningPlayer.finished)
           .set(Some(stats))
           .apply(game)
-          .log(playerFinished)
+          .addLogs(playerFinished)
     }
   }
 }

@@ -6,20 +6,20 @@ import Robot._
 object Events {
   private def robot(playerName: String) = Game.player(playerName) composeLens RunningPlayer.robot
 
-  def move(player: RunningPlayer, nextPos: Position)(game: Game): Logged[Game] =
+  def move(player: RunningPlayer, nextPos: Position)(game: Game): Game =
     (robot(player.name) composeLens position)
       .set(nextPos)(game)
-      .log(RobotMoves(player.name, nextPos))
+      .addLogs(RobotMoves(player.name, nextPos))
 
-  def turn(player: RunningPlayer, nextDirection: Direction)(game: Game): Logged[Game] =
+  def turn(player: RunningPlayer, nextDirection: Direction)(game: Game): Game =
     (robot(player.name) composeLens direction)
       .set(nextDirection)(game)
-      .log(RobotTurns(player.name, nextDirection))
+      .addLogs(RobotTurns(player.name, nextDirection))
 
-  def reset(player: RunningPlayer, initialRobot: Robot)(game: Game): Logged[Game] =
+  def reset(player: RunningPlayer, initialRobot: Robot)(game: Game): Game =
     robot(player.name).set(initialRobot)
       .andThen((Game.player(player.name) composeLens RunningPlayer.instructionSlots).set(Instruction.emptySlots))
       .apply(game)
-      .log(RobotReset(player.name, initialRobot))
+      .addLogs(RobotReset(player.name, initialRobot))
 
 }

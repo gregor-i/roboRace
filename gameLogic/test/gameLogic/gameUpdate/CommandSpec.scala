@@ -7,7 +7,7 @@ import org.scalatest.{FunSuite, Matchers}
 class CommandSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("RegisterForGame: add players") {
     updateChain(createGame(Scenario.default)(p1))(
-      RegisterForGame(p2).accepted.anyEvents,
+      RegisterForGame(p2).accepted,
       assert(_.players.map(_.name) shouldBe List(p1,p2))
     )
   }
@@ -31,15 +31,15 @@ class CommandSpec extends FunSuite with Matchers with GameUpdateHelper {
 
   test("DeregisterForGame: deregister players") {
     updateChain(createGame(Scenario.default)(p1))(
-      RegisterForGame(p2).accepted.anyEvents,
-      DeregisterForGame(p1).accepted.anyEvents,
+      RegisterForGame(p2).accepted,
+      DeregisterForGame(p1).accepted,
       assert(_.players.map(_.name) shouldBe List(p2))
     )
   }
 
   test("ReadyForGame: start game if all players are ready") {
     updateChain(createGame(Scenario.default)(p1))(
-      RegisterForGame(p2).accepted.anyEvents,
+      RegisterForGame(p2).accepted,
       dummyInstructions(0)(p1),
       dummyInstructions(0)(p2),
       assert(_.cycle shouldBe 1)
@@ -48,16 +48,16 @@ class CommandSpec extends FunSuite with Matchers with GameUpdateHelper {
 
   test("RageQuit: finish players in order") {
     updateChain(createGame(Scenario.default)(p1))(
-      RegisterForGame(p2).accepted.noEvents,
-      RegisterForGame(p3).accepted.noEvents,
-      DeregisterForGame(p3).accepted.anyEvents,
+      RegisterForGame(p2).accepted,
+      RegisterForGame(p3).accepted,
+      DeregisterForGame(p3).accepted,
       dummyInstructions(0)(p1),
       dummyInstructions(0)(p2),
       assert(_.cycle shouldBe 1),
-      DeregisterForGame(p2).accepted.anyEvents,
+      DeregisterForGame(p2).accepted,
       dummyInstructions(1)(p1),
       assert(_.cycle shouldBe 2),
-      DeregisterForGame(p1).accepted.anyEvents,
+      DeregisterForGame(p1).accepted,
       assert(_.players.find(_.name == p1).get.finished.get shouldBe FinishedStatistic(rank = 1, cycle = 2, rageQuitted = true)),
       assert(_.players.find(_.name == p2).get.finished.get shouldBe FinishedStatistic(rank = 2, cycle = 1, rageQuitted = true))
     )
