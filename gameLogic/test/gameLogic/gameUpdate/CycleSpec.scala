@@ -9,15 +9,14 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
     updateChain(createGame(Scenario.default)(p1))(
       RegisterForGame(p2).accepted.noEvents,
       RegisterForGame(p3).accepted.noEvents,
-      dummyInstructions(0)(p1).accepted.noEvents,
-      dummyInstructions(0)(p2).accepted.noEvents,
-      dummyInstructions(0)(p3).accepted
-        .logged(_ should contain(StartNextCycle(1))),
+      dummyInstructions(0)(p1),
+      dummyInstructions(0)(p2),
+      dummyInstructions(0)(p3),
       assert{ game =>
         game.players.map(_.name) shouldBe List(p1, p2, p3)
         game.cycle shouldBe 1
         for (player <- game.players) {
-          player.instructionSlots shouldBe Seq()
+          player.instructionSlots shouldBe Instruction.emptySlots
           player.finished shouldBe None
           player.robot shouldBe Scenario.default.initialRobots(player.index)
           player.instructionOptions.size shouldBe Constants.instructionOptionsPerCycle
@@ -31,14 +30,14 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
     updateChain(createGame(Scenario.default)(p1))(
       RegisterForGame(p2).accepted.noEvents,
       RegisterForGame(p3).accepted.noEvents,
-      dummyInstructions(0)(p1).accepted.noEvents,
-      dummyInstructions(0)(p2).accepted.noEvents,
-      dummyInstructions(0)(p3).accepted
-        .logged(_ should contain(StartNextCycle(1))),
-      dummyInstructions(1)(p1).accepted.noEvents,
-      dummyInstructions(1)(p2).accepted.noEvents,
-      dummyInstructions(1)(p3).accepted
-        .logged(_ should contain(StartNextCycle(2))),
+      dummyInstructions(0)(p1),
+      dummyInstructions(0)(p2),
+      dummyInstructions(0)(p3),
+      assert(_.cycle shouldBe 1),
+      dummyInstructions(1)(p1),
+      dummyInstructions(1)(p2),
+      dummyInstructions(1)(p3),
+      assert(_.cycle shouldBe 2),
       assert(_ => succeed)
     )
   }

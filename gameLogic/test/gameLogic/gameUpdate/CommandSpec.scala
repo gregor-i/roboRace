@@ -40,10 +40,9 @@ class CommandSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("ReadyForGame: start game if all players are ready") {
     updateChain(createGame(Scenario.default)(p1))(
       RegisterForGame(p2).accepted.anyEvents,
-      dummyInstructions(0)(p1).accepted.noEvents,
-      dummyInstructions(0)(p2).accepted
-        .logged(_ should contain(StartNextCycle(1))),
-      assert(_ => succeed)
+      dummyInstructions(0)(p1),
+      dummyInstructions(0)(p2),
+      assert(_.cycle shouldBe 1)
     )
   }
 
@@ -52,12 +51,11 @@ class CommandSpec extends FunSuite with Matchers with GameUpdateHelper {
       RegisterForGame(p2).accepted.noEvents,
       RegisterForGame(p3).accepted.noEvents,
       DeregisterForGame(p3).accepted.anyEvents,
-      dummyInstructions(0)(p1).accepted.noEvents,
-      dummyInstructions(0)(p2).accepted
-        .logged(_ should contain(StartNextCycle(1))),
+      dummyInstructions(0)(p1),
+      dummyInstructions(0)(p2),
       assert(_.cycle shouldBe 1),
       DeregisterForGame(p2).accepted.anyEvents,
-      dummyInstructions(1)(p1).accepted.anyEvents,
+      dummyInstructions(1)(p1),
       assert(_.cycle shouldBe 2),
       DeregisterForGame(p1).accepted.anyEvents,
       assert(_.players.find(_.name == p1).get.finished.get shouldBe FinishedStatistic(rank = 1, cycle = 2, rageQuitted = true)),

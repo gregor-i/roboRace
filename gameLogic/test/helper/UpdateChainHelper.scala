@@ -12,8 +12,12 @@ trait UpdateChainHelper {
     resp.asInstanceOf[CommandAccepted].newState
   }
 
-  def dummyInstructions(cycle: Int): String => Game => CommandResponse =
-    player => ChooseInstructions(cycle, (0 until Constants.instructionsPerCycle).map(Some.apply))(player)
+  def dummyInstructions(cycle: Int): String => Game => Game =
+    player => game => updateChain(game)(
+      (0 until Constants.instructionsPerCycle).map(i =>
+        SetInstruction(cycle, i, i)(player).accepted.anyEvents
+      ):_*
+    )
 
   def updateChain(state: Game)(fs: (Game => Game)*): Game =
     fs.foldLeft(state)((s, f) => f(s))
