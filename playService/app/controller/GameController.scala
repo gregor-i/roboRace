@@ -36,13 +36,14 @@ class GameController @Inject()(repo: GameRepository)
           case CommandAccepted(afterCommand) =>
             val afterCycle = Cycle(afterCommand)
             repo.save(row.copy(game = Some(afterCycle.state)))
-            Source.single(
-              Json.obj(
-                "state" -> afterCycle.state.asJson,
-                "events" -> afterCycle.events.asJson,
-                "textLog" -> afterCycle.events.map(_.text).asJson
-              ).noSpaces)
-              .runWith(SinkSourceCache.sink(id))
+            if(afterCycle.events.nonEmpty)
+              Source.single(
+                Json.obj(
+                  "state" -> afterCycle.state.asJson,
+                  "events" -> afterCycle.events.asJson,
+                  "textLog" -> afterCycle.events.map(_.text).asJson
+                ).noSpaces)
+                .runWith(SinkSourceCache.sink(id))
             Ok(afterCycle.asJson)
           case CommandRejected(reason) =>
             BadRequest(reason.asJson)
