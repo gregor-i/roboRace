@@ -12,7 +12,14 @@ import repo.{ScenarioRepository, ScenarioRow}
 class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedController with Circe {
 
   def get() = Action {
-    Ok(repo.list().asJson)
+    val list = repo.list()
+    if (list.isEmpty) {
+      val defaultRow = ScenarioRow("default", "system", Some(Scenario.default))
+      repo.save(defaultRow)
+      Ok(List(defaultRow).asJson)
+    } else {
+      Ok(list.asJson)
+    }
   }
 
   def getSingle(id: String) = Action {
@@ -24,9 +31,9 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
 
   def post() = Action(circe.tolerantJson[Scenario]) { request =>
     Utils.playerName(request) match {
-      case None                                    => Unauthorized
+      case None => Unauthorized
       case _ if !Scenario.validation(request.body) => BadRequest
-      case Some(player)                            =>
+      case Some(player) =>
         val row = ScenarioRow(
           id = Utils.newShortId(),
           owner = player,
@@ -36,7 +43,7 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
     }
   }
 
-  def delete(id: String) = Action{ request =>
+  def delete(id: String) = Action { request =>
     (repo.get(id), Utils.playerName(request)) match {
       case (None, _) => NotFound
       case (_, None) => Unauthorized

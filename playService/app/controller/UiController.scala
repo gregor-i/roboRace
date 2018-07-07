@@ -1,18 +1,32 @@
 package controller
 
+import controllers.Assets
+import javax.inject.Inject
 import play.api.mvc.InjectedController
+import repo.{GameRepository, ScenarioRepository}
 
-class UiController() extends InjectedController {
+class UiController @Inject()(gameRepo: GameRepository,
+                             scenarioRepo: ScenarioRepository,
+                             assets: Assets) extends InjectedController {
 
-  private def ui(mode: String, gameId: String = "", scenarioId: String = "") = Action(
+  private def ui(mode: String, gameId: String = "", scenarioId: String = "") =
     Ok(views.html.RoboRace(mode = mode, gameId = gameId, scenarioId = scenarioId))
-  )
 
-  def lobby() = ui(mode = "lobby")
+  def lobby() = Action(ui(mode = "lobby"))
 
-  def game(id: String) = ui(mode = "game", gameId = id)
+  def game(id: String) = Action {
+    if (gameRepo.get(id).isDefined)
+      ui(mode = "game", gameId = id)
+    else
+      NotFound(views.html.NotFound())
+  }
 
-  def editor() = ui(mode = "editor")
+  def editor(id: String) = Action {
+    if(scenarioRepo.get(id).isDefined)
+      ui(mode = "editor", scenarioId = id)
+    else
+      NotFound(views.html.NotFound())
+  }
 
-  def editorWithId(id: String) = ui(mode = "editor", scenarioId = id)
+  def asset(path: String) = assets.at(path)
 }

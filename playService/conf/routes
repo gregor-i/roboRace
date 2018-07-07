@@ -15,14 +15,10 @@ DELETE        /api/scenarios/:id                  controller.ScenarioController.
 
 #Frontend
 GET           /                                   controller.UiController.lobby()
-GET           /editor                             controller.UiController.editor()
-GET           /editor/:id                         controller.UiController.editorWithId(id: String)
+GET           /editor/:id                         controller.UiController.editor(id: String)
 GET           /game/:id                           controller.UiController.game(id: String)
-
-GET           /assets/*file                       controllers.Assets.at(file)
+GET           /assets/*file                       controller.UiController.asset(file)
 
 #Admin
 GET           /admin                              controller.AdminController.ui()
-GET           /admin/config                       controller.AdminController.config()
-POST          /admin/post-default-scenario        controller.AdminController.postDefault()
 POST          /admin/garbage-collect              controller.AdminController.garbageCollect()

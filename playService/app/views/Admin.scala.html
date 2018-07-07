@@ -1,0 +1,34 @@
+@(config: play.api.Configuration)
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Robo Race - Admin</title>
+        <link rel="icon" href="/assets/favicon.png" type="image/x-icon">
+        <link rel="stylesheet" type="text/css" href="/assets/bulma.min.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css?family=Roboto:700" rel="stylesheet">
+        <script>
+            function garbageCollect(){
+                fetch('/admin/garbage-collect', {method:'POST'})
+                        .then(resp => resp.text())
+                        .then(resp => alert(resp))
+            }
+        </script>
+    </head>
+    <body class="content">
+        <h1>Admin</h1>
+
+        <h2>Garbage Collection</h2>
+        <div><button class="button" onclick="garbageCollect()">Garbage Collection</button></div>
+
+        <h2>Config</h2>
+        <div>
+            <table>
+                <tr><th>key</th><th>value</th></tr>
+                @config.entrySet.map{ case (key, value) => <tr><td>@key</td><td>@value.unwrapped()</td></tr> }
+            </table>
+        </div>
+    </body>
+</html>

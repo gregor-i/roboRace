@@ -16,11 +16,7 @@ class AdminController @Inject()(configuration: Configuration,
   implicit val encodeConfigVal: Encoder[ConfigValue] = Encoder.encodeString.contramap[ConfigValue](_.unwrapped.toString)
 
   def ui() = Action{
-    NotImplemented
-  }
-
-  def config() = Action {
-    Ok(configuration.entrySet.toMap.asJson)
+    Ok(views.html.Admin(configuration))
   }
 
   def postDefault() = Action{
