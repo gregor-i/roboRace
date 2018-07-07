@@ -1,6 +1,6 @@
 package gameLogic.gameUpdate
 
-import gameLogic.{Game, Instruction, InvalidScenario, RunningPlayer, Scenario}
+import gameLogic.{Game, Instruction, InvalidScenario, Player, Scenario}
 
 object CreateGame {
   def apply(scenario: Scenario)(player: String): CommandResponse = {
@@ -9,7 +9,7 @@ object CreateGame {
         cycle = 0,
         scenario = scenario,
         players = List(
-          RunningPlayer(index = 0,
+          Player(index = 0,
             name = player,
             robot = scenario.initialRobots(0),
             instructionSlots = Instruction.emptySlots,

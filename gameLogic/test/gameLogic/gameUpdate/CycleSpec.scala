@@ -18,7 +18,6 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
         for (player <- game.players) {
           player.instructionSlots shouldBe Instruction.emptySlots
           player.finished shouldBe None
-          player.robot shouldBe Scenario.default.initialRobots(player.index)
           player.instructionOptions.size shouldBe Constants.instructionOptionsPerCycle
         }
         succeed

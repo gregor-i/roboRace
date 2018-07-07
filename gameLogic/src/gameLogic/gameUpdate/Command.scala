@@ -18,7 +18,7 @@ case object RegisterForGame extends Command {
     case game if game.players.size >= game.scenario.initialRobots.size =>
       CommandRejected(TooMuchPlayersRegistered)
     case game =>
-      val newPlayer = RunningPlayer(index = game.players.size,
+      val newPlayer = Player(index = game.players.size,
         name = player,
         robot = game.scenario.initialRobots(game.players.size),
         instructionSlots = Instruction.emptySlots,
@@ -46,7 +46,7 @@ case object DeregisterForGame extends Command {
       )
     case game =>
       CommandAccepted(
-        (Game.player(player) composeLens RunningPlayer.finished)
+        (Game.player(player) composeLens Player.finished)
         .set(Some(FinishedStatistic(game.players.count(_.finished.isEmpty), game.cycle, true)))(game)
           .addLogs(PlayerRageQuitted(player))
       )
@@ -69,7 +69,7 @@ case class SetInstruction(cycle: Int, slot: Int, instruction: Int) extends Comma
     case game if game.players.find(_.name == player).get.instructionSlots.contains(Some(instruction)) =>
       CommandRejected(ActionAlreadyUsed)
     case game =>
-      CommandAccepted((Game.player(player) composeLens RunningPlayer.instructionSlots).modify(_.updated(slot, Some(instruction)))(game))
+      CommandAccepted((Game.player(player) composeLens Player.instructionSlots).modify(_.updated(slot, Some(instruction)))(game))
   }
 }
 
@@ -84,7 +84,7 @@ case class ResetInstruction(cycle: Int, slot: Int) extends Command {
     case game if 0 > slot || slot >= Constants.instructionsPerCycle =>
       CommandRejected(InvalidSlot)
     case game =>
-      CommandAccepted((Game.player(player) composeLens RunningPlayer.instructionSlots).modify(_.updated(slot, None))(game))
+      CommandAccepted((Game.player(player) composeLens Player.instructionSlots).modify(_.updated(slot, None))(game))
   }
 }
 

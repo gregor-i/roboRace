@@ -1,6 +1,6 @@
 package gameLogic.gameUpdate
 
-import gameLogic.{FinishedStatistic, Game, PlayerFinished, RunningPlayer}
+import gameLogic.{FinishedStatistic, Game, PlayerFinished, Player}
 
 object ScenarioEffects {
 
@@ -21,11 +21,12 @@ object ScenarioEffects {
     firstFallenPlayer match {
       case None         => game
       case Some(player) =>
-        val index = player.index
-        val initial = game.scenario.initialRobots(index)
-        val clearedInitial = MoveRobots.pushRobots(initial.position, initial.direction, game)
-        val resettedFallen = Events.reset(player, initial)(clearedInitial)
-        fallenRobots(resettedFallen)
+        val initial = game.scenario.initialRobots(player.index)
+        val clearedInitial = MoveRobots.pushRobots(initial.position, initial.direction, game) match {
+          case Some(robotPushed) => Events.move(robotPushed)(game)
+          case None => game
+        }
+        fallenRobots(Events.reset(player, initial)(clearedInitial))
     }
   }
 
@@ -38,7 +39,7 @@ object ScenarioEffects {
         val stats = FinishedStatistic(rank = game.players.count(_.finished.isDefined) + 1, cycle = game.cycle, rageQuitted = false)
         val playerFinished = PlayerFinished(player.name, stats)
 
-        (Game.player(player.name) composeLens RunningPlayer.finished)
+        (Game.player(player.name) composeLens Player.finished)
           .set(Some(stats))
           .apply(game)
           .addLogs(playerFinished)

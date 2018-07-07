@@ -8,7 +8,7 @@ object Cycle{
     case g: Game if g.players.forall(player => player.finished.isDefined || player.instructionSlots.flatten.size == Constants.instructionsPerCycle) =>
       val afterPlayerActions = execAllActions(g)
       val afterEffects = ScenarioEffects.afterCycle(afterPlayerActions)
-      val o1 = Game.players composeTraversal each composeLens RunningPlayer.instructionOptions set DealOptions()
+      val o1 = Game.players composeTraversal each composeLens Player.instructionOptions set DealOptions()
       val o2 = Game.cycle modify (_ + 1)
       o1.andThen(o2)(afterEffects)
         .addLogs(StartNextCycle(afterEffects.cycle + 1))
@@ -22,10 +22,10 @@ object Cycle{
       case None => gameRunning
     }
 
-  private def calcNextPlayer(gameState: Game): Option[RunningPlayer] = {
+  private def calcNextPlayer(gameState: Game): Option[Player] = {
     val beacon = gameState.scenario.beaconPosition
 
-    def nextPlayerWeight(player: RunningPlayer): (Int, Double, Double) = {
+    def nextPlayerWeight(player: Player): (Int, Double, Double) = {
       val position = player.robot.position
       val dx = position.x - beacon.x
       val dy = position.y - beacon.y
@@ -41,7 +41,7 @@ object Cycle{
     }
   }
 
-  private def applyAction(game: Game, player: RunningPlayer): Game = {
+  private def applyAction(game: Game, player: Player): Game = {
     val slot = player.instructionSlots.indexWhere(_.isDefined)
     val instruction = player.instructionOptions(player.instructionSlots(slot).get)
     val g1 =game.addLogs(RobotAction(player.name, instruction))
@@ -54,6 +54,6 @@ object Cycle{
 
       case Sleep => g1
     }
-    (Game.player(player.name) composeLens RunningPlayer.instructionSlots).modify(_.updated(slot, None))(afterInstruction)
+    (Game.player(player.name) composeLens Player.instructionSlots).modify(_.updated(slot, None))(afterInstruction)
   }
 }

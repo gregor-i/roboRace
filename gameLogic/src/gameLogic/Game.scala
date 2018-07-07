@@ -7,13 +7,13 @@ import util.OptionalWhere
 @Lenses
 case class Game(cycle: Int,
                 scenario: Scenario,
-                players: List[RunningPlayer],
+                players: List[Player],
                 events: Seq[EventLog]){
   def addLogs(events: EventLog*): Game = copy(events = this.events ++ events)
 }
 
 object Game {
-  def player(name: String): Optional[Game, RunningPlayer] = players.composeOptional(OptionalWhere.where(_.name == name))
+  def player(name: String): Optional[Game, Player] = players.composeOptional(OptionalWhere.where(_.name == name))
 
   def isFinished(game: Game) : Boolean = game.players.forall(_.finished.isDefined)
 }
