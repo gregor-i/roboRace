@@ -18,18 +18,14 @@ function robotFromInitial(initial, index){
   return Robot(index, initial.position.x, initial.position.y, directionToRotation(initial.direction), 1)
 }
 
-function interpolateRobots(r1, r2, t) {
-  // https://gist.github.com/shaunlebron/8832585
-  function angleLerp(a0, a1, t) {
-    const da = (a1 - a0) % (Math.PI * 2)
-    return a0 + (2 * da % (Math.PI * 2) - da) * t
-  }
+function interpolate(d1, d2, t) {
+  return (1 - t) * d1 + t * d2
+}
 
-  return Robot(r1.index,
-    r1.x * (1 - t) + r2.x * t,
-    r1.y * (1 - t) + r2.y * t,
-    angleLerp(r1.rotation, r2.rotation, t),
-    r1.alpha * (1 - t) + r2.alpha * t)
+function interpolateAngle(a0, a1, t) {
+  // https://gist.github.com/shaunlebron/8832585
+  const da = (a1 - a0) % (Math.PI * 2)
+  return a0 + (2 * da % (Math.PI * 2) - da) * t
 }
 
 function drawCanvas(canvas, scenario, robots) {
@@ -70,8 +66,18 @@ function drawCanvas(canvas, scenario, robots) {
   const s = shapes(tile, wallFactor)
 
   function centerOn(x, y, callback) {
+    // the same as:
+    // centerOnInterpolated(x, y, x, y, 0, callback)
     ctx.save()
     ctx.translate(left(x, y), top(x, y))
+    callback()
+    ctx.restore()
+  }
+
+  function centerOnInterpolated(x1, y1, x2, y2, t, callback){
+    ctx.save()
+    ctx.translate(interpolate(left(x1, y1), left(x2, y2), t),
+                  interpolate(top(x1, y1), top(x2, y2), t))
     callback()
     ctx.restore()
   }
@@ -113,13 +119,26 @@ function drawCanvas(canvas, scenario, robots) {
   )
 
   // robots:
-  robots.forEach(robot =>
-    centerOn(robot.x, robot.y, () => {
-      ctx.globalAlpha = robot.alpha
-      ctx.rotate(robot.rotation)
-      ctx.drawImage(images.player(robot.index), -tile / 2, -tile / 2, tile , tile )
-    })
-  )
+  if (_.isArray(robots)) {
+    robots.forEach(robot =>
+      centerOn(robot.x, robot.y, () => {
+        ctx.globalAlpha = robot.alpha
+        ctx.rotate(robot.rotation)
+        ctx.drawImage(images.player(robot.index), -tile / 2, -tile / 2, tile, tile)
+      })
+    )
+  } else if (_.has(robots, 'currentFrame') && _.has(robots, 'nextFrame') && _.has(robots, 'frameProgress')) {
+    const {currentFrame, nextFrame, frameProgress} = robots
+    for (let i = 0; i < currentFrame.length; i++) {
+      const current = currentFrame[i]
+      const next = nextFrame[i]
+      centerOnInterpolated(current.x, current.y, next.x, next.y, frameProgress, () => {
+        ctx.globalAlpha = interpolate(current.alpha, next.alpha, frameProgress)
+        ctx.rotate(interpolateAngle(current.rotation, next.rotation, frameProgress))
+        ctx.drawImage(images.player(current.index), -tile / 2, -tile / 2, tile, tile)
+      })
+    }
+  }
 }
 
 function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots) {
@@ -133,8 +152,7 @@ function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots)
   } else {
     const currentFrame = frames[frameIndex]
     const nextFrame = frames[frameIndex + 1]
-    const robots = currentFrame.map((robot, index) => interpolateRobots(robot, nextFrame[index], frameProgress))
-    drawCanvas(canvas, scenario, robots)
+    drawCanvas(canvas, scenario, {currentFrame, nextFrame, frameProgress})
     requestAnimationFrame(() => drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots))
   }
 }
@@ -216,9 +234,7 @@ function onClickCanvas(scenario, options) {
           break;
       }
 
-      if(Math.sqrt(dist(bestX, bestY)) > tile/2)
-          console.log('clicked outside')
-      else
+      if(Math.sqrt(dist(bestX, bestY)) < tile/2)
         options.onClickTile(bestX, bestY, direction)
     }
   else
@@ -262,7 +278,6 @@ function directionToRotation(direction) {
 }
 
 function framesFromEvents(oldGameState, events) {
-  console.log("framesFromEvents", oldGameState, events)
   function indexByName(name) {
     return oldGameState.players.find((player) => player.name === name).index
   }
