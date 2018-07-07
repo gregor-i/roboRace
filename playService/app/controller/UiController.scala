@@ -15,14 +15,14 @@ class UiController @Inject()(gameRepo: GameRepository,
   def lobby() = Action(ui(mode = "lobby"))
 
   def game(id: String) = Action {
-    if (gameRepo.get(id).isDefined)
+    if (gameRepo.get(id).flatMap(_.game).isDefined)
       ui(mode = "game", gameId = id)
     else
       NotFound(views.html.NotFound())
   }
 
   def editor(id: String) = Action {
-    if(scenarioRepo.get(id).isDefined)
+    if(scenarioRepo.get(id).flatMap(_.scenario).isDefined)
       ui(mode = "editor", scenarioId = id)
     else
       NotFound(views.html.NotFound())

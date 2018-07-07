@@ -8,8 +8,11 @@ import util.OptionalWhere
 case class Game(cycle: Int,
                 scenario: Scenario,
                 players: List[Player],
-                events: Seq[EventLog]){
-  def addLogs(events: EventLog*): Game = copy(events = this.events ++ events)
+                events: Seq[Seq[EventLog]]){
+  def addLogs(newEvents: EventLog*): Game = if(events.length > cycle)
+    copy(events = events.updated(cycle, events(cycle) ++ newEvents))
+  else
+    copy(events = events :+ newEvents)
 }
 
 object Game {

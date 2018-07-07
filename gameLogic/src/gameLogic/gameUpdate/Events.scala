@@ -8,14 +8,25 @@ case class RobotPushed(player: Player, to: Position, push: Option[RobotPushed])
 object Events {
   private def robot(playerName: String) = Game.player(playerName) composeLens Player.robot
 
-  def move(event: RobotPushed)(game: Game): Game = {
-    val pushed = (robot(event.player.name) composeLens position)
-      .set(event.to)(game)
-      .addLogs(RobotMoves(event.player.name, event.to, event.push))
-    event.push match {
-      case Some(rec) => move(rec)(pushed)
-      case None => pushed
+  private def asEvent(pushed: RobotPushed): RobotMoves = {
+    def loop(event: RobotPushed): List[RobotPositionTransition] = {
+      val head = RobotPositionTransition(event.player.name, event.to)
+      event.push.fold(head :: Nil)(head :: loop(_))
     }
+
+    RobotMoves(pushed.player.name, loop(pushed))
+  }
+
+  def move(event: RobotPushed)(game: Game): Game = {
+    def loop(event: RobotPushed, game: Game) : Game = {
+      val pushed = (robot(event.player.name) composeLens position)
+        .set(event.to)(game)
+      event.push match {
+        case Some(rec) => loop(rec, pushed)
+        case None => pushed
+      }
+    }
+    loop(event, game).addLogs(asEvent(event))
   }
 
   def turn(player: Player, nextDirection: Direction)(game: Game): Game =
@@ -27,6 +38,6 @@ object Events {
     robot(player.name).set(initialRobot)
       .andThen((Game.player(player.name) composeLens Player.instructionSlots).set(Instruction.emptySlots))
       .apply(game)
-      .addLogs(RobotReset(player.name, initialRobot, game.cycle))
+      .addLogs(RobotReset(player.name, initialRobot))
 
 }

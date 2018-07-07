@@ -18507,7 +18507,7 @@ function drawCanvas(canvas, scenario, robots) {
 
   function top(x, y) {
     function saw(x) {
-      const m = x % 2
+      const m = Math.abs(x) % 2
       if (m > 1) return 2 - m
       else return m
     }
@@ -18613,7 +18613,7 @@ function onClickCanvas(scenario, options) {
 
       function top(x, y) {
         function saw(x) {
-          const m = x % 2
+          const m = Math.abs(x) % 2
           if (m > 1) return 2 - m
           else return m
         }
@@ -18679,6 +18679,7 @@ function renderCanvas(scenario, robots, options) {
       on : {click: onClickCanvas(scenario, options)},
       hook: {
         postpatch: (oldVnode, newVnode) => {
+          window.onresize = () => drawCanvas(newVnode.elm, scenario, robots)
           drawAnimatedCanvas(newVnode.elm, options.animationStart, scenario, options.frames, robots)
         },
         insert: node => {
@@ -18709,34 +18710,43 @@ function directionToRotation(direction) {
 }
 
 function framesFromEvents(oldGameState, events) {
+  console.log("framesFromEvents", oldGameState, events)
   function indexByName(name) {
     return oldGameState.players.find((player) => player.name === name).index
   }
 
   let state = oldGameState.players.map(robotFromPlayer)
   let frames = []
+  frames.push(_.cloneDeep(state))
 
   for (let j = 0; j < events.length; j++) {
-    if (events[j].RobotAction) {
+    if (events[j].RobotMoves) {
+      events[j].RobotMoves.transitions.forEach(t => {
+        let i = indexByName(t.playerName)
+        state[i].x = t.to.x
+        state[i].y = t.to.y
+      })
       frames.push(_.cloneDeep(state))
-    } else if (events[j].RobotMoves) {
-      let i = indexByName(events[j].RobotMoves.playerName)
-      state[i].x = events[j].RobotMoves.to.x
-      state[i].y = events[j].RobotMoves.to.y
     } else if (events[j].RobotTurns) {
       let i = indexByName(events[j].RobotTurns.playerName)
       state[i].rotation = directionToRotation(events[j].RobotTurns.to)
+      frames.push(_.cloneDeep(state))
     } else if (events[j].RobotReset) {
       let i = indexByName(events[j].RobotReset.playerName)
+      state[i].alpha = 0.0
+      frames.push(_.cloneDeep(state))
       state[i].x = events[j].RobotReset.to.position.x
       state[i].y = events[j].RobotReset.to.position.y
       state[i].rotation = events[j].RobotReset.to.direction
+      frames.push(_.cloneDeep(state))
+      state[i].alpha = 1.0
+      frames.push(_.cloneDeep(state))
     } else if (events[j].PlayerFinished) {
       let i = indexByName(events[j].PlayerFinished.playerName)
       state[i].alpha = 0.0
+      frames.push(_.cloneDeep(state))
     }
   }
-  frames.push(_.cloneDeep(state))
   return frames
 }
 
@@ -18959,12 +18969,12 @@ function Game(element, player, gameId) {
     return function (event) {
       const serverState = JSON.parse(event.data)
       const oldState = state.game
-      const newEvents = _.drop(serverState.events, oldState.events.length)
+      const newCycle = oldState.cycle !== serverState.cycle
 
       state.animationStart = new Date()
-      state.animations = gameBoard.framesFromEvents(oldState, newEvents)
+      state.animations = gameBoard.framesFromEvents(oldState, _.last(serverState.events))
       state.game = serverState
-      if (newEvents.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) {
+      if (newCycle) {
         state.focusedSlot = undefined
       }
       renderState(state)

@@ -11,7 +11,6 @@ object Cycle{
       val o1 = Game.players composeTraversal each composeLens Player.instructionOptions set DealOptions()
       val o2 = Game.cycle modify (_ + 1)
       o1.andThen(o2)(afterEffects)
-        .addLogs(StartNextCycle(afterEffects.cycle + 1))
     case _ => gameState
   }
 
@@ -44,15 +43,14 @@ object Cycle{
   private def applyAction(game: Game, player: Player): Game = {
     val slot = player.instructionSlots.indexWhere(_.isDefined)
     val instruction = player.instructionOptions(player.instructionSlots(slot).get)
-    val g1 =game.addLogs(RobotAction(player.name, instruction))
     val afterInstruction = instruction match {
-      case TurnRight => Events.turn(player, player.robot.direction.right)(g1)
-      case TurnLeft => Events.turn(player, player.robot.direction.left)(g1)
-      case UTurn => Events.turn(player, player.robot.direction.back)(g1)
+      case TurnRight => Events.turn(player, player.robot.direction.right)(game)
+      case TurnLeft => Events.turn(player, player.robot.direction.left)(game)
+      case UTurn => Events.turn(player, player.robot.direction.back)(game)
 
-      case move: MoveInstruction => MoveRobots(player, move, g1)
+      case move: MoveInstruction => MoveRobots(player, move, game)
 
-      case Sleep => g1
+      case Sleep => game
     }
     (Game.player(player.name) composeLens Player.instructionSlots).modify(_.updated(slot, None))(afterInstruction)
   }

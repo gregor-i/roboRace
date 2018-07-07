@@ -18,7 +18,7 @@ object MoveRobots {
       case StepLeft => move(player.robot.position, player.robot.direction.left, game)
       case MoveTwiceForward =>
         val after1Move = move(player.robot.position, player.robot.direction, game)
-        val fallen = after1Move.events.collect{ case RobotReset(player.name, _, game.cycle) => true }.nonEmpty // todo: I need a better solution.
+        val fallen = after1Move.events.drop(game.cycle-1).headOption.getOrElse(Seq.empty).collect{ case RobotReset(player.name, _) => true }.nonEmpty // todo: I need a better solution.
         if(fallen) {
           after1Move
         }else{

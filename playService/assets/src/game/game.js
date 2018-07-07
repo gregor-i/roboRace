@@ -34,12 +34,12 @@ function Game(element, player, gameId) {
     return function (event) {
       const serverState = JSON.parse(event.data)
       const oldState = state.game
-      const newEvents = _.drop(serverState.events, oldState.events.length)
+      const newCycle = oldState.cycle !== serverState.cycle
 
       state.animationStart = new Date()
-      state.animations = gameBoard.framesFromEvents(oldState, newEvents)
+      state.animations = gameBoard.framesFromEvents(oldState, _.last(serverState.events))
       state.game = serverState
-      if (newEvents.find((event) => !!event.StartNextCycle || !!event.AllPlayersFinished)) {
+      if (newCycle) {
         state.focusedSlot = undefined
       }
       renderState(state)

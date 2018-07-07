@@ -1,22 +1,20 @@
 package gameLogic
 
-import gameLogic.gameUpdate.RobotPushed
+sealed trait EventLog
 
-sealed abstract class EventLog(val text: String)
+case class GameStarted() extends EventLog
 
-case class GameStarted() extends EventLog("Game Started")
+case class RobotMoves(playerName: String, transitions: Seq[RobotPositionTransition]) extends EventLog
+case class RobotTurns(playerName: String, to: Direction) extends EventLog
+case class MovementBlocked(playerName: String, position: Position, direction: Direction) extends EventLog
+case class RobotReset(playerName: String, to: Robot) extends EventLog
+case class PlayerFinished(playerName: String, stats: FinishedStatistic) extends EventLog
+case class PlayerRageQuitted(playerName: String) extends EventLog
+case class PlayerJoinedGame(playerName: String) extends EventLog
 
-case class RobotAction(playerName: String, instruction: Instruction) extends EventLog(s"'$playerName' does '$instruction'")
-case class RobotMoves(playerName: String, to: Position, push: Option[RobotPushed]) extends EventLog(s"'$playerName' moves to $to")
-case class RobotTurns(playerName: String, to: Direction) extends EventLog(s"'$playerName' turns $to")
-case class MovementBlocked(playerName: String, position: Position, direction: Direction) extends EventLog(s"The movement of '$playerName' is blocked")
-case class RobotReset(playerName: String, to: Robot, cycle: Int) extends EventLog(s"'$playerName' fell from the board and was resetted to ${to.position}")
-case class PlayerFinished(playerName: String, stats: FinishedStatistic) extends EventLog(s"'$playerName' reached the target as number ${stats.rank}")
-case class PlayerRageQuitted(playerName: String) extends EventLog(s"'$playerName' has left the game")
-case class PlayerJoinedGame(playerName: String) extends EventLog(s"'$playerName' has joined the game")
+case object AllPlayersFinished extends EventLog
 
-case class StartNextCycle(cycle: Int) extends EventLog("starting next cycle")
-case object AllPlayersFinished extends EventLog("All players reached the target")
+case class RobotPositionTransition(playerName: String, to: Position)
 
 sealed trait RejectionReason
 case object InvalidScenario extends RejectionReason

@@ -23,8 +23,8 @@ class GameController @Inject()(repo: GameRepository)
 
   def state(id: String) = Action {
     repo.get(id) match {
-      case Some(game) => Ok(game.asJson)
-      case None => NotFound
+      case Some(row) if row.game.isDefined => Ok(row.asJson)
+      case _ => NotFound
     }
   }
 
@@ -36,7 +36,7 @@ class GameController @Inject()(repo: GameRepository)
           case CommandAccepted(afterCommand) =>
             val afterCycle = Cycle(afterCommand)
             repo.save(row.copy(game = Some(afterCycle)))
-            if(afterCycle.events.size > row.game.get.events.size)
+            if(afterCycle.events != row.game.get.events)
               Source.single(afterCycle.asJson.noSpaces)
                 .runWith(SinkSourceCache.sink(id))
             Ok(afterCycle.asJson)
