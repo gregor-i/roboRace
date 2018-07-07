@@ -27,7 +27,7 @@ case object RegisterForGame extends Command {
       )
       CommandAccepted(
         Game.players.modify(players => players :+ newPlayer)(game)
-          .addLogs(PlayerJoinedGame(player))
+          .log(PlayerJoinedGame(player))
       )
   }
 }
@@ -42,13 +42,13 @@ case object DeregisterForGame extends Command {
     case game if game.cycle == 0 =>
       CommandAccepted(
         Game.players.modify(_.filter(_.name != player).zipWithIndex.map{case (player, index) => player.copy(index =index)})(game)
-        .addLogs(PlayerRageQuitted(player))
+        .log(PlayerRageQuitted(player))
       )
     case game =>
       CommandAccepted(
         (Game.player(player) composeLens Player.finished)
         .set(Some(FinishedStatistic(game.players.count(_.finished.isEmpty), game.cycle, true)))(game)
-          .addLogs(PlayerRageQuitted(player))
+          .log(PlayerRageQuitted(player))
       )
 
   }

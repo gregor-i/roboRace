@@ -9,10 +9,10 @@ case class Game(cycle: Int,
                 scenario: Scenario,
                 players: List[Player],
                 events: Seq[Seq[EventLog]]){
-  def addLogs(newEvents: EventLog*): Game = if(events.length > cycle)
-    copy(events = events.updated(cycle, events(cycle) ++ newEvents))
+  def log(newEvents: EventLog): Game = if(events.length > cycle)
+    copy(events = events.updated(cycle, events(cycle) :+ newEvents))
   else
-    copy(events = events :+ newEvents)
+    copy(events = events :+ Seq(newEvents))
 }
 
 object Game {

@@ -26,18 +26,18 @@ object Events {
         case None => pushed
       }
     }
-    loop(event, game).addLogs(asEvent(event))
+    loop(event, game).log(asEvent(event))
   }
 
   def turn(player: Player, nextDirection: Direction)(game: Game): Game =
     (robot(player.name) composeLens direction)
       .set(nextDirection)(game)
-      .addLogs(RobotTurns(player.name, nextDirection))
+      .log(RobotTurns(player.name, nextDirection))
 
   def reset(player: Player, initialRobot: Robot)(game: Game): Game =
     robot(player.name).set(initialRobot)
       .andThen((Game.player(player.name) composeLens Player.instructionSlots).set(Instruction.emptySlots))
       .apply(game)
-      .addLogs(RobotReset(player.name, initialRobot))
+      .log(RobotReset(player.name, initialRobot))
 
 }

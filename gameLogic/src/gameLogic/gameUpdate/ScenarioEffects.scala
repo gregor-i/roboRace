@@ -42,7 +42,7 @@ object ScenarioEffects {
         (Game.player(player.name) composeLens Player.finished)
           .set(Some(stats))
           .apply(game)
-          .addLogs(playerFinished)
+          .log(playerFinished)
     }
   }
 }

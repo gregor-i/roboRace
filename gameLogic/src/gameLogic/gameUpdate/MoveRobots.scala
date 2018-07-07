@@ -8,7 +8,7 @@ object MoveRobots {
         case Some(robotPushed) =>
           val afterPush = Events.move(robotPushed)(game)
           ScenarioEffects.afterMoveAction(afterPush)
-        case None => gameRunning.addLogs(MovementBlocked(player.name, player.robot.position, player.robot.direction))
+        case None => gameRunning.log(MovementBlocked(player.name, player.robot.position, player.robot.direction))
       }
 
     instruction match {
