@@ -65,12 +65,12 @@ function actions(state, action) {
       y--
       direction = {Down: {}}
     } else if (direction.UpLeft) {
-      if(x %2 === 0  && x !== 0)
+      if(x %2 === 0)
         y--
       x--
       direction = {DownRight: {}}
     } else if (direction.DownLeft) {
-      if(x %2 === 1 || x === 0)
+      if(x %2 === 1)
         y++
       x--
       direction = {UpRight: {}}
