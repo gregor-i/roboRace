@@ -103,6 +103,10 @@ function drawCanvas(canvas, scenario, robots) {
   scenario.walls.forEach(w =>
     centerOn(w.position.x, w.position.y, () => {
       ctx.fillStyle = 'DimGray'
+      ctx.shadowBlur = 20
+      ctx.shadowColor = "#383838"
+      ctx.shadowOffsetX = 5
+      ctx.shadowOffsetY = 5
       if (w.direction.Down) {
         ctx.fill(s.wallDown)
         ctx.stroke(s.wallDown)
