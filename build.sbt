@@ -14,7 +14,7 @@ def folderSettings = Seq(
   scalaSource in Test := baseDirectory.value / "test"
 )
 
-def scalaTest = libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % Test
+def scalaTest = libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
 
 def monocle = Seq(
   libraryDependencies ++= Seq(
@@ -22,5 +22,5 @@ def monocle = Seq(
     "com.github.julien-truffaut" %% "monocle-macro" % "1.5.0",
     "com.github.julien-truffaut" %% "monocle-law" % "1.5.0" % Test
   ),
-  addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full)
+  addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full)
 )

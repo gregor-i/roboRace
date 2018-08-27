@@ -1,8 +1,8 @@
 enablePlugins(PlayScala)
 
 libraryDependencies += guice
-libraryDependencies += "com.dripower" %% "play-circe" % "2609.0"
-libraryDependencies += "org.postgresql" % "postgresql" % "42.2.2"
+libraryDependencies += "com.dripower" %% "play-circe" % "2609.1"
+libraryDependencies += "org.postgresql" % "postgresql" % "42.2.4"
 libraryDependencies += evolutions
 libraryDependencies += jdbc
 libraryDependencies += "org.playframework.anorm" %% "anorm" % "2.6.2"

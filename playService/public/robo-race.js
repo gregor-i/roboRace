@@ -18566,12 +18566,17 @@ function drawCanvas(canvas, scenario, robots) {
     })
   )
 
-  // robots:
+    // robots:
   if (_.isArray(robots)) {
     robots.forEach(robot =>
       centerOn(robot.x, robot.y, () => {
         ctx.globalAlpha = robot.alpha
         ctx.rotate(robot.rotation)
+        ctx.shadowBlur = 20
+        ctx.shadowColor = "#383838"
+        ctx.shadowOffsetX = 10
+        ctx.shadowOffsetY = 10
+        console.log(ctx)
         ctx.drawImage(images.player(robot.index), -tile / 4, -tile / 4, tile / 2, tile / 2)
       })
     )
@@ -18583,6 +18588,10 @@ function drawCanvas(canvas, scenario, robots) {
       centerOnInterpolated(current.x, current.y, next.x, next.y, frameProgress, () => {
         ctx.globalAlpha = interpolate(current.alpha, next.alpha, frameProgress)
         ctx.rotate(interpolateAngle(current.rotation, next.rotation, frameProgress))
+        ctx.shadowBlur = 20
+        ctx.shadowColor = "#383838"
+        ctx.shadowOffsetX = 10
+        ctx.shadowOffsetY = 10
         ctx.drawImage(images.player(current.index), -tile / 4, -tile / 4, tile / 2, tile / 2)
       })
     }
