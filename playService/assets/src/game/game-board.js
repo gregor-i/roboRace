@@ -124,7 +124,7 @@ function drawCanvas(canvas, scenario, robots) {
       centerOn(robot.x, robot.y, () => {
         ctx.globalAlpha = robot.alpha
         ctx.rotate(robot.rotation)
-        ctx.drawImage(images.player(robot.index), -tile / 2, -tile / 2, tile, tile)
+        ctx.drawImage(images.player(robot.index), -tile / 4, -tile / 4, tile / 2, tile / 2)
       })
     )
   } else if (_.has(robots, 'currentFrame') && _.has(robots, 'nextFrame') && _.has(robots, 'frameProgress')) {
@@ -135,7 +135,7 @@ function drawCanvas(canvas, scenario, robots) {
       centerOnInterpolated(current.x, current.y, next.x, next.y, frameProgress, () => {
         ctx.globalAlpha = interpolate(current.alpha, next.alpha, frameProgress)
         ctx.rotate(interpolateAngle(current.rotation, next.rotation, frameProgress))
-        ctx.drawImage(images.player(current.index), -tile / 2, -tile / 2, tile, tile)
+        ctx.drawImage(images.player(current.index), -tile / 4, -tile / 4, tile / 2, tile / 2)
       })
     }
   }
