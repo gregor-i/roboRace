@@ -21,10 +21,11 @@ function render(state, actionHandler) {
         closeAction)
 
   const game = state.game
+  const playerIndex = _.get(game.players.find(p => p.name === state.player), "index")
   return h('div', [
     fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
     fab('.fab-left-1', images.iconReplayAnimation, [actionHandler, {replayAnimations: state.animations}]),
-    fab('.fab-left-2', images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),
+    fab('.fab-left-2', playerIndex !== undefined ? images.player(playerIndex) : images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),
     h('div.game-board', gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), {
       animationStart: state.animationStart,
       frames: state.animations
