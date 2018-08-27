@@ -31,26 +31,14 @@ function interpolateAngle(a0, a1, t) {
 function drawCanvas(canvas, scenario, robots) {
   const ctx = canvas.getContext("2d")
 
-  const rect = canvas.getBoundingClientRect()
-  const width = rect.width
-  const height = rect.height
-  canvas.width = width
-  canvas.height = height
+  const tile = 50
+  const wall = 8
 
-  const wallFactor = 0.1
-
-  const kWidth = scenario.width * 0.75  + (scenario.width - 1) * wallFactor * k + 0.25
-  const kHeight = scenario.height * k + (scenario.height - 1) * wallFactor * k + 0.5 + wallFactor * 2
-
-  const tile = Math.min(height / kHeight, width / kWidth)
-  const offsetTop = (canvas.height - tile * kHeight) / 2
-  const offsetLeft = (canvas.width - tile * kWidth) / 2
-
-  const deltaLeft = 0.75 * tile + tile * wallFactor*k
-  const deltaTop = tile * k + tile * wallFactor
+  const deltaLeft = 0.75 * tile + wall*k
+  const deltaTop = tile * k + wall
 
   function left(x, y) {
-    return offsetLeft + deltaLeft * x + tile /2
+    return deltaLeft * x + tile /2
   }
 
   function top(x, y) {
@@ -60,10 +48,13 @@ function drawCanvas(canvas, scenario, robots) {
       else return m
     }
 
-    return offsetTop + deltaTop * (y + saw(x) / 2) + tile /2
+    return deltaTop * (y + saw(x) / 2) + tile /2
   }
 
-  const s = shapes(tile, wallFactor)
+  canvas.width = left(scenario.width, 1)
+  canvas.height = top(0, scenario.height)
+
+  const s = shapes(tile, wall)
 
   function centerOn(x, y, callback) {
     // the same as:
@@ -132,7 +123,6 @@ function drawCanvas(canvas, scenario, robots) {
         ctx.shadowColor = "#383838"
         ctx.shadowOffsetX = 10
         ctx.shadowOffsetY = 10
-        console.log(ctx)
         ctx.drawImage(images.player(robot.index), -tile / 4, -tile / 4, tile / 2, tile / 2)
       })
     )
@@ -256,7 +246,7 @@ function onClickCanvas(scenario, options) {
 
 
 function renderCanvas(scenario, robots, options) {
-  return h('canvas.game-view', {
+  return h('canvas', {
       on : {click: onClickCanvas(scenario, options)},
       hook: {
         postpatch: (oldVnode, newVnode) => {

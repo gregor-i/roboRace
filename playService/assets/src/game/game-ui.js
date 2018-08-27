@@ -22,7 +22,7 @@ function render(state, actionHandler) {
 
   const game = state.game
   const playerIndex = _.get(game.players.find(p => p.name === state.player), "index")
-  return h('div', [
+  return h('div.game', [
     fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
     fab('.fab-left-1', images.iconReplayAnimation, [actionHandler, {replayAnimations: state.animations}]),
     fab('.fab-left-2', playerIndex !== undefined ? images.player(playerIndex) : images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),

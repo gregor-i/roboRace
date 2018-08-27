@@ -9,9 +9,8 @@ function degree(a) {
   return a * Math.PI / 180
 }
 
-function shapes(tile, wallFactor) {
+function shapes(tile, wall) {
   const th = tile / 2
-  const wall = wallFactor * th * 2
   const wallCenter = wall / Math.sqrt(3)
 
   function wallShape(angle) {
