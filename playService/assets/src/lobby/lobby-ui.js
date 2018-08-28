@@ -2,17 +2,13 @@ const h = require('snabbdom/h').default
 const button = require('../common/button')
 const modal = require('../common/modal')
 const frame = require('../common/frame')
-const gameBoard = require('../game/game-board')
-
 
 function render(state, actionHandler) {
   let m = null
   if (!state.player) {
     m = renderLoginModal(state.player, actionHandler)
   } else if (state.previewScenario) {
-    m = modal(h('div.modal-maximized',
-      gameBoard.renderCanvas(state.previewScenario, state.previewScenario.initialRobots.map(gameBoard.robotFromInitial), {}),
-    ), [actionHandler, {closeModal: true}])
+    m = modal(renderBackendPreview(state.previewScenario), [actionHandler, {closeModal: true}])
   }
 
 
@@ -26,6 +22,10 @@ function render(state, actionHandler) {
     undefined,
     m
   )
+}
+
+function renderBackendPreview(scenarioId){
+  return h('img.scenario-preview', {props: {src: '/api/scenarios/'+scenarioId+'/svg'}})
 }
 
 function renderGameTable(state, games, actionHandler) {
@@ -62,7 +62,7 @@ function renderScenarioList(player, scenarios, actionHandler) {
       h('td', button.group(
         button.primary(actionHandler, {createGame: row.scenario}, 'Start Game'),
         button.builder(actionHandler, {editScenario: row.id}, 'Edit'),
-        button.builder(actionHandler, {previewScenario: row.scenario}, 'Preview'),
+        button.builder(actionHandler, {previewScenario: row.id}, 'Preview'),
         button.builder.disabled(row.owner !== player)(actionHandler, {deleteScenario: true, id: row.id}, 'Delete')
       ))
     ]))

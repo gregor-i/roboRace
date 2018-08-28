@@ -2,7 +2,6 @@ const _ = require('lodash')
 const h = require('snabbdom/h').default
 const images = require('../common/images')
 const constants = require('../common/constants')
-const shapes = require('./shapes')
 
 const k = Math.sqrt(3) / 2
 
@@ -32,10 +31,9 @@ function drawCanvas(canvas, scenario, robots) {
   const ctx = canvas.getContext("2d")
 
   const tile = 50
-  const wall = 8
 
-  const deltaLeft = 0.75 * tile + wall*k
-  const deltaTop = tile * k + wall
+  const deltaLeft = 0.75 * tile
+  const deltaTop = tile * k
 
   function left(x, y) {
     return deltaLeft * x + tile /2
@@ -51,10 +49,15 @@ function drawCanvas(canvas, scenario, robots) {
     return deltaTop * (y + saw(x) / 2) + tile /2
   }
 
-  canvas.width = left(scenario.width, 1)
-  canvas.height = top(0, scenario.height)
+  function imageAt(image, x, y, factor){
+    if(factor)
+      ctx.drawImage(image, left(x, y) - factor*tile, top(x, y) - factor*tile, factor*2*tile, factor*2*tile)
+    else
+      ctx.drawImage(image, left(x, y) - tile, top(x, y) - tile, 2*tile, 2*tile)
+  }
 
-  const s = shapes(tile, wall)
+  canvas.width = left(scenario.width, 1)
+  canvas.height = top(0, scenario.height) + 15
 
   function centerOn(x, y, callback) {
     // the same as:
@@ -75,45 +78,34 @@ function drawCanvas(canvas, scenario, robots) {
 
   // tiles:
   for (let y = 0; y < scenario.height; y++)
-    for (let x = 0; x < scenario.width; x++)
-      centerOn(x, y, () => {
-        if (scenario.pits.find(p => p.x === x && p.y === y))
-          return
-
-       ctx.fillStyle = 'rgb(240, 248, 255)'
-       ctx.fill(s.hex)
-       ctx.stroke(s.hex)
-      })
+    for (let x = 0; x < scenario.width; x++) {
+      if (scenario.pits.find(p => p.x === x && p.y === y))
+        continue
+      imageAt(images.tile, x, y)
+    }
 
   // target:
-  centerOn(scenario.targetPosition.x, scenario.targetPosition.y, () => {
-    ctx.drawImage(images.target, -tile / 4, -tile / 2 / 2, tile / 2, tile / 2)
-  })
+  imageAt(images.target, scenario.targetPosition.x, scenario.targetPosition.y, 0.25)
 
   // walls:
-  scenario.walls.forEach(w =>
-    centerOn(w.position.x, w.position.y, () => {
-      ctx.fillStyle = 'DimGray'
-      ctx.shadowBlur = 20
-      ctx.shadowColor = "#383838"
-      ctx.shadowOffsetX = 5
-      ctx.shadowOffsetY = 5
-      if (w.direction.Down) {
-        ctx.fill(s.wallDown)
-        ctx.stroke(s.wallDown)
-      } else if (w.direction.DownRight) {
-        ctx.fill(s.wallDownRight)
-        ctx.stroke(s.wallDownRight)
-      } else if (w.direction.UpRight) {
-        ctx.fill(s.wallUpRight)
-        ctx.stroke(s.wallUpRight)
-      } else {
-        console.error("unknown wall direction")
-      }
-    })
-  )
+  ctx.fillStyle = 'DimGray'
+  ctx.shadowBlur = 10
+  ctx.shadowColor = "#383838"
+  ctx.shadowOffsetX = 2
+  ctx.shadowOffsetY = 2
+  scenario.walls.forEach(w => {
+    if (w.direction.Down) {
+      imageAt(images.wallDown, w.position.x, w.position.y)
+    } else if (w.direction.DownRight) {
+      imageAt(images.wallDownRight, w.position.x, w.position.y)
+    } else if (w.direction.UpRight) {
+      imageAt(images.wallUpRight, w.position.x, w.position.y)
+    } else {
+      console.error("unknown wall direction")
+    }
+  })
 
-    // robots:
+  // robots:
   if (_.isArray(robots)) {
     robots.forEach(robot =>
       centerOn(robot.x, robot.y, () => {

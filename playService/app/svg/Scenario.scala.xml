@@ -1,0 +1,108 @@
+@(scenario: gameLogic.Scenario)
+
+@import svg.SVGRenderingConstants._
+@import gameLogic._
+@import svg.PolarCoordinates
+
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="@{width(scenario)}"
+     height="@{height(scenario)}"
+     viewBox="0 0 @{width(scenario)} @{height(scenario)}">
+  <defs>
+    <polygon id="hex"
+             points="@{PolarCoordinates(0, 0.5).svg}
+                     @{PolarCoordinates(60, 0.5).svg}
+                     @{PolarCoordinates(120, 0.5).svg}
+                     @{PolarCoordinates(180, 0.5).svg}
+                     @{PolarCoordinates(240, 0.5).svg}
+                     @{PolarCoordinates(300, 0.5).svg}"/>
+
+    <clipPath id="hexagon-cutout">
+      <use href="#hex"/>
+    </clipPath>
+
+    <linearGradient id="stroke-gradient" x1="4.425%" x2="98.163%" y1="3.974%" y2="97.917%">
+      <stop offset="0%" stop-color="#FFF"/>
+      <stop offset="100%" stop-color="#AFAFAF"/>
+    </linearGradient>
+
+    <use id="tile"
+         href="#hex"
+         clip-path="url(#hexagon-cutout)"
+         fill="#EAEAEA"
+         stroke="url(#stroke-gradient)" stroke-width="0.07"/>
+
+    @defining(PolarCoordinates(60, 0.5)){ corner =>
+      @defining(PolarCoordinates(60, 0.07)){ diff =>
+        <polygon id="wall"
+                 points="@{corner.x} @{corner.y}
+                         @{corner.x - diff.x} @{corner.y - diff.y}
+                         @{-corner.x + diff.x} @{corner.y - diff.y}
+                         @{-corner.x} @{corner.y}
+                         @{-corner.x + diff.x} @{corner.y + diff.y}
+                         @{corner.x - diff.x} @{corner.y + diff.y}"/>
+      }
+    }
+
+    <path id="target"
+          d="M6,3A1,1 0 0,1 7,4V4.88C8.06,4.44 9.5,4 11,4C14,4 14,6 16,6C19,6 20,4 20,4V12C20,12 19,14 16,14C13,14 13,12 11,12C8,12 7,14 7,14V21H5V4A1,1 0 0,1 6,3M7,7.25V11.5C7,11.5 9,10 11,10C13,10 14,12 16,12C18,12 18,11 18,11V7.5C18,7.5 17,8 16,8C14,8 13,6 11,6C9,6 7,7.25 7,7.25Z"
+          transform="scale(0.66) translate(-0.5 -0.5) scale(@{1.0/24})"/>
+
+    <g id="robot" fill-rule="evenodd" transform="scale(0.6) translate(-0.5 -0.5) scale(@{1.0/32}) translate(2 6)">
+      <circle cx="14" cy="13" r="7" />
+      <path d="M4 0v16H0V0zM28 0v16h-4V0z"/>
+      <path d="M2 8l8 4v5l-8-3zM25 8l-8 4v5l8-3zM9 3h1v6H9zM18 3h1v6h-1z"/>
+      <path fill="#FFF" d="M12.012 9.46a1 1 0 0 0-1.732 1c.277.48 2.009-.52 1.732-1zM17.72 10.46a1 1 0 0 0-1.732-1c-.277.48 1.455 1.48 1.732 1z"/>
+      <path d="M7 15h14v5.333L14 23l-7-2.667z"/>
+    </g>
+  </defs>
+
+@useTile(x: Int, y: Int) = {
+  <use href="#tile" transform="translate(@{left(x, y)} @{top(x, y)})"/>
+}
+
+@useWall(x: Int, y: Int, angle: Int) = {
+  <use href="#wall"
+       fill="grey"
+       stroke="black" stroke-width="0.02"
+       transform="translate(@{left(x, y)} @{top(x, y)}), rotate(@{angle})"/>
+}
+
+@useTarget(x: Int, y:Int) = {
+  <use href="#target"
+       fill="black"
+       transform="translate(@{left(x,y)} @{top(x,y)})"/>
+
+}
+
+@useRobot(x: Int, y: Int, color: String, rotation: Int) = {
+  <use href="#robot"
+       fill="@{color}"
+       transform="translate(@{left(x,y)} @{top(x,y)}) rotate(@{rotation})"/>
+}
+
+  <g transform="scale(@{tile}) translate(0.5 0.5)">
+    @for(x <- 0 until scenario.width) {
+      @for(y <- 0 until scenario.height) {
+        @if(!scenario.pits.contains(Position(x, y))) {
+           @useTile(x,y)
+        }
+      }
+    }
+
+    @for(w <- scenario.walls) {
+      @{w.direction match {
+        case UpRight => useWall(w.position.x, w.position.y, -120)
+        case DownRight => useWall(w.position.x, w.position.y, -60)
+        case Down => useWall(w.position.x, w.position.y, -0)
+      }}
+    }
+
+    @useTarget(scenario.targetPosition.x, scenario.targetPosition.y)
+
+    @for((robot, index) <- scenario.initialRobots.zipWithIndex) {
+      @useRobot(robot.position.x, robot.position.y, robotColor(index), directionToRotation(robot.direction))
+    }
+  </g>
+
+</svg>

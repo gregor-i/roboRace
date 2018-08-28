@@ -65,12 +65,6 @@ html, body{
   width: 100%;
 }
 
-.modal-maximized {
-  display: flex;
-  width: 100%;
-  height: 80vh;,
-}
-
 .fab {
   width: 48px;
   height: 48px;
@@ -198,4 +192,10 @@ html, body{
   overflow-x: auto;
   margin: 4px;
   font-size: 30px;
+}
+
+.scenario-preview{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }

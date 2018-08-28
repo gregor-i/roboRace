@@ -18090,6 +18090,12 @@ const iconClose = image('/assets/ic-close.svg')
 const iconGamerlist = image('/assets/ic-gamerlist.svg')
 const iconReplayAnimation = image('/assets/ic-replay-animation.svg')
 
+const tile = image('/assets/tile.svg')
+
+const wallDown = image('/assets/wall-down.svg')
+const wallDownRight = image('/assets/wall-down-right.svg')
+const wallUpRight = image('/assets/wall-up-right.svg')
+
 const player1 = image('/assets/player1.svg')
 const player2 = image('/assets/player2.svg')
 const player3 = image('/assets/player3.svg')
@@ -18098,7 +18104,7 @@ const player5 = image('/assets/player5.svg')
 const player6 = image('/assets/player6.svg')
 
 // https://materialdesignicons.com/icon/flag-variant-outline
-const target = image('/assets/target.png')
+const target = image('/assets/target.svg')
 
 
 function player(index){
@@ -18138,7 +18144,8 @@ function action(name) {
 
 module.exports = {
   player, target, action,
-  iconClose, iconGamerlist, iconReplayAnimation
+  iconClose, iconGamerlist, iconReplayAnimation,
+  tile, wallDown, wallUpRight, wallDownRight
 }
 
 },{}],17:[function(require,module,exports){
@@ -18450,7 +18457,6 @@ const _ = require('lodash')
 const h = require('snabbdom/h').default
 const images = require('../common/images')
 const constants = require('../common/constants')
-const shapes = require('./shapes')
 
 const k = Math.sqrt(3) / 2
 
@@ -18480,10 +18486,9 @@ function drawCanvas(canvas, scenario, robots) {
   const ctx = canvas.getContext("2d")
 
   const tile = 50
-  const wall = 8
 
-  const deltaLeft = 0.75 * tile + wall*k
-  const deltaTop = tile * k + wall
+  const deltaLeft = 0.75 * tile
+  const deltaTop = tile * k
 
   function left(x, y) {
     return deltaLeft * x + tile /2
@@ -18499,10 +18504,15 @@ function drawCanvas(canvas, scenario, robots) {
     return deltaTop * (y + saw(x) / 2) + tile /2
   }
 
-  canvas.width = left(scenario.width, 1)
-  canvas.height = top(0, scenario.height)
+  function imageAt(image, x, y, factor){
+    if(factor)
+      ctx.drawImage(image, left(x, y) - factor*tile, top(x, y) - factor*tile, factor*2*tile, factor*2*tile)
+    else
+      ctx.drawImage(image, left(x, y) - tile, top(x, y) - tile, 2*tile, 2*tile)
+  }
 
-  const s = shapes(tile, wall)
+  canvas.width = left(scenario.width, 1)
+  canvas.height = top(0, scenario.height) + 15
 
   function centerOn(x, y, callback) {
     // the same as:
@@ -18523,45 +18533,34 @@ function drawCanvas(canvas, scenario, robots) {
 
   // tiles:
   for (let y = 0; y < scenario.height; y++)
-    for (let x = 0; x < scenario.width; x++)
-      centerOn(x, y, () => {
-        if (scenario.pits.find(p => p.x === x && p.y === y))
-          return
-
-       ctx.fillStyle = 'rgb(240, 248, 255)'
-       ctx.fill(s.hex)
-       ctx.stroke(s.hex)
-      })
+    for (let x = 0; x < scenario.width; x++) {
+      if (scenario.pits.find(p => p.x === x && p.y === y))
+        continue
+      imageAt(images.tile, x, y)
+    }
 
   // target:
-  centerOn(scenario.targetPosition.x, scenario.targetPosition.y, () => {
-    ctx.drawImage(images.target, -tile / 4, -tile / 2 / 2, tile / 2, tile / 2)
-  })
+  imageAt(images.target, scenario.targetPosition.x, scenario.targetPosition.y, 0.25)
 
   // walls:
-  scenario.walls.forEach(w =>
-    centerOn(w.position.x, w.position.y, () => {
-      ctx.fillStyle = 'DimGray'
-      ctx.shadowBlur = 20
-      ctx.shadowColor = "#383838"
-      ctx.shadowOffsetX = 5
-      ctx.shadowOffsetY = 5
-      if (w.direction.Down) {
-        ctx.fill(s.wallDown)
-        ctx.stroke(s.wallDown)
-      } else if (w.direction.DownRight) {
-        ctx.fill(s.wallDownRight)
-        ctx.stroke(s.wallDownRight)
-      } else if (w.direction.UpRight) {
-        ctx.fill(s.wallUpRight)
-        ctx.stroke(s.wallUpRight)
-      } else {
-        console.error("unknown wall direction")
-      }
-    })
-  )
+  ctx.fillStyle = 'DimGray'
+  ctx.shadowBlur = 10
+  ctx.shadowColor = "#383838"
+  ctx.shadowOffsetX = 2
+  ctx.shadowOffsetY = 2
+  scenario.walls.forEach(w => {
+    if (w.direction.Down) {
+      imageAt(images.wallDown, w.position.x, w.position.y)
+    } else if (w.direction.DownRight) {
+      imageAt(images.wallDownRight, w.position.x, w.position.y)
+    } else if (w.direction.UpRight) {
+      imageAt(images.wallUpRight, w.position.x, w.position.y)
+    } else {
+      console.error("unknown wall direction")
+    }
+  })
 
-    // robots:
+  // robots:
   if (_.isArray(robots)) {
     robots.forEach(robot =>
       centerOn(robot.x, robot.y, () => {
@@ -18772,7 +18771,7 @@ module.exports = {
   renderCanvas, robotFromPlayer, robotFromInitial, framesFromEvents
 }
 
-},{"../common/constants":14,"../common/images":16,"./shapes":28,"lodash":2,"snabbdom/h":3}],25:[function(require,module,exports){
+},{"../common/constants":14,"../common/images":16,"lodash":2,"snabbdom/h":3}],25:[function(require,module,exports){
 const headers = require('../common/service-headers')
 
 function getState(gameId) {
@@ -19020,53 +19019,6 @@ function Game(element, player, gameId) {
 module.exports = Game
 
 },{"./game-actions":23,"./game-board":24,"./game-service":25,"./game-ui":26,"lodash":2,"snabbdom":10,"snabbdom/modules/class":6,"snabbdom/modules/eventlisteners":7,"snabbdom/modules/props":8,"snabbdom/modules/style":9}],28:[function(require,module,exports){
-// left = 0
-function x(angle, size){
-  return -Math.cos(degree(angle)) *size
-}
-function y(angle, size){
-  return -Math.sin(degree(angle)) * size
-}
-function degree(a) {
-  return a * Math.PI / 180
-}
-
-function shapes(tile, wall) {
-  const th = tile / 2
-  const wallCenter = wall / Math.sqrt(3)
-
-  function wallShape(angle) {
-    const w = new Path2D()
-    w.moveTo(x(angle - 30, th), y(angle - 30, th))
-    w.lineTo(x(angle + 30, th), y(angle + 30, th))
-    w.lineTo(x(angle + 30, th + wallCenter), y(angle + 30, th + wallCenter))
-    w.lineTo(x(angle + 30, th) + x(angle, wall), y(angle + 30, th) + y(angle, wall))
-    w.lineTo(x(angle - 30, th) + x(angle, wall), y(angle - 30, th) + y(angle, wall))
-    w.lineTo(x(angle - 30, th + wallCenter), y(angle - 30, th + wallCenter))
-    w.closePath()
-    return w
-  }
-
-  const hex = new Path2D()
-  hex.moveTo(x(0, th), y(0, th))
-  hex.lineTo(x(60, th), y(60, th))
-  hex.lineTo(x(120, th), y(120, th))
-  hex.lineTo(x(180, th), y(180, th))
-  hex.lineTo(x(240, th), y(240, th))
-  hex.lineTo(x(300, th), y(300, th))
-  hex.closePath()
-
-  return {
-    hex,
-    wallUpRight: wallShape(150),
-    wallDownRight: wallShape(210),
-    wallDown: wallShape(270)
-  }
-}
-
-module.exports = shapes
-
-},{}],29:[function(require,module,exports){
 const Lobby = require('./lobby/lobby')
 const Game = require('./game/game')
 const Cookie = require('js-cookie')
@@ -19088,7 +19040,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.write('unknown mode')
 })
 
-},{"./editor/editor":22,"./game/game":27,"./lobby/lobby":33,"js-cookie":1}],30:[function(require,module,exports){
+},{"./editor/editor":22,"./game/game":27,"./lobby/lobby":32,"js-cookie":1}],29:[function(require,module,exports){
 const _ = require('lodash')
 const lobbyService = require('./lobby-service')
 const editorService = require('../editor/editor-service')
@@ -19128,7 +19080,7 @@ function actions(state, action) {
 
 module.exports = actions
 
-},{"../editor/editor-service":20,"./lobby-service":31,"js-cookie":1,"lodash":2}],31:[function(require,module,exports){
+},{"../editor/editor-service":20,"./lobby-service":30,"js-cookie":1,"lodash":2}],30:[function(require,module,exports){
 const headers = require('../common/service-headers')
 
 function getAllGames() {
@@ -19162,22 +19114,18 @@ module.exports = {
   updates
 }
 
-},{"../common/service-headers":18}],32:[function(require,module,exports){
+},{"../common/service-headers":18}],31:[function(require,module,exports){
 const h = require('snabbdom/h').default
 const button = require('../common/button')
 const modal = require('../common/modal')
 const frame = require('../common/frame')
-const gameBoard = require('../game/game-board')
-
 
 function render(state, actionHandler) {
   let m = null
   if (!state.player) {
     m = renderLoginModal(state.player, actionHandler)
   } else if (state.previewScenario) {
-    m = modal(h('div.modal-maximized',
-      gameBoard.renderCanvas(state.previewScenario, state.previewScenario.initialRobots.map(gameBoard.robotFromInitial), {}),
-    ), [actionHandler, {closeModal: true}])
+    m = modal(renderBackendPreview(state.previewScenario), [actionHandler, {closeModal: true}])
   }
 
 
@@ -19191,6 +19139,10 @@ function render(state, actionHandler) {
     undefined,
     m
   )
+}
+
+function renderBackendPreview(scenarioId){
+  return h('img.scenario-preview', {props: {src: '/api/scenarios/'+scenarioId+'/svg'}})
 }
 
 function renderGameTable(state, games, actionHandler) {
@@ -19227,7 +19179,7 @@ function renderScenarioList(player, scenarios, actionHandler) {
       h('td', button.group(
         button.primary(actionHandler, {createGame: row.scenario}, 'Start Game'),
         button.builder(actionHandler, {editScenario: row.id}, 'Edit'),
-        button.builder(actionHandler, {previewScenario: row.scenario}, 'Preview'),
+        button.builder(actionHandler, {previewScenario: row.id}, 'Preview'),
         button.builder.disabled(row.owner !== player)(actionHandler, {deleteScenario: true, id: row.id}, 'Delete')
       ))
     ]))
@@ -19267,7 +19219,7 @@ function renderLoginModal(player, actionHandler) {
 
 module.exports = render
 
-},{"../common/button":13,"../common/frame":15,"../common/modal":17,"../game/game-board":24,"snabbdom/h":3}],33:[function(require,module,exports){
+},{"../common/button":13,"../common/frame":15,"../common/modal":17,"snabbdom/h":3}],32:[function(require,module,exports){
 const snabbdom = require('snabbdom')
 const patch = snabbdom.init([
   require('snabbdom/modules/eventlisteners').default,
@@ -19317,4 +19269,4 @@ function Lobby(element, player) {
 
 module.exports = Lobby
 
-},{"../editor/editor-service":20,"./lobby-actions":30,"./lobby-service":31,"./lobby-ui":32,"snabbdom":10,"snabbdom/modules/class":6,"snabbdom/modules/eventlisteners":7,"snabbdom/modules/props":8,"snabbdom/modules/style":9}]},{},[29]);
+},{"../editor/editor-service":20,"./lobby-actions":29,"./lobby-service":30,"./lobby-ui":31,"snabbdom":10,"snabbdom/modules/class":6,"snabbdom/modules/eventlisteners":7,"snabbdom/modules/props":8,"snabbdom/modules/style":9}]},{},[28]);

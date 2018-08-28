@@ -10,6 +10,7 @@ GET           /api/games/:id/events               controller.GameController.sse(
 
 GET           /api/scenarios                      controller.ScenarioController.get()
 GET           /api/scenarios/:id                  controller.ScenarioController.getSingle(id:String)
+GET           /api/scenarios/:id/svg              controller.ScenarioController.scenarioSvg(id:String)
 POST          /api/scenarios                      controller.ScenarioController.post()
 DELETE        /api/scenarios/:id                  controller.ScenarioController.delete(id: String)
 

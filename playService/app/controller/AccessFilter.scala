@@ -13,7 +13,7 @@ class AccessFilter @Inject()()(implicit val mat: Materializer, ex: ExecutionCont
 
   override def apply(f: RequestHeader => Future[Result])(rh: RequestHeader): Future[Result] = {
     f(rh).map { resp =>
-      Logger.info(s"${rh.method} to ${rh.path} returned ${resp.header.status}. ${rh.cookies.map(c => c.name + ": " + c.value).mkString(", ")}")
+      Logger.info(s"${rh.method} to ${rh.path} returned ${resp.header.status}")
       resp
     }
   }
