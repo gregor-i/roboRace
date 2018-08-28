@@ -2,6 +2,7 @@ const h = require('snabbdom/h').default
 const button = require('../common/button')
 const modal = require('../common/modal')
 const frame = require('../common/frame')
+const images = require('../common/images')
 
 function render(state, actionHandler) {
   let m = null
@@ -25,7 +26,7 @@ function render(state, actionHandler) {
 }
 
 function renderBackendPreview(scenarioId){
-  return h('img.scenario-preview', {props: {src: '/api/scenarios/'+scenarioId+'/svg'}})
+  return h('img.scenario-preview', {props: {src: images.scenarioImage(scenarioId).src}})
 }
 
 function renderGameTable(state, games, actionHandler) {

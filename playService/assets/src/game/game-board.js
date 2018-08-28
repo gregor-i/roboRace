@@ -49,15 +49,8 @@ function drawCanvas(canvas, scenario, robots) {
     return deltaTop * (y + saw(x) / 2) + tile /2
   }
 
-  function imageAt(image, x, y, factor){
-    if(factor)
-      ctx.drawImage(image, left(x, y) - factor*tile, top(x, y) - factor*tile, factor*2*tile, factor*2*tile)
-    else
-      ctx.drawImage(image, left(x, y) - tile, top(x, y) - tile, 2*tile, 2*tile)
-  }
-
-  canvas.width = left(scenario.width, 1)
-  canvas.height = top(0, scenario.height) + 15
+  canvas.width = left(scenario.width, 0) + deltaLeft - tile
+  canvas.height = top(0, scenario.height) //+0.5*tile
 
   function centerOn(x, y, callback) {
     // the same as:
@@ -75,35 +68,6 @@ function drawCanvas(canvas, scenario, robots) {
     callback()
     ctx.restore()
   }
-
-  // tiles:
-  for (let y = 0; y < scenario.height; y++)
-    for (let x = 0; x < scenario.width; x++) {
-      if (scenario.pits.find(p => p.x === x && p.y === y))
-        continue
-      imageAt(images.tile, x, y)
-    }
-
-  // target:
-  imageAt(images.target, scenario.targetPosition.x, scenario.targetPosition.y, 0.25)
-
-  // walls:
-  ctx.fillStyle = 'DimGray'
-  ctx.shadowBlur = 10
-  ctx.shadowColor = "#383838"
-  ctx.shadowOffsetX = 2
-  ctx.shadowOffsetY = 2
-  scenario.walls.forEach(w => {
-    if (w.direction.Down) {
-      imageAt(images.wallDown, w.position.x, w.position.y)
-    } else if (w.direction.DownRight) {
-      imageAt(images.wallDownRight, w.position.x, w.position.y)
-    } else if (w.direction.UpRight) {
-      imageAt(images.wallUpRight, w.position.x, w.position.y)
-    } else {
-      console.error("unknown wall direction")
-    }
-  })
 
   // robots:
   if (_.isArray(robots)) {
@@ -237,8 +201,9 @@ function onClickCanvas(scenario, options) {
 }
 
 
-function renderCanvas(scenario, robots, options) {
+function renderCanvas(scenario, robots, options, gameId) {
   return h('canvas', {
+      style: {"background" : "url("+images.gameImage(gameId).src+")"},
       on : {click: onClickCanvas(scenario, options)},
       hook: {
         postpatch: (oldVnode, newVnode) => {

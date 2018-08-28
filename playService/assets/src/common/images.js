@@ -60,8 +60,21 @@ function action(name) {
   }
 }
 
+function scenarioImage(scenarioId){
+  return image('/api/scenarios/'+scenarioId+'/svg')
+}
+
+const gameImageCache = {}
+function gameImage(gameId){
+  if(!gameImageCache[gameId])
+    gameImageCache[gameId] = image('/api/games/'+gameId+'/svg')
+
+  return gameImageCache[gameId]
+}
+
 module.exports = {
   player, target, action,
   iconClose, iconGamerlist, iconReplayAnimation,
-  tile, wallDown, wallUpRight, wallDownRight
+  tile, wallDown, wallUpRight, wallDownRight,
+  scenarioImage, gameImage
 }

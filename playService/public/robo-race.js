@@ -18142,10 +18142,23 @@ function action(name) {
   }
 }
 
+function scenarioImage(scenarioId){
+  return image('/api/scenarios/'+scenarioId+'/svg')
+}
+
+const gameImageCache = {}
+function gameImage(gameId){
+  if(!gameImageCache[gameId])
+    gameImageCache[gameId] = image('/api/games/'+gameId+'/svg')
+
+  return gameImageCache[gameId]
+}
+
 module.exports = {
   player, target, action,
   iconClose, iconGamerlist, iconReplayAnimation,
-  tile, wallDown, wallUpRight, wallDownRight
+  tile, wallDown, wallUpRight, wallDownRight,
+  scenarioImage, gameImage
 }
 
 },{}],17:[function(require,module,exports){
@@ -18504,15 +18517,8 @@ function drawCanvas(canvas, scenario, robots) {
     return deltaTop * (y + saw(x) / 2) + tile /2
   }
 
-  function imageAt(image, x, y, factor){
-    if(factor)
-      ctx.drawImage(image, left(x, y) - factor*tile, top(x, y) - factor*tile, factor*2*tile, factor*2*tile)
-    else
-      ctx.drawImage(image, left(x, y) - tile, top(x, y) - tile, 2*tile, 2*tile)
-  }
-
-  canvas.width = left(scenario.width, 1)
-  canvas.height = top(0, scenario.height) + 15
+  canvas.width = left(scenario.width, 0) + deltaLeft - tile
+  canvas.height = top(0, scenario.height) //+0.5*tile
 
   function centerOn(x, y, callback) {
     // the same as:
@@ -18530,35 +18536,6 @@ function drawCanvas(canvas, scenario, robots) {
     callback()
     ctx.restore()
   }
-
-  // tiles:
-  for (let y = 0; y < scenario.height; y++)
-    for (let x = 0; x < scenario.width; x++) {
-      if (scenario.pits.find(p => p.x === x && p.y === y))
-        continue
-      imageAt(images.tile, x, y)
-    }
-
-  // target:
-  imageAt(images.target, scenario.targetPosition.x, scenario.targetPosition.y, 0.25)
-
-  // walls:
-  ctx.fillStyle = 'DimGray'
-  ctx.shadowBlur = 10
-  ctx.shadowColor = "#383838"
-  ctx.shadowOffsetX = 2
-  ctx.shadowOffsetY = 2
-  scenario.walls.forEach(w => {
-    if (w.direction.Down) {
-      imageAt(images.wallDown, w.position.x, w.position.y)
-    } else if (w.direction.DownRight) {
-      imageAt(images.wallDownRight, w.position.x, w.position.y)
-    } else if (w.direction.UpRight) {
-      imageAt(images.wallUpRight, w.position.x, w.position.y)
-    } else {
-      console.error("unknown wall direction")
-    }
-  })
 
   // robots:
   if (_.isArray(robots)) {
@@ -18692,8 +18669,9 @@ function onClickCanvas(scenario, options) {
 }
 
 
-function renderCanvas(scenario, robots, options) {
+function renderCanvas(scenario, robots, options, gameId) {
   return h('canvas', {
+      style: {"background" : "url("+images.gameImage(gameId).src+")"},
       on : {click: onClickCanvas(scenario, options)},
       hook: {
         postpatch: (oldVnode, newVnode) => {
@@ -18834,11 +18812,6 @@ function render(state, actionHandler) {
     m = modal(renderLog(state.game.events), closeAction)
   else if (state.modal === 'playerList')
     m = modal(renderPlayerList(state), closeAction)
-  else if (state.modal && state.modal.type === 'previewScenario')
-    m = modal(h('div.modal-maximized',
-        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial), {}),
-        ),
-        closeAction)
 
   const game = state.game
   const playerIndex = _.get(game.players.find(p => p.name === state.player), "index")
@@ -18849,7 +18822,7 @@ function render(state, actionHandler) {
     h('div.game-board', gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), {
       animationStart: state.animationStart,
       frames: state.animations
-    })),
+    }, state.gameId)),
     renderActionButtons(state, game, actionHandler),
     m])
 }
@@ -19034,8 +19007,8 @@ document.addEventListener('DOMContentLoaded', function () {
     Lobby(container, player)
   else if (mode === "game")
     Game(container, player, gameId)
-  else if (mode === "editor")
-    Editor(container, player, scenarioId)
+  // else if (mode === "editor")
+  //   Editor(container, player, scenarioId)
   else
     document.write('unknown mode')
 })
@@ -19119,6 +19092,7 @@ const h = require('snabbdom/h').default
 const button = require('../common/button')
 const modal = require('../common/modal')
 const frame = require('../common/frame')
+const images = require('../common/images')
 
 function render(state, actionHandler) {
   let m = null
@@ -19142,7 +19116,7 @@ function render(state, actionHandler) {
 }
 
 function renderBackendPreview(scenarioId){
-  return h('img.scenario-preview', {props: {src: '/api/scenarios/'+scenarioId+'/svg'}})
+  return h('img.scenario-preview', {props: {src: images.scenarioImage(scenarioId).src}})
 }
 
 function renderGameTable(state, games, actionHandler) {
@@ -19219,7 +19193,7 @@ function renderLoginModal(player, actionHandler) {
 
 module.exports = render
 
-},{"../common/button":13,"../common/frame":15,"../common/modal":17,"snabbdom/h":3}],32:[function(require,module,exports){
+},{"../common/button":13,"../common/frame":15,"../common/images":16,"../common/modal":17,"snabbdom/h":3}],32:[function(require,module,exports){
 const snabbdom = require('snabbdom')
 const patch = snabbdom.init([
   require('snabbdom/modules/eventlisteners').default,

@@ -1,4 +1,4 @@
-@(scenario: gameLogic.Scenario)
+@(scenario: gameLogic.Scenario, excludeRobots: Boolean)
 
 @import svg.SVGRenderingConstants._
 @import gameLogic._
@@ -100,8 +100,10 @@
 
     @useTarget(scenario.targetPosition.x, scenario.targetPosition.y)
 
-    @for((robot, index) <- scenario.initialRobots.zipWithIndex) {
-      @useRobot(robot.position.x, robot.position.y, robotColor(index), directionToRotation(robot.direction))
+    @if(!excludeRobots){
+      @for((robot, index) <- scenario.initialRobots.zipWithIndex) {
+        @useRobot(robot.position.x, robot.position.y, robotColor(index), directionToRotation(robot.direction))
+      }
     }
   </g>
 

@@ -14,11 +14,6 @@ function render(state, actionHandler) {
     m = modal(renderLog(state.game.events), closeAction)
   else if (state.modal === 'playerList')
     m = modal(renderPlayerList(state), closeAction)
-  else if (state.modal && state.modal.type === 'previewScenario')
-    m = modal(h('div.modal-maximized',
-        gameBoard.renderCanvas(state.modal.scenario, state.modal.scenario.initialRobots.map(gameBoard.robotFromInitial), {}),
-        ),
-        closeAction)
 
   const game = state.game
   const playerIndex = _.get(game.players.find(p => p.name === state.player), "index")
@@ -29,7 +24,7 @@ function render(state, actionHandler) {
     h('div.game-board', gameBoard.renderCanvas(game.scenario, game.players.map(gameBoard.robotFromPlayer), {
       animationStart: state.animationStart,
       frames: state.animations
-    })),
+    }, state.gameId)),
     renderActionButtons(state, game, actionHandler),
     m])
 }

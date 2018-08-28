@@ -52,4 +52,13 @@ class GameController @Inject()(repo: GameRepository)
   def sse(id: String) = Action {
     Ok.chunked(SinkSourceCache.source(id) via EventSource.flow).as(ContentTypes.EVENT_STREAM)
   }
+
+  def image(id: String) = Action{
+    repo.get(id) match {
+      case Some(row) if row.game.isDefined =>
+        Ok(svg.xml.Scenario(row.game.get.scenario, true))
+        .as("image/svg+xml")
+      case _ => NotFound
+    }
+  }
 }

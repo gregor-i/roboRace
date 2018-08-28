@@ -56,9 +56,9 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
 
   // todo: SSE!
 
-  def scenarioSvg(id: String) = Action {
+  def image(id: String) = Action {
     repo.get(id) match {
-      case Some(ScenarioRow(_, _, Some(scenario))) => Ok(svg.xml.Scenario(scenario)).as("image/svg+xml")
+      case Some(ScenarioRow(_, _, Some(scenario))) => Ok(svg.xml.Scenario(scenario, false)).as("image/svg+xml")
       case _                                       => NotFound
     }
   }
