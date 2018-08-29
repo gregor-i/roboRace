@@ -19041,7 +19041,7 @@ function svg(scenario, excludeInitialRobots) {
 }
 
 function render(scenario, additionalProperties) {
-  return h('object', _.merge({}, additionalProperties, {props: {innerHTML: svg(scenario)}}))
+  return h('div', _.merge({}, additionalProperties, {props: {innerHTML: svg(scenario)}}))
 }
 
 
