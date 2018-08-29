@@ -4,7 +4,6 @@ import gameLogic.Scenario
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
 import repo.{ScenarioRepository, ScenarioRow}
@@ -55,11 +54,4 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
   }
 
   // todo: SSE!
-
-  def image(id: String) = Action {
-    repo.get(id) match {
-      case Some(ScenarioRow(_, _, Some(scenario))) => Ok(svg.xml.Scenario(scenario, false)).as("image/svg+xml")
-      case _                                       => NotFound
-    }
-  }
 }

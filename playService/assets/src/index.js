@@ -13,8 +13,9 @@ document.addEventListener('DOMContentLoaded', function () {
     Lobby(container, player)
   else if (mode === "game")
     Game(container, player, gameId)
-  // else if (mode === "editor")
-  //   Editor(container, player, scenarioId)
+  else if (mode === "editor")
+    document.write('The Editor is currently disabled')
+    // Editor(container, player, scenarioId)
   else
     document.write('unknown mode')
 })

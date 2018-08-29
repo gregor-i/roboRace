@@ -2,6 +2,8 @@ const _ = require('lodash')
 const h = require('snabbdom/h').default
 const images = require('../common/images')
 const constants = require('../common/constants')
+const gameBoard = require('./gameBoard/scenario')
+
 
 const k = Math.sqrt(3) / 2
 
@@ -202,8 +204,9 @@ function onClickCanvas(scenario, options) {
 
 
 function renderCanvas(scenario, robots, options, gameId) {
+  const svg64 = window.btoa(gameBoard.svg(scenario, true))
   return h('canvas', {
-      style: {"background" : "url("+images.gameImage(gameId).src+")"},
+      style: {"background" : "url('data:image/svg+xml;base64," + svg64 + "')"},
       on : {click: onClickCanvas(scenario, options)},
       hook: {
         postpatch: (oldVnode, newVnode) => {

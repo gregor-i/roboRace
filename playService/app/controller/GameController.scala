@@ -4,7 +4,6 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import gameLogic.gameUpdate._
-import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
@@ -51,14 +50,5 @@ class GameController @Inject()(repo: GameRepository)
 
   def sse(id: String) = Action {
     Ok.chunked(SinkSourceCache.source(id) via EventSource.flow).as(ContentTypes.EVENT_STREAM)
-  }
-
-  def image(id: String) = Action{
-    repo.get(id) match {
-      case Some(row) if row.game.isDefined =>
-        Ok(svg.xml.Scenario(row.game.get.scenario, true))
-        .as("image/svg+xml")
-      case _ => NotFound
-    }
   }
 }

@@ -8,12 +8,6 @@ const iconClose = image('/assets/ic-close.svg')
 const iconGamerlist = image('/assets/ic-gamerlist.svg')
 const iconReplayAnimation = image('/assets/ic-replay-animation.svg')
 
-const tile = image('/assets/tile.svg')
-
-const wallDown = image('/assets/wall-down.svg')
-const wallDownRight = image('/assets/wall-down-right.svg')
-const wallUpRight = image('/assets/wall-up-right.svg')
-
 const player1 = image('/assets/player1.svg')
 const player2 = image('/assets/player2.svg')
 const player3 = image('/assets/player3.svg')
@@ -22,7 +16,7 @@ const player5 = image('/assets/player5.svg')
 const player6 = image('/assets/player6.svg')
 
 // https://materialdesignicons.com/icon/flag-variant-outline
-const target = image('/assets/target.svg')
+// const target = image('/assets/target.svg')
 
 
 function player(index){
@@ -60,21 +54,7 @@ function action(name) {
   }
 }
 
-function scenarioImage(scenarioId){
-  return image('/api/scenarios/'+scenarioId+'/svg')
-}
-
-const gameImageCache = {}
-function gameImage(gameId){
-  if(!gameImageCache[gameId])
-    gameImageCache[gameId] = image('/api/games/'+gameId+'/svg')
-
-  return gameImageCache[gameId]
-}
-
 module.exports = {
-  player, target, action,
-  iconClose, iconGamerlist, iconReplayAnimation,
-  tile, wallDown, wallUpRight, wallDownRight,
-  scenarioImage, gameImage
+  player, action,
+  iconClose, iconGamerlist, iconReplayAnimation
 }
