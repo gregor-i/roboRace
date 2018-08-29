@@ -8,23 +8,12 @@ function builder(props) {
     f.addProperty = function (p) {
         return builder(_.merge({}, props, p))
     }
-
     f.primary = function (bool) {
         return f.addProperty({class: {'is-primary': bool === undefined ? true : bool}})
-    }
-    f.danger = function (bool) {
-        return f.addProperty({class: {'is-danger': bool === undefined ? true : bool}})
-    }
-    f.info = function (bool) {
-        return f.addProperty({class: {'is-info': bool === undefined ? true : bool}})
-    }
-    f.link = function (bool) {
-        return f.addProperty({class: {'is-link': bool === undefined ? true : bool}})
     }
     f.disabled = function (bool) {
         return f.addProperty({props: {disabled: bool === undefined ? true : bool}})
     }
-
     return f
 }
 
@@ -37,6 +26,5 @@ function group() {
 module.exports = {
     group: group,
     builder: builder(),
-    primary: builder().primary(true),
-    link: builder().link(true)
+    primary: builder().primary(true)
 }

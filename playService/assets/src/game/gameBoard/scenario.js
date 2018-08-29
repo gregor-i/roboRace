@@ -90,7 +90,7 @@ function translate(x, y){
 }
 
 function useTile(x, y){
-  return `<use href="#tile" transform="${translate(x, y)}"/>`
+  return `<use href="#tile" class="tile" data-x="${x}" data-y="${y}" transform="${translate(x, y)}"/>`
 }
 
 function useWall(x, y, rotation){
@@ -135,8 +135,8 @@ function svg(scenario, excludeInitialRobots) {
 </svg>`
 }
 
-function render(scenario) {
-  return h('object', {props: {innerHTML: svg(scenario)}})
+function render(scenario, additionalProperties) {
+  return h('object', _.merge({}, additionalProperties, {props: {innerHTML: svg(scenario)}}))
 }
 
 

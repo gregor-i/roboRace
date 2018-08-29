@@ -1,51 +1,82 @@
 const h = require('snabbdom/h').default
 const button = require('../common/button')
-const frame = require('../common/frame')
-const gameBoard = require('../game/game-board')
+const renderScenario = require('../game/gameBoard/scenario').render
+const images = require('../common/images')
 
 function render(state, actionHandler) {
-  return frame([h('h1', 'Scenario Editor: ' + state.scenarioId), button.group(backToLobbyButton(actionHandler))],
-    gameBoard.renderCanvas(state.scenario, state.scenario.initialRobots.map(gameBoard.robotFromInitial), clickEventHandler(state.clickAction, actionHandler)),
-    renderEditorActionbar(actionHandler),
-    null)
+  const hook = function(x, y){
+    const elm = y ? y.elm : x.elm
+    const tiles = elm.getElementsByClassName("tile")
+
+    function clickListener(event) {
+      const tileX = parseInt(event.target.dataset.x)
+      const tileY = parseInt(event.target.dataset.y)
+
+      const bb = event.target.getBoundingClientRect()
+      const direction = dxdy2direction(event.x - bb.x - bb.width/2, event.y - bb.y - bb.height/2)
+      clickEventHandler(state.clickAction, actionHandler)(tileX, tileY, direction)
+    }
+
+    for(let i=0; i< tiles.length; i++) {
+      tiles[i].onclick = clickListener
+    }
+  }
+
+  return h('div.game', [
+    fab('.fab-right-1', images.iconClose, [actionHandler, {backToLobby: true}]),
+    h('div.game-board', renderScenario(state.scenario, {hook: {postpatch: hook, insert: hook}})),
+    renderEditorActionbar(actionHandler)
+  ])
 }
 
-function clickEventHandler(clickAction, actionHandler) {
-  if (clickAction === 'ToggleWall')
-    return {onClickTile: (x, y, direction) => actionHandler({toggleWall: {x, y, direction}})}
-  else if (clickAction === 'TogglePit')
-    return {onClickTile: (x, y) => actionHandler({togglePit: {x, y}})}
-  else if (clickAction === 'SetTarget')
-    return {onClickTile: (x, y) => actionHandler({setTarget: {x, y}})}
-  else if (clickAction === 'ToggleInitialRobot')
-    return {onClickTile: (x, y) => actionHandler({toggleInitialRobot: {x, y}})}
-  else if (clickAction === 'RotateRobot')
-    return {onClickTile: (x, y) => actionHandler({rotateRobot: {x, y}})}
-  else
-    return {}
+function fab(classes, image, onclick){
+  return h('div.fab'+classes, {on: {click: onclick}},
+    h('img', {props: {src: image.src}}))
 }
 
 function renderEditorActionbar(actionHandler) {
-  return [
-    h('div.control-panel', [
+  return h('div.footer-group', [
+    h('div.slots-panel', [
       button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
       button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
       button.builder(actionHandler, {setClickAction: 'SetTarget'}, 'Target'),
       button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
       button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
     ]),
-    h('div.control-panel', [
+    h('div.slots-panel', [
       button.builder(actionHandler, 'width--', 'W-'),
       button.builder(actionHandler, 'width++', 'W+'),
       button.builder(actionHandler, 'height--', 'H-'),
       button.builder(actionHandler, 'height++', 'H+'),
       button.builder(actionHandler, 'save', 'Save Scenario')
     ])
-  ]
+  ])
 }
 
-function backToLobbyButton(actionHandler) {
-  return button.link(actionHandler, {backToLobby: true}, 'Back to Lobby')
+function dxdy2direction(dx, dy) {
+  switch (Math.floor((Math.atan2(dy, dx) / Math.PI * 3 + 6) % 6)) {
+    case 0: return {DownRight: {}}
+    case 1: return {Down: {}}
+    case 2: return {DownLeft: {}}
+    case 3: return {UpLeft: {}}
+    case 4: return {Up: {}}
+    case 5: return {UpRight: {}}
+  }
+}
+
+function clickEventHandler(clickAction, actionHandler) {
+  if (clickAction === 'ToggleWall')
+    return (x, y, direction) => actionHandler({toggleWall: {x, y, direction}})
+  else if (clickAction === 'TogglePit')
+    return (x, y) => actionHandler({togglePit: {x, y}})
+  else if (clickAction === 'SetTarget')
+    return (x, y) => actionHandler({setTarget: {x, y}})
+  else if (clickAction === 'ToggleInitialRobot')
+    return (x, y) => actionHandler({toggleInitialRobot: {x, y}})
+  else if (clickAction === 'RotateRobot')
+    return (x, y) => actionHandler({rotateRobot: {x, y}})
+  else
+    return (x, y, direction) => {}
 }
 
 module.exports = render

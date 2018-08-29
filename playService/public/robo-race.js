@@ -18026,23 +18026,12 @@ function builder(props) {
     f.addProperty = function (p) {
         return builder(_.merge({}, props, p))
     }
-
     f.primary = function (bool) {
         return f.addProperty({class: {'is-primary': bool === undefined ? true : bool}})
-    }
-    f.danger = function (bool) {
-        return f.addProperty({class: {'is-danger': bool === undefined ? true : bool}})
-    }
-    f.info = function (bool) {
-        return f.addProperty({class: {'is-info': bool === undefined ? true : bool}})
-    }
-    f.link = function (bool) {
-        return f.addProperty({class: {'is-link': bool === undefined ? true : bool}})
     }
     f.disabled = function (bool) {
         return f.addProperty({props: {disabled: bool === undefined ? true : bool}})
     }
-
     return f
 }
 
@@ -18055,8 +18044,7 @@ function group() {
 module.exports = {
     group: group,
     builder: builder(),
-    primary: builder().primary(true),
-    link: builder().link(true)
+    primary: builder().primary(true)
 }
 
 },{"lodash":2,"snabbdom/h":3}],14:[function(require,module,exports){
@@ -18303,57 +18291,88 @@ module.exports = {
 },{"../common/service-headers":18}],21:[function(require,module,exports){
 const h = require('snabbdom/h').default
 const button = require('../common/button')
-const frame = require('../common/frame')
-const gameBoard = require('../game/game-board')
+const renderScenario = require('../game/gameBoard/scenario').render
+const images = require('../common/images')
 
 function render(state, actionHandler) {
-  return frame([h('h1', 'Scenario Editor: ' + state.scenarioId), button.group(backToLobbyButton(actionHandler))],
-    gameBoard.renderCanvas(state.scenario, state.scenario.initialRobots.map(gameBoard.robotFromInitial), clickEventHandler(state.clickAction, actionHandler)),
-    renderEditorActionbar(actionHandler),
-    null)
+  const hook = function(x, y){
+    const elm = y ? y.elm : x.elm
+    const tiles = elm.getElementsByClassName("tile")
+
+    function clickListener(event) {
+      const tileX = parseInt(event.target.dataset.x)
+      const tileY = parseInt(event.target.dataset.y)
+
+      const bb = event.target.getBoundingClientRect()
+      const direction = dxdy2direction(event.x - bb.x - bb.width/2, event.y - bb.y - bb.height/2)
+      clickEventHandler(state.clickAction, actionHandler)(tileX, tileY, direction)
+    }
+
+    for(let i=0; i< tiles.length; i++) {
+      tiles[i].onclick = clickListener
+    }
+  }
+
+  return h('div.game', [
+    fab('.fab-right-1', images.iconClose, [actionHandler, {backToLobby: true}]),
+    h('div.game-board', renderScenario(state.scenario, {hook: {postpatch: hook, insert: hook}})),
+    renderEditorActionbar(actionHandler)
+  ])
 }
 
-function clickEventHandler(clickAction, actionHandler) {
-  if (clickAction === 'ToggleWall')
-    return {onClickTile: (x, y, direction) => actionHandler({toggleWall: {x, y, direction}})}
-  else if (clickAction === 'TogglePit')
-    return {onClickTile: (x, y) => actionHandler({togglePit: {x, y}})}
-  else if (clickAction === 'SetTarget')
-    return {onClickTile: (x, y) => actionHandler({setTarget: {x, y}})}
-  else if (clickAction === 'ToggleInitialRobot')
-    return {onClickTile: (x, y) => actionHandler({toggleInitialRobot: {x, y}})}
-  else if (clickAction === 'RotateRobot')
-    return {onClickTile: (x, y) => actionHandler({rotateRobot: {x, y}})}
-  else
-    return {}
+function fab(classes, image, onclick){
+  return h('div.fab'+classes, {on: {click: onclick}},
+    h('img', {props: {src: image.src}}))
 }
 
 function renderEditorActionbar(actionHandler) {
-  return [
-    h('div.control-panel', [
+  return h('div.footer-group', [
+    h('div.slots-panel', [
       button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
       button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
       button.builder(actionHandler, {setClickAction: 'SetTarget'}, 'Target'),
       button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
       button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
     ]),
-    h('div.control-panel', [
+    h('div.slots-panel', [
       button.builder(actionHandler, 'width--', 'W-'),
       button.builder(actionHandler, 'width++', 'W+'),
       button.builder(actionHandler, 'height--', 'H-'),
       button.builder(actionHandler, 'height++', 'H+'),
       button.builder(actionHandler, 'save', 'Save Scenario')
     ])
-  ]
+  ])
 }
 
-function backToLobbyButton(actionHandler) {
-  return button.link(actionHandler, {backToLobby: true}, 'Back to Lobby')
+function dxdy2direction(dx, dy) {
+  switch (Math.floor((Math.atan2(dy, dx) / Math.PI * 3 + 6) % 6)) {
+    case 0: return {DownRight: {}}
+    case 1: return {Down: {}}
+    case 2: return {DownLeft: {}}
+    case 3: return {UpLeft: {}}
+    case 4: return {Up: {}}
+    case 5: return {UpRight: {}}
+  }
+}
+
+function clickEventHandler(clickAction, actionHandler) {
+  if (clickAction === 'ToggleWall')
+    return (x, y, direction) => actionHandler({toggleWall: {x, y, direction}})
+  else if (clickAction === 'TogglePit')
+    return (x, y) => actionHandler({togglePit: {x, y}})
+  else if (clickAction === 'SetTarget')
+    return (x, y) => actionHandler({setTarget: {x, y}})
+  else if (clickAction === 'ToggleInitialRobot')
+    return (x, y) => actionHandler({toggleInitialRobot: {x, y}})
+  else if (clickAction === 'RotateRobot')
+    return (x, y) => actionHandler({rotateRobot: {x, y}})
+  else
+    return (x, y, direction) => {}
 }
 
 module.exports = render
 
-},{"../common/button":13,"../common/frame":15,"../game/game-board":24,"snabbdom/h":3}],22:[function(require,module,exports){
+},{"../common/button":13,"../common/images":16,"../game/gameBoard/scenario":28,"snabbdom/h":3}],22:[function(require,module,exports){
 const snabbdom = require('snabbdom')
 const patch = snabbdom.init([
   require('snabbdom/modules/eventlisteners').default,
@@ -18389,7 +18408,7 @@ function Editor(element, player, scenarioId) {
       scenarioId: scenario.id,
       scenarioOwner: scenario.owner
     }, element)
-  ).catch(err => window.location.href = '/')
+  ).catch(err => console.error(err))
 
   return this
 }
@@ -18452,7 +18471,6 @@ const images = require('../common/images')
 const constants = require('../common/constants')
 const gameBoard = require('./gameBoard/scenario')
 
-
 const k = Math.sqrt(3) / 2
 
 function Robot(index, x, y, rotation, alpha) {
@@ -18461,10 +18479,6 @@ function Robot(index, x, y, rotation, alpha) {
 
 function robotFromPlayer(player) {
   return Robot(player.index, player.robot.position.x, player.robot.position.y, directionToRotation(player.robot.direction), player.finished ? 0 : 1)
-}
-
-function robotFromInitial(initial, index){
-  return Robot(index, initial.position.x, initial.position.y, directionToRotation(initial.direction), 1)
 }
 
 function interpolate(d1, d2, t) {
@@ -18566,96 +18580,10 @@ function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots)
   }
 }
 
-function onClickCanvas(scenario, options) {
-  if(options.onClickTile)
-    return (event) => {
-      const canvas = event.target
-      const rect = canvas.getBoundingClientRect()
-      const width = rect.width
-      const height = rect.height
-
-      const wallFactor = 0.1
-
-      const kWidth = scenario.width * 0.75  + (scenario.width - 1) * wallFactor * k + 0.25
-      const kHeight = scenario.height * k + (scenario.height - 1) * wallFactor * k + 0.5 + wallFactor * 2
-
-      const tile = Math.min(height / kHeight, width / kWidth)
-      const offsetTop = (height - tile * kHeight) / 2
-      const offsetLeft = (width - tile * kWidth) / 2
-
-      const deltaLeft = 0.75 * tile + tile * wallFactor*k
-      const deltaTop = tile * k + tile * wallFactor
-
-      function left(x, y) {
-        return offsetLeft + deltaLeft * x + tile /2
-      }
-
-      function top(x, y) {
-        function saw(x) {
-          const m = Math.abs(x) % 2
-          if (m > 1) return 2 - m
-          else return m
-        }
-
-        return offsetTop + deltaTop * (y + saw(x) / 2) + tile /2
-      }
-
-      const eventX = event.offsetX
-      const eventY = event.offsetY
-
-      let bestX = 0
-      let bestY = 0
-
-      function dist(x, y){
-        return (eventX - left(x,y)) * (eventX - left(x,y)) + (eventY - top(x,y)) * (eventY - top(x,y))
-      }
-
-      for (let y = 0; y < scenario.height; y++)
-        for (let x = 0; x < scenario.width; x++)
-          if(dist(bestX, bestY) > dist(x, y)){
-            bestX = x
-            bestY = y
-          }
-
-      const angle = Math.atan2(top(bestX, bestY) - eventY, left(bestX, bestY) - eventX)
-      // 0 = left
-      // Math.PI = Right
-      const directionHelper = Math.floor((angle/ Math.PI * 3 + 6) % 6)
-      let direction
-      switch(directionHelper){
-        case 0:
-          direction = {UpLeft: {}}
-          break;
-        case 1:
-          direction = {Up: {}}
-          break;
-        case 2:
-          direction = {UpRight: {}}
-          break;
-        case 3:
-          direction = {DownRight: {}}
-          break;
-        case 4:
-          direction = {Down: {}}
-          break;
-        case 5:
-          direction = {DownLeft: {}}
-          break;
-      }
-
-      if(Math.sqrt(dist(bestX, bestY)) < tile/2)
-        options.onClickTile(bestX, bestY, direction)
-    }
-  else
-    return null
-}
-
-
-function renderCanvas(scenario, robots, options, gameId) {
+function renderCanvas(scenario, robots, options) {
   const svg64 = window.btoa(gameBoard.svg(scenario, true))
   return h('canvas', {
       style: {"background" : "url('data:image/svg+xml;base64," + svg64 + "')"},
-      on : {click: onClickCanvas(scenario, options)},
       hook: {
         postpatch: (oldVnode, newVnode) => {
           window.onresize = () => drawCanvas(newVnode.elm, scenario, robots)
@@ -18729,7 +18657,7 @@ function framesFromEvents(oldGameState, events) {
 }
 
 module.exports = {
-  renderCanvas, robotFromPlayer, robotFromInitial, framesFromEvents
+  renderCanvas, robotFromPlayer, framesFromEvents
 }
 
 },{"../common/constants":14,"../common/images":16,"./gameBoard/scenario":28,"lodash":2,"snabbdom/h":3}],25:[function(require,module,exports){
@@ -19067,7 +18995,7 @@ function translate(x, y){
 }
 
 function useTile(x, y){
-  return `<use href="#tile" transform="${translate(x, y)}"/>`
+  return `<use href="#tile" class="tile" data-x="${x}" data-y="${y}" transform="${translate(x, y)}"/>`
 }
 
 function useWall(x, y, rotation){
@@ -19112,8 +19040,8 @@ function svg(scenario, excludeInitialRobots) {
 </svg>`
 }
 
-function render(scenario) {
-  return h('object', {props: {innerHTML: svg(scenario)}})
+function render(scenario, additionalProperties) {
+  return h('object', _.merge({}, additionalProperties, {props: {innerHTML: svg(scenario)}}))
 }
 
 
@@ -19135,8 +19063,7 @@ document.addEventListener('DOMContentLoaded', function () {
   else if (mode === "game")
     Game(container, player, gameId)
   else if (mode === "editor")
-    document.write('The Editor is currently disabled')
-    // Editor(container, player, scenarioId)
+    Editor(container, player, scenarioId)
   else
     document.write('unknown mode')
 })

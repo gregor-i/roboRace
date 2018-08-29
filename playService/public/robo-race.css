@@ -56,9 +56,13 @@ html, body{
   overflow-y: auto;
 }
 
-.game-board canvas {
+.game-board canvas{
   display: block;
   margin: auto;
+}
+
+.game-board object svg {
+  width: 100%;
 }
 
 .footer-group {

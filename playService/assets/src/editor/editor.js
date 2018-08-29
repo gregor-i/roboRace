@@ -33,7 +33,7 @@ function Editor(element, player, scenarioId) {
       scenarioId: scenario.id,
       scenarioOwner: scenario.owner
     }, element)
-  ).catch(err => window.location.href = '/')
+  ).catch(err => console.error(err))
 
   return this
 }
