@@ -42,11 +42,11 @@ object Scenario {
     targetPosition = Position(3, 1),
     initialRobots = Seq(
       robot(1, 8, Up),
-      robot(5, 8, UpRight),
-      robot(2, 8, DownRight),
-      robot(4, 8, Down),
-      robot(0, 8, DownLeft),
-      robot(6, 8, UpLeft)
+      robot(5, 8, Up),
+      robot(2, 8, Up),
+      robot(4, 8, Up),
+      robot(0, 8, Up),
+      robot(6, 8, Up)
     ),
     walls = Seq(
       wall(3, 2, Down),

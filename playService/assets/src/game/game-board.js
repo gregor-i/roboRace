@@ -114,7 +114,7 @@ function drawAnimatedCanvas(canvas, startTime, scenario, frames, newStateRobots)
 }
 
 function renderCanvas(scenario, robots, options) {
-  const svg64 = window.btoa(gameBoard.svg(scenario, true))
+  const svg64 = window.btoa(gameBoard.svg(scenario))
   return h('canvas', {
       style: {"background" : "url('data:image/svg+xml;base64," + svg64 + "')"},
       hook: {
