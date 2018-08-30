@@ -10,7 +10,6 @@ const patch = snabbdom.init([
 const gameUi = require('./game-ui')
 const gameService = require('./game-service')
 const actions = require('./game-actions')
-const gameBoard = require('./game-board')
 
 function Game(element, player, gameId) {
   var node = element
@@ -37,7 +36,6 @@ function Game(element, player, gameId) {
       const newCycle = oldState.cycle !== serverState.cycle
 
       state.animationStart = new Date()
-      state.animations = gameBoard.framesFromEvents(oldState, _.last(serverState.events))
       state.game = serverState
       if (newCycle) {
         state.focusedSlot = undefined
