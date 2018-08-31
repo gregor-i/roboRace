@@ -10,11 +10,11 @@ object Events {
 
   private def asEvent(pushed: RobotPushed): RobotMoves = {
     def loop(event: RobotPushed): List[RobotPositionTransition] = {
-      val head = RobotPositionTransition(event.player.name, event.to)
+      val head = RobotPositionTransition(event.player.index, event.player.robot.position, event.to)
       event.push.fold(head :: Nil)(head :: loop(_))
     }
 
-    RobotMoves(pushed.player.name, loop(pushed))
+    RobotMoves(loop(pushed))
   }
 
   def move(event: RobotPushed)(game: Game): Game = {
@@ -32,12 +32,12 @@ object Events {
   def turn(player: Player, nextDirection: Direction)(game: Game): Game =
     (robot(player.name) composeLens direction)
       .set(nextDirection)(game)
-      .log(RobotTurns(player.name, nextDirection))
+      .log(RobotTurns(player.index, player.robot.direction, nextDirection))
 
   def reset(player: Player, initialRobot: Robot)(game: Game): Game =
     robot(player.name).set(initialRobot)
       .andThen((Game.player(player.name) composeLens Player.instructionSlots).set(Instruction.emptySlots))
       .apply(game)
-      .log(RobotReset(player.name, initialRobot))
+      .log(RobotReset(player.index, initialRobot))
 
 }

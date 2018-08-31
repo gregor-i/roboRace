@@ -3,26 +3,26 @@ package gameUpdate
 
 object MoveRobots {
   def apply(player: Player, instruction: MoveInstruction, game: Game): Game = {
-    def move(position: Position, direction: Direction, gameRunning: Game): Game =
-      pushRobots(position, direction, gameRunning) match {
+    def move(direction: Direction): Game =
+      pushRobots(player.robot.position, direction, game) match {
         case Some(robotPushed) =>
           val afterPush = Events.move(robotPushed)(game)
           ScenarioEffects.afterMoveAction(afterPush)
-        case None => gameRunning.log(MovementBlocked(player.name, player.robot.position, player.robot.direction))
+        case None => game.log(MovementBlocked(player.index, player.robot))
       }
 
     instruction match {
-      case MoveForward => move(player.robot.position, player.robot.direction, game)
-      case MoveBackward => move(player.robot.position, player.robot.direction.back, game)
-      case StepRight => move(player.robot.position, player.robot.direction.right, game)
-      case StepLeft => move(player.robot.position, player.robot.direction.left, game)
+      case MoveForward => move(player.robot.direction)
+      case MoveBackward => move(player.robot.direction.back)
+      case StepRight => move(player.robot.direction.right)
+      case StepLeft => move(player.robot.direction.left)
       case MoveTwiceForward =>
-        val after1Move = move(player.robot.position, player.robot.direction, game)
-        val fallen = after1Move.events.drop(game.cycle-1).headOption.getOrElse(Seq.empty).collect{ case RobotReset(player.name, _) => true }.nonEmpty // todo: I need a better solution.
-        if(fallen) {
-          after1Move
-        }else{
-          move(after1Move.players.find(_.name == player.name).get.robot.position, player.robot.direction, after1Move)
+        val updatedGame = move(player.robot.direction)
+        val updatedPlayer = updatedGame.players.find(_.index == player.index).get
+        if (updatedPlayer.instructionSlots == Instruction.emptySlots) {
+          updatedGame
+        } else {
+          apply(updatedPlayer, MoveForward, updatedGame)
         }
     }
   }

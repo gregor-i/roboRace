@@ -1,7 +1,33 @@
 package helper
 
-trait TestDataHelper {
+import gameLogic._
+import gameLogic.gameUpdate.{CommandAccepted, CreateGame}
+import org.scalatest.Matchers
+
+trait TestDataHelper { _: UpdateChainHelper with Matchers =>
+  val p0 = "p0"
   val p1 = "p1"
   val p2 = "p2"
-  val p3 = "p3"
+
+  def createGame(scenario: Scenario)(player: String): Game = {
+    val resp = CreateGame(scenario)(player)
+    resp shouldBe a[CommandAccepted]
+    resp.asInstanceOf[CommandAccepted].newState
+  }
+
+  def addWall(wall: Wall): CE =
+    Game.scenario.modify(s => s.copy(walls = s.walls :+ wall))
+
+  def addPit(pit: Position): CE =
+    Game.scenario.modify(s => s.copy(pits = s.pits :+ pit))
+
+  def forcedInstructions(player: String)(instructions: Instruction*): CE =
+    Game.player(player).modify(_.copy(
+      instructionOptions = (instructions ++ Seq.fill(Constants.instructionsPerCycle)(Sleep)).take(Constants.instructionsPerCycle),
+      instructionSlots = (0 until Constants.instructionsPerCycle).map(Some.apply)))
+
+  def placeRobot(player: String, robot: Robot): CE =
+    (Game.player(player) composeLens Player.robot).set(robot)
+
+  def clearHistory: CE = Game.events.set(Seq.empty)
 }

@@ -37,12 +37,11 @@ object ScenarioEffects {
       case None => game
       case Some(player) =>
         val stats = FinishedStatistic(rank = game.players.count(_.finished.isDefined) + 1, cycle = game.cycle, rageQuitted = false)
-        val playerFinished = PlayerFinished(player.name, stats)
 
         (Game.player(player.name) composeLens Player.finished)
           .set(Some(stats))
           .apply(game)
-          .log(playerFinished)
+          .log(PlayerFinished(player.index))
     }
   }
 }

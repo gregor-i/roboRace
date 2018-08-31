@@ -1,72 +1,133 @@
 package gameLogic
 package gameUpdate
 
+import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
 
-class MoveRobotsSpec extends FunSuite with Matchers {
-  val c0 = Game(0,
-    Scenario(10, 10,
-      Position(9, 9),
-      Position(9, 8),
-      List(
-        Robot(Position(5, 5), Up),
-        Robot(Position(6, 6), Up)
-      ), List.empty, List.empty),
+class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
+  val scenario = Scenario(10, 10,
+    Position(9, 9),
+    Position(9, 8),
     List(
-      Player(0, "p1", Robot(Position(0, 0), Down), List.empty, List.empty, None),
-      Player(1, "p2", Robot(Position(0, 1), Down), List.empty, List.empty, None)
-    ),
-    Seq.empty
+      Robot(Position(5, 5), DownRight),
+      Robot(Position(6, 6), DownLeft)
+    ), List.empty, List.empty)
+
+  val initialGame = updateChain(createGame(scenario)(p0))(
+    RegisterForGame(p1).accepted,
+    placeRobot(p0, Robot(Position(0, 0), Down)),
+    placeRobot(p1, Robot(Position(0, 1), Down)),
+    clearHistory
   )
 
-
   test("move a robot") {
-    val newState = MoveRobots(c0.players(1), MoveForward, c0)
-    newState.players(0) shouldBe c0.players(0)
-    newState.players(1).robot.position shouldBe Position(0, 2)
+    updateChain(initialGame)(
+      forcedInstructions(p0)(),
+      forcedInstructions(p1)(MoveForward),
+      assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
+      assertPlayer(p1)(_.robot.position shouldBe Position(0, 2)),
+      assertLog(_ should contain(RobotMoves(Seq(
+        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+      ))))
+    )
   }
 
   test("push a robot by moving") {
-    val newState = MoveRobots(c0.players(0), MoveForward, c0)
-    newState.players(0).robot.position shouldBe Position(0, 1)
-    newState.players(1).robot.position shouldBe Position(0, 2)
+    updateChain(initialGame)(
+      forcedInstructions(p0)(MoveForward),
+      forcedInstructions(p1)(),
+      assertPlayer(p0)(_.robot.position shouldBe Position(0, 1)),
+      assertPlayer(p1)(_.robot.position shouldBe Position(0, 2)),
+      assertLog(_ should contain(RobotMoves(Seq(
+        RobotPositionTransition(0, Position(0, 0), Position(0, 1)),
+        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+      ))))
+    )
   }
 
   test("don't push through walls") {
-    val c0WithWall = c0.copy(scenario = c0.scenario.copy(walls = List(Wall(Position(0, 1), Down))))
-    MoveRobots(c0.players(0), MoveForward, c0WithWall).players shouldBe c0WithWall.players
-    MoveRobots(c0.players(1), MoveForward, c0WithWall).players shouldBe c0WithWall.players
+    updateChain(initialGame)(
+      addWall(Wall(Position(0, 1), Down)),
+      forcedInstructions(p0)(MoveForward),
+      forcedInstructions(p1)(MoveForward),
+      assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
+      assertPlayer(p1)(_.robot.position shouldBe Position(0, 1)),
+      assertLog(_ should contain(MovementBlocked(0, Robot(Position(0, 0), Down)))),
+      assertLog(_ should contain(MovementBlocked(1, Robot(Position(0, 1), Down))))
+    )
   }
 
   test("move robots from the board") {
-    val newState = MoveRobots(c0.players(1), MoveBackward, c0)
-    newState.players(0).robot shouldBe c0.scenario.initialRobots(0)
-    newState.players(1).robot.position shouldBe Position(0, 0)
+    updateChain(initialGame)(
+      forcedInstructions(p0)(MoveBackward),
+      forcedInstructions(p1)(),
+      assertPlayer(p0)(_.robot.position shouldBe Position(5, 5)),
+      assertPlayer(p0)(_.robot.direction shouldBe DownRight),
+      assertPlayer(p1)(_.robot.position shouldBe Position(0, 1)),
+      assertLog(_ should contain(RobotMoves(Seq(
+        RobotPositionTransition(0, Position(0, 0), Position(0, -1))
+      )))),
+      assertLog(_ should contain(RobotReset(0, Robot(Position(5, 5), DownRight))))
+    )
   }
 
   test("move twice without barrier") {
-    val newState = MoveRobots(c0.players(1), MoveTwiceForward, c0)
-    newState.players(0) shouldBe c0.players(0)
-    newState.players(1).robot.position shouldBe Position(0, 3)
+    updateChain(initialGame)(
+      forcedInstructions(p0)(),
+      forcedInstructions(p1)(MoveTwiceForward),
+      assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
+      assertPlayer(p1)(_.robot.position shouldBe Position(0, 3)),
+      assertLog(_ should contain(RobotMoves(Seq(
+        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+      )))),
+      assertLog(_ should contain(RobotMoves(Seq(
+        RobotPositionTransition(1, Position(0, 2), Position(0, 3))
+      ))))
+    )
   }
 
   test("move twice with a barrier on the way") {
-    val c0WithWall = c0.copy(scenario = c0.scenario.copy(walls = List(Wall(Position(0, 2), Down))))
-    val newState = MoveRobots(c0.players(1), MoveTwiceForward, c0WithWall)
-    newState.players(0) shouldBe c0.players(0)
-    newState.players(1).robot.position shouldBe Position(0, 2)
+    updateChain(initialGame)(
+      addWall(Wall(Position(0, 2), Down)),
+      forcedInstructions(p0)(),
+      forcedInstructions(p1)(MoveTwiceForward),
+      assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
+      assertPlayer(p1)(_.robot.position shouldBe Position(0, 2)),
+      assertLog(_ should contain(RobotMoves(Seq(
+        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+      )))),
+      assertLog(_ should contain(MovementBlocked(1, Robot(Position(0, 2), Down))))
+    )
   }
 
-  test("move twice also pushed twice") {
-    val newState = MoveRobots(c0.players(0), MoveTwiceForward, c0)
-    newState.players(0).robot.position shouldBe Position(0, 2)
-    newState.players(1).robot.position shouldBe Position(0, 3)
+  test("move twice also pushes twice") {
+    updateChain(initialGame)(
+      forcedInstructions(p0)(MoveTwiceForward),
+      forcedInstructions(p1)(),
+      assertPlayer(p0)(_.robot.position shouldBe Position(0, 2)),
+      assertPlayer(p1)(_.robot.position shouldBe Position(0, 3)),
+      assertLog(_ should contain(RobotMoves(Seq(
+        RobotPositionTransition(0, Position(0, 0), Position(0, 1)),
+        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+      )))),
+      assertLog(_ should contain(RobotMoves(Seq(
+        RobotPositionTransition(0, Position(0, 1), Position(0, 2)),
+        RobotPositionTransition(1, Position(0, 2), Position(0, 3))
+      ))))
+    )
   }
 
   test("move twice stops after the first move if the robot was resetted") {
-    val robotOnEdge = (Game.player("p2") composeLens Player.robot composeLens Robot.position).set(Position(10, 10))(c0)
-    val afterAction = MoveRobots(robotOnEdge.players(1), MoveTwiceForward, robotOnEdge)
-    afterAction.players(0) shouldBe c0.players(0)
-    afterAction.players(1).robot shouldBe c0.scenario.initialRobots(1)
+    updateChain(initialGame)(
+      addPit(Position(0, 2)),
+      forcedInstructions(p0)(),
+      forcedInstructions(p1)(MoveTwiceForward),
+      assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
+      assertPlayer(p1)(_.robot.position shouldBe Position(6, 6)),
+      assertLog(_ should contain(RobotMoves(Seq(
+        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+      )))),
+      assertLog(_ should contain(RobotReset(1, Robot(Position(6,6), DownLeft))))
+    )
   }
 }
