@@ -109,7 +109,6 @@ function renderGame(game) {
     const oldSvg = oldVNode.elm.getElementsByTagName('svg')[0]
     const time = oldSvg.getCurrentTime()
     timeCache = Math.min(duration, time)
-    console.log("set timecache to "+timeCache)
   }
   function postpatch(oldVNode, newVNode){
     const newSvg = newVNode.elm.getElementsByTagName('svg')[0]
