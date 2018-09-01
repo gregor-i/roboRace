@@ -18291,7 +18291,7 @@ module.exports = {
 },{"../common/service-headers":18}],21:[function(require,module,exports){
 const h = require('snabbdom/h').default
 const button = require('../common/button')
-const renderScenario = require('../game/gameBoard/scenario').render
+const {renderScenario} = require('../game/gameBoard/static')
 const images = require('../common/images')
 
 function render(state, actionHandler) {
@@ -18372,7 +18372,7 @@ function clickEventHandler(clickAction, actionHandler) {
 
 module.exports = render
 
-},{"../common/button":13,"../common/images":16,"../game/gameBoard/scenario":28,"snabbdom/h":3}],22:[function(require,module,exports){
+},{"../common/button":13,"../common/images":16,"../game/gameBoard/static":28,"snabbdom/h":3}],22:[function(require,module,exports){
 const snabbdom = require('snabbdom')
 const patch = snabbdom.init([
   require('snabbdom/modules/eventlisteners').default,
@@ -18516,7 +18516,7 @@ const h = require('snabbdom/h').default
 const constants = require('../common/constants')
 const button = require('../common/button')
 const modal = require('../common/modal')
-const gameBoard = require('./gameBoard/game')
+const gameBoardAnimated = require('./gameBoard/animated')
 const images = require('../common/images')
 
 
@@ -18534,7 +18534,7 @@ function render(state, actionHandler) {
     fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
     fab('.fab-left-1', images.iconReplayAnimation, [actionHandler, {replayAnimations: state.animations}]),
     fab('.fab-left-2', playerIndex !== undefined ? images.player(playerIndex) : images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),
-    h('div.game-board', gameBoard.renderGame(game)),
+    h('div.game-board', gameBoardAnimated.renderGame(game)),
     renderActionButtons(state, game, actionHandler),
     m])
 }
@@ -18635,7 +18635,7 @@ function renderLog(events) {
 
 module.exports = render
 
-},{"../common/button":13,"../common/constants":14,"../common/images":16,"../common/modal":17,"./gameBoard/game":27,"lodash":2,"snabbdom/h":3}],26:[function(require,module,exports){
+},{"../common/button":13,"../common/constants":14,"../common/images":16,"../common/modal":17,"./gameBoard/animated":27,"lodash":2,"snabbdom/h":3}],26:[function(require,module,exports){
 const _ = require('lodash')
 const snabbdom = require('snabbdom')
 const patch = snabbdom.init([
@@ -18673,7 +18673,6 @@ function Game(element, player, gameId) {
       const oldState = state.game
       const newCycle = oldState.cycle !== serverState.cycle
 
-      state.animationStart = new Date()
       state.game = serverState
       if (newCycle) {
         state.focusedSlot = undefined
@@ -18688,9 +18687,7 @@ function Game(element, player, gameId) {
         player, gameId,
         game: gameRow.game,
         eventSource: gameService.updates(gameId),
-        modal: 'none',
-        animations: [],
-        animationStart: undefined
+        modal: 'none'
       }, element)
     }).catch(function (ex) {
       console.error(ex)
@@ -18706,28 +18703,127 @@ const _ = require('lodash')
 const h = require('snabbdom/h').default
 const svg = require('./svg')
 
+const animationSpeed = 0.5
+
+function animationDebugInfo(game){
+return `<g class="animationDebugInfo">
+    ${game.events.map((event, i) => {
+      return `
+    <text display="none" x="0" y="15" fill="black">
+        ${Object.keys(event)[0]}, ${JSON.stringify(event)}
+        <set attributeName="display" to="block" begin="${animationSpeed*i}s" dur="${animationSpeed}s" />
+    </text>
+      `}).join("")
+    }
+  </g>`
+}
+
+function nearestRotationTarget(from, to) {
+  const a = Math.abs(from - to)
+  const b = Math.abs(from - to + 360)
+  const c = Math.abs(from - to - 360)
+  if(a < b && a < c)
+    return to
+  else if(b < c)
+    return to - 360
+  else
+    return to + 360
+}
+
+function animateRotation(playerIndex, from, to, t){
+  return `<animateTransform attributeName="transform" type="rotate"
+                            xlink:href="#robot-rotation-${playerIndex}"
+                            from="${svg.directionToRotation(from)}"
+                            to="${nearestRotationTarget(svg.directionToRotation(from), svg.directionToRotation(to))}"
+                            begin="${t}s" dur="${animationSpeed}s" fill="freeze" />`
+}
+
+function animateTranslation(playerIndex, from, to, t) {
+  return `<animateTransform attributeName="transform" type="translate"
+                            xlink:href="#robot-translation-${playerIndex}"
+                            from="${svg.left(from.x,from.y)} ${svg.top(from.x,from.y)}" 
+                            to="${svg.left(to.x,to.y)} ${svg.top(to.x,to.y)}"
+                            begin="${t}s" dur="${animationSpeed}s" fill="freeze" />`
+}
+
+function initializeRobots(game) {
+  return game.players.map(player => {
+    const initial = game.scenario.initialRobots[player.index]
+    return animateRotation(player.index, initial.direction, initial.direction, 0)
+      + animateTranslation(player.index, initial.position, initial.position, 0)
+  })
+}
+
+function animate(events){
+  function t(i){
+    return i * animationSpeed
+  }
+
+  const functions = {
+    RobotTurns: (event, i) =>
+      animateRotation(event.playerIndex, event.from, event.to, t(i))
+    ,
+    RobotMoves: (event, i) => event.transitions
+        .map(transition => animateTranslation(transition.playerIndex, transition.from, transition.to, t(i)))
+        .join("")
+    ,
+    RobotReset: (event, i) =>
+      animateRotation(event.playerIndex, event.from.direction, event.to.direction, t(i))
+        + animateTranslation(event.playerIndex, event.from.position, event.to.position, t(i))
+  }
+
+  return events.map((event, i) => {
+    const f = functions[Object.keys(event)[0]]
+    return f ? f(Object.values(event)[0], i) : ''
+  }).join("")
+}
+
 function gameSvg(game) {
   return `
 <svg xmlns="http://www.w3.org/2000/svg"
   width="${svg.width(game.scenario)}"
   height="${svg.height(game.scenario)}"
+  duration="${time(game.events)}"
   viewBox="0 0 ${svg.width(game.scenario)} ${svg.height(game.scenario)}">
   <defs>${svg.defs}</defs>
   <g transform="scale(${svg.tile}) translate(0.5 0.5)">
-      ${svg.tiles(game.scenario)}
-      ${svg.walls(game.scenario)}
-      ${svg.target(game.scenario)}
-      ${svg.startingPoints(game.scenario)}
-      ${svg.robots(game)}
+    <g>${svg.tiles(game.scenario)}</g>
+    <g>${svg.walls(game.scenario)}</g>
+    <g>${svg.target(game.scenario)}</g>
+    <g>${svg.startingPoints(game.scenario)}</g>
+    <g>${svg.robots(game)}</g>
+  </g>
+  <g name="animation">
+    ${initializeRobots(game)}
+    ${animate(game.events)}
+  </g>
+  <g name="debug-info">
+    ${animationDebugInfo(game)}
   </g>
 </svg>`
 }
 
-function renderGame(scenario, additionalProperties) {
-  return h('div', _.merge({}, additionalProperties, {props: {innerHTML: gameSvg(scenario)}}))
+function renderGame(game) {
+  const duration = time(game.events)
+  var timeCache
+  function prepatch(oldVNode, newVNode){
+    const oldSvg = oldVNode.elm.getElementsByTagName('svg')[0]
+    const time = oldSvg.getCurrentTime()
+    timeCache = Math.min(duration, time)
+    console.log("set timecache to "+timeCache)
+  }
+  function postpatch(oldVNode, newVNode){
+    const newSvg = newVNode.elm.getElementsByTagName('svg')[0]
+    newSvg.setCurrentTime(timeCache)
+  }
+  return h('div', {props: {innerHTML: gameSvg(game)}, hook: {prepatch, postpatch}})
 }
 
-module.exports = {renderGame}
+function time(events){
+  return events.length * animationSpeed
+}
+
+module.exports = {renderGame, time}
 
 },{"./svg":29,"lodash":2,"snabbdom/h":3}],28:[function(require,module,exports){
 const _ = require('lodash')
@@ -18792,7 +18888,7 @@ const wallCoordinates = init(() => {
 
 
 function left(x, y) { return 0.75 * x }
-function top(x, y) { return  deltaTop * (y + (x % 2) / 2) }
+function top(x, y) { return  deltaTop * (y + ((x % 2 + 2) % 2) / 2) }
 function height(scenario) { return  (top(0, scenario.height) + 0.5) * tile }
 function width(scenario) { return  (left(scenario.width, 0) + (1-deltaLeft)) * tile }
 
@@ -18867,8 +18963,12 @@ function useRobotStartingPoint(x, y, color, direction){
   return `<use href="#robot-starting-point" stroke="${color}" transform="${translate(x, y)} rotate(${direction})"/>`
 }
 
-function useRobot(x, y, color, direction){
-  return `<use href="#robot" fill="${color}" transform="${translate(x, y)} rotate(${direction})"/>`
+function useRobot(index, x, y, color, direction){
+  return `<g id="robot-translation-${index}" transform="${translate(x, y)}">
+            <g id="robot-rotation-${index}" transform="rotate(${direction})">
+              <use href="#robot" id="robot-${index}" fill="${color}"/>
+            </g>
+          </g>`
 }
 
 function tiles(scenario) {
@@ -18897,13 +18997,19 @@ function startingPoints(scenario){
 function robots(game){
   return game.players.map(player => {
     const robot = player.robot
-    return useRobot(robot.position.x, robot.position.y, robotColor(player.index), directionToRotation(robot.direction))
+    return useRobot(player.index, robot.position.x, robot.position.y, robotColor(player.index), directionToRotation(robot.direction))
   }).join("")
 }
 
-module.exports = {defs,
+window.f = translate
+
+module.exports = {
+  directionToRotation, robotColor, translate, left, top,
+  useRobot,
+  defs,
   tile, width, height,
-  tiles, walls, target, startingPoints, robots}
+  tiles, walls, target, startingPoints, robots,
+}
 
 },{"lodash":2}],30:[function(require,module,exports){
 const Lobby = require('./lobby/lobby')
@@ -19006,7 +19112,7 @@ const h = require('snabbdom/h').default
 const button = require('../common/button')
 const modal = require('../common/modal')
 const frame = require('../common/frame')
-const {renderScenario} = require('../game/gameBoard/scenario')
+const {renderScenario} = require('../game/gameBoard/static')
 
 function render(state, actionHandler) {
   let m = null
@@ -19103,7 +19209,7 @@ function renderLoginModal(player, actionHandler) {
 
 module.exports = render
 
-},{"../common/button":13,"../common/frame":15,"../common/modal":17,"../game/gameBoard/scenario":28,"snabbdom/h":3}],34:[function(require,module,exports){
+},{"../common/button":13,"../common/frame":15,"../common/modal":17,"../game/gameBoard/static":28,"snabbdom/h":3}],34:[function(require,module,exports){
 const snabbdom = require('snabbdom')
 const patch = snabbdom.init([
   require('snabbdom/modules/eventlisteners').default,

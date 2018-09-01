@@ -33,7 +33,7 @@ const wallCoordinates = init(() => {
 
 
 function left(x, y) { return 0.75 * x }
-function top(x, y) { return  deltaTop * (y + (x % 2) / 2) }
+function top(x, y) { return  deltaTop * (y + ((x % 2 + 2) % 2) / 2) }
 function height(scenario) { return  (top(0, scenario.height) + 0.5) * tile }
 function width(scenario) { return  (left(scenario.width, 0) + (1-deltaLeft)) * tile }
 
@@ -108,8 +108,12 @@ function useRobotStartingPoint(x, y, color, direction){
   return `<use href="#robot-starting-point" stroke="${color}" transform="${translate(x, y)} rotate(${direction})"/>`
 }
 
-function useRobot(x, y, color, direction){
-  return `<use href="#robot" fill="${color}" transform="${translate(x, y)} rotate(${direction})"/>`
+function useRobot(index, x, y, color, direction){
+  return `<g id="robot-translation-${index}" transform="${translate(x, y)}">
+            <g id="robot-rotation-${index}" transform="rotate(${direction})">
+              <use href="#robot" id="robot-${index}" fill="${color}"/>
+            </g>
+          </g>`
 }
 
 function tiles(scenario) {
@@ -138,10 +142,16 @@ function startingPoints(scenario){
 function robots(game){
   return game.players.map(player => {
     const robot = player.robot
-    return useRobot(robot.position.x, robot.position.y, robotColor(player.index), directionToRotation(robot.direction))
+    return useRobot(player.index, robot.position.x, robot.position.y, robotColor(player.index), directionToRotation(robot.direction))
   }).join("")
 }
 
-module.exports = {defs,
+window.f = translate
+
+module.exports = {
+  directionToRotation, robotColor, translate, left, top,
+  useRobot,
+  defs,
   tile, width, height,
-  tiles, walls, target, startingPoints, robots}
+  tiles, walls, target, startingPoints, robots,
+}

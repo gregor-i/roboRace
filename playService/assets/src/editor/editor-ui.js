@@ -1,6 +1,6 @@
 const h = require('snabbdom/h').default
 const button = require('../common/button')
-const renderScenario = require('../game/gameBoard/scenario').render
+const {renderScenario} = require('../game/gameBoard/static')
 const images = require('../common/images')
 
 function render(state, actionHandler) {

@@ -35,7 +35,6 @@ function Game(element, player, gameId) {
       const oldState = state.game
       const newCycle = oldState.cycle !== serverState.cycle
 
-      state.animationStart = new Date()
       state.game = serverState
       if (newCycle) {
         state.focusedSlot = undefined
@@ -50,9 +49,7 @@ function Game(element, player, gameId) {
         player, gameId,
         game: gameRow.game,
         eventSource: gameService.updates(gameId),
-        modal: 'none',
-        animations: [],
-        animationStart: undefined
+        modal: 'none'
       }, element)
     }).catch(function (ex) {
       console.error(ex)

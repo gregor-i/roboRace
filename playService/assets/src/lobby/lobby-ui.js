@@ -2,7 +2,7 @@ const h = require('snabbdom/h').default
 const button = require('../common/button')
 const modal = require('../common/modal')
 const frame = require('../common/frame')
-const {renderScenario} = require('../game/gameBoard/scenario')
+const {renderScenario} = require('../game/gameBoard/static')
 
 function render(state, actionHandler) {
   let m = null

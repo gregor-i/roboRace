@@ -3,7 +3,7 @@ const h = require('snabbdom/h').default
 const constants = require('../common/constants')
 const button = require('../common/button')
 const modal = require('../common/modal')
-const gameBoard = require('./gameBoard/game')
+const gameBoardAnimated = require('./gameBoard/animated')
 const images = require('../common/images')
 
 
@@ -21,7 +21,7 @@ function render(state, actionHandler) {
     fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
     fab('.fab-left-1', images.iconReplayAnimation, [actionHandler, {replayAnimations: state.animations}]),
     fab('.fab-left-2', playerIndex !== undefined ? images.player(playerIndex) : images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),
-    h('div.game-board', gameBoard.renderGame(game)),
+    h('div.game-board', gameBoardAnimated.renderGame(game)),
     renderActionButtons(state, game, actionHandler),
     m])
 }

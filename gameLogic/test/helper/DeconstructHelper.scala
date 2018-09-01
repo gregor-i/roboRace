@@ -13,7 +13,7 @@ trait DeconstructHelper {
       val r = f(state)
       r shouldBe a[CommandAccepted]
       val newState = r.asInstanceOf[CommandAccepted].newState
-      Cycle.apply(newState)
+      Cycle(newState)
     }
 
     def rejected(): Game => Game =

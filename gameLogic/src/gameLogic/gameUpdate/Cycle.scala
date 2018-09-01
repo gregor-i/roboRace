@@ -3,15 +3,15 @@ package gameUpdate
 
 import monocle.function.Each.each
 
-object Cycle{
-  def apply: Game => Game = {
+object Cycle extends (Game => Game){
+  def apply(game: Game): Game = {
     def readyForCycle(g: Game): Boolean =
       g.players.forall(p => p.finished.isDefined || p.instructionSlots.flatten.size == Constants.instructionsPerCycle) && !g.players.forall(_.finished.isDefined)
 
     State.sequence(
       State.conditional(readyForCycle)(
         State.sequence(
-          g => g.log(StartCycleEvaluation(g.cycle)),
+          g => g.log(StartCycleEvaluation(g.cycle, g.players)),
           execAllActions,
           ScenarioEffects.afterCycle,
           g => g.log(FinishedCycleEvaluation(g.cycle)),
@@ -22,7 +22,7 @@ object Cycle{
           )
         )
       )
-    )
+    )(game)
   }
 
   private def execAllActions(gameRunning: Game): Game =
