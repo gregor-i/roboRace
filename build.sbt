@@ -20,7 +20,7 @@ def monocle = Seq(
   libraryDependencies ++= Seq(
     "com.github.julien-truffaut" %% "monocle-core" % "1.5.0",
     "com.github.julien-truffaut" %% "monocle-macro" % "1.5.0",
-    "com.github.julien-truffaut" %% "monocle-law" % "1.5.0" % Test
+    "com.github.julien-truffaut" %% "monocle-unsafe"  % "1.5.0"
   ),
   addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.1" cross CrossVersion.full)
 )

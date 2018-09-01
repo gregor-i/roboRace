@@ -4,6 +4,6 @@ import gameLogic._
 import gameLogic.gameUpdate._
 
 trait UpdateChainHelper {
-  def updateChain(state: Game)(fs: (Game => Game)*): Game =
-    fs.foldLeft(state)((s, f) => Cycle(f(s)))
+  def sequenceWithAutoCycle(state: Game)(fs: (Game => Game)*): Game =
+    State.sequence(fs.map(_ andThen Cycle.apply): _*)(state)
 }

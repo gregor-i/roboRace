@@ -1,7 +1,6 @@
 package gameLogic
 
 case class Scenario(width: Int, height: Int,
-                    beaconPosition: Position,
                     targetPosition: Position,
                     initialRobots: Seq[Robot],
                     walls: Seq[Wall],
@@ -38,7 +37,6 @@ object Scenario {
   val default = Scenario(
     width = 7,
     height = 9,
-    beaconPosition = Position(3, 8),
     targetPosition = Position(3, 1),
     initialRobots = Seq(
       robot(1, 8, Up),

@@ -1,6 +1,6 @@
 package gameLogic.gameUpdate
 
-import gameLogic.{FinishedStatistic, Game, PlayerFinished, Player}
+import gameLogic._
 
 object ScenarioEffects {
 
@@ -36,12 +36,15 @@ object ScenarioEffects {
     } match {
       case None => game
       case Some(player) =>
-        val stats = FinishedStatistic(rank = game.players.count(_.finished.isDefined) + 1, cycle = game.cycle, rageQuitted = false)
+        val stats = FinishedStatistic(
+          rank = game.players.count(_.finished.isDefined) + 1,
+          cycle = game.cycle,
+          rageQuitted = false)
 
-        (Game.player(player.name) composeLens Player.finished)
-          .set(Some(stats))
-          .apply(game)
-          .log(PlayerFinished(player.index))
+        State.sequence(
+          (Game.player(player.name) composeLens Player.finished).set(Some(stats)),
+          _.log(PlayerFinished(player.index))
+        )(game)
     }
   }
 }

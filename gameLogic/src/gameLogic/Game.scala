@@ -1,8 +1,9 @@
 package gameLogic
 
-import monocle.Optional
+import monocle.Traversal
+import monocle.function.Each.each
 import monocle.macros.Lenses
-import util.OptionalWhere
+import monocle.unsafe.UnsafeSelect
 
 @Lenses
 case class Game(cycle: Int,
@@ -13,7 +14,5 @@ case class Game(cycle: Int,
 }
 
 object Game {
-  def player(name: String): Optional[Game, Player] = players.composeOptional(OptionalWhere.where(_.name == name))
-
-  def isFinished(game: Game) : Boolean = game.players.forall(_.finished.isDefined)
+  def player(name: String): Traversal[Game, Player] = players.composeTraversal(each).composePrism(UnsafeSelect.unsafeSelect[Player](_.name == name))
 }

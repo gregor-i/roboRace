@@ -29,15 +29,16 @@ object Events {
     loop(event, game).log(asEvent(event))
   }
 
-  def turn(player: Player, nextDirection: Direction)(game: Game): Game =
-    (robot(player.name) composeLens direction)
-      .set(nextDirection)(game)
-      .log(RobotTurns(player.index, player.robot.direction, nextDirection))
+  def turn(player: Player, nextDirection: Direction): Game => Game =
+    State.sequence(
+      (robot(player.name) composeLens direction).set(nextDirection),
+      _.log(RobotTurns(player.index, player.robot.direction, nextDirection))
+    )
 
-  def reset(player: Player, initialRobot: Robot)(game: Game): Game =
-    robot(player.name).set(initialRobot)
-      .andThen((Game.player(player.name) composeLens Player.instructionSlots).set(Instruction.emptySlots))
-      .apply(game)
-      .log(RobotReset(player.index, initialRobot))
-
+  def reset(player: Player, initialRobot: Robot): Game => Game =
+    State.sequence(
+      robot(player.name).set(initialRobot)
+        .andThen((Game.player(player.name) composeLens Player.instructionSlots).set(Instruction.emptySlots)),
+      _.log(RobotReset(player.index, initialRobot))
+    )
 }

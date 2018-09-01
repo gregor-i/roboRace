@@ -6,14 +6,13 @@ import org.scalatest.{FunSuite, Matchers}
 
 class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
   val scenario = Scenario(10, 10,
-    Position(9, 9),
     Position(9, 8),
     List(
       Robot(Position(5, 5), DownRight),
       Robot(Position(6, 6), DownLeft)
     ), List.empty, List.empty)
 
-  val initialGame = updateChain(createGame(scenario)(p0))(
+  val initialGame = sequenceWithAutoCycle(createGame(scenario)(p0))(
     RegisterForGame(p1).accepted,
     placeRobot(p0, Robot(Position(0, 0), Down)),
     placeRobot(p1, Robot(Position(0, 1), Down)),
@@ -21,7 +20,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
   )
 
   test("move a robot") {
-    updateChain(initialGame)(
+    sequenceWithAutoCycle(initialGame)(
       forcedInstructions(p0)(),
       forcedInstructions(p1)(MoveForward),
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
@@ -33,7 +32,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("push a robot by moving") {
-    updateChain(initialGame)(
+    sequenceWithAutoCycle(initialGame)(
       forcedInstructions(p0)(MoveForward),
       forcedInstructions(p1)(),
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 1)),
@@ -46,7 +45,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("don't push through walls") {
-    updateChain(initialGame)(
+    sequenceWithAutoCycle(initialGame)(
       addWall(Wall(Position(0, 1), Down)),
       forcedInstructions(p0)(MoveForward),
       forcedInstructions(p1)(MoveForward),
@@ -58,7 +57,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("move robots from the board") {
-    updateChain(initialGame)(
+    sequenceWithAutoCycle(initialGame)(
       forcedInstructions(p0)(MoveBackward),
       forcedInstructions(p1)(),
       assertPlayer(p0)(_.robot.position shouldBe Position(5, 5)),
@@ -72,7 +71,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("move twice without barrier") {
-    updateChain(initialGame)(
+    sequenceWithAutoCycle(initialGame)(
       forcedInstructions(p0)(),
       forcedInstructions(p1)(MoveTwiceForward),
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
@@ -87,7 +86,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("move twice with a barrier on the way") {
-    updateChain(initialGame)(
+    sequenceWithAutoCycle(initialGame)(
       addWall(Wall(Position(0, 2), Down)),
       forcedInstructions(p0)(),
       forcedInstructions(p1)(MoveTwiceForward),
@@ -101,7 +100,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("move twice also pushes twice") {
-    updateChain(initialGame)(
+    sequenceWithAutoCycle(initialGame)(
       forcedInstructions(p0)(MoveTwiceForward),
       forcedInstructions(p1)(),
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 2)),
@@ -118,7 +117,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("move twice stops after the first move if the robot was resetted") {
-    updateChain(initialGame)(
+    sequenceWithAutoCycle(initialGame)(
       addPit(Position(0, 2)),
       forcedInstructions(p0)(),
       forcedInstructions(p1)(MoveTwiceForward),

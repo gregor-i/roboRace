@@ -50,8 +50,6 @@ object MoveRobots {
     }
     if (blockedByWall)
       false
-    //        if (game.scenario.beaconPosition == position.move(direction))
-    //          false
     else if (game.players.exists(player => player.robot.position == direction(position) && player.finished.isEmpty))
       movementIsAllowed(game, direction(position), direction)
     else
