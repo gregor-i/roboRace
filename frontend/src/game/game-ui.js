@@ -21,7 +21,7 @@ function render(state, actionHandler) {
     fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
     fab('.fab-left-1', images.iconReplayAnimation, [actionHandler, {replayAnimations: state.animations}]),
     fab('.fab-left-2', playerIndex !== undefined ? images.player(playerIndex) : images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),
-    h('div.game-board', gameBoardAnimated.renderGame(game)),
+    gameBoardAnimated.renderGame(game),
     renderActionButtons(state, game, actionHandler),
     m])
 }
@@ -72,7 +72,7 @@ function renderActionButtons(state, game, actionHandler) {
     const instruction = player.instructionSlots[index]
     const focused = focusedSlot === index
     const props = {
-      class: {"slot-focused": focused},
+      class: {focused},
       on: {
         dblclick: () => actionHandler({resetSlot: true, slot: index}),
         click: () => actionHandler({focusSlot: index})
@@ -80,22 +80,22 @@ function renderActionButtons(state, game, actionHandler) {
     }
     if (instruction !== undefined && instruction !== null) {
       const image = images.action(Object.keys(player.instructionOptions[instruction])[0])
-      return h('div.slot.slot-filled', props,
+      return h('span.slot.filled', props,
           h('img', {props: {src: image.src}}))
     } else {
-      return h('div.slot', props, index+1)
+      return h('span.slot', props, index+1)
     }
   }
 
   if (!player && game.cycle === 0) {
     return h('div.footer-group', [
-      h('div.slots-panel', 'observer mode'),
-      h('div.cards-panel', button.builder.primary()(actionHandler, {joinGame: state.gameId}, 'Join Game'))
+      h('div.text-panel', 'observer mode'),
+      h('div.text-panel', button.builder.primary()(actionHandler, {joinGame: state.gameId}, 'Join Game'))
     ])
   } else if (!player) {
-    return h('div.status-panel', h('div.text', 'observer mode'))
+    return h('div.text-panel', 'observer mode')
   } else if (player.finished) {
-    return h('div.status-panel', h('div.text', 'target reached'))
+    return h('div.text-panel', 'target reached')
   } else {
     let instructionTypes = []
     let instr = _.clone(player.instructionOptions)

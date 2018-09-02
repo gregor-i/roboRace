@@ -1,4 +1,4 @@
-body {
+html, body{
   font-family: Roboto;
   width: 100%;
   height: 100%;
@@ -6,41 +6,9 @@ body {
   padding: 0;
 }
 
-.frame {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-}
-
-.frame-header {
-  background-color: grey;
-  padding: 0.5em;
-  flex-shrink: 0;
-}
-
-.frame-body {
-  flex-grow: 1;
-  flex-shrink: 1;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  padding: 0.5em;
-  position: relative;
-}
-
-.frame-footer {
-  padding: 0.5em;
-  flex-grow: 0;
-  flex-shrink: 0;
-}
-
-html, body{
-  height: 100%;
-}
+/*
+ * Game Layout
+ */
 
 .game {
   display: flex;
@@ -69,6 +37,18 @@ html, body{
 .footer-group {
   width: 100%;
 }
+
+.text-panel {
+  text-align: center;
+  overflow-x: auto;
+  margin: 4px;
+  font-size: 30px;
+  color: white;
+}
+
+/*
+ * Floating Action Buttons (= fab)
+ */
 
 .fab {
   width: 48px;
@@ -105,15 +85,18 @@ html, body{
   top: 8px;
 }
 
+/*
+ * Slots
+ */
+
 .slots-panel {
   text-align: center;
   overflow-x: auto;
-  white-space: nowrap;
-  overflow-y: hidden;
   margin: 4px;
+  height: 72px;
 }
 
-.slot {
+.slots-panel .slot {
   width: 48px;
   height: 64px;
   border-radius: 4px;
@@ -130,21 +113,24 @@ html, body{
   align-items: center;
 }
 
-.slot-filled {
+.slots-panel .filled {
   background-color: #ffffff;
 }
 
-.slot-filled img {
+.slots-panel .filled img {
   width: 100%;
   object-fit: contain;
 }
 
-.slot-focused {
-  -webkit-backdrop-filter: blur(10px);
+.slots-panel .focused {
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 9px 0 #1d97e2;
   border: solid 2px #1d97e2;
 }
+
+/*
+ * Cards (= Instructions)
+ */
 
 .cards-panel {
   text-align: center;
@@ -155,7 +141,7 @@ html, body{
   margin: 4px;
 }
 
-.action {
+.cards-panel .action {
   width: 80px;
   height: 96px;
   border-radius: 4px;
@@ -169,12 +155,12 @@ html, body{
   align-items: center;
 }
 
-.action img {
+.cards-panel .action img {
   width: 100%;
   object-fit: contain;
 }
 
-.action .badge {
+.cards-panel .action .badge {
   width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -189,18 +175,4 @@ html, body{
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.status-panel {
-  text-align: center;
-  height: 184px;
-  overflow-x: auto;
-  margin: 4px;
-  font-size: 30px;
-}
-
-.box.content div svg{
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
 }

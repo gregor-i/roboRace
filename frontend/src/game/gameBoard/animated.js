@@ -142,7 +142,7 @@ function renderGame(game) {
       newSvg.setCurrentTime(Math.min(oldTime, oldDuration))
     }
   }
-  return h('div', {props: {innerHTML: gameSvg(game)}, hook: {insert, prepatch, postpatch}})
+  return h('div.game-board', {props: {innerHTML: gameSvg(game)}, hook: {insert, prepatch, postpatch}})
 }
 
 function eventDuration(event){

@@ -36,14 +36,14 @@ function fab(classes, image, onclick){
 
 function renderEditorActionbar(actionHandler) {
   return h('div.footer-group', [
-    h('div.slots-panel', [
+    h('div.text-panel', [
       button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
       button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
       button.builder(actionHandler, {setClickAction: 'SetTarget'}, 'Target'),
       button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
       button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
     ]),
-    h('div.slots-panel', [
+    h('div.text-panel', [
       button.builder(actionHandler, 'width--', 'W-'),
       button.builder(actionHandler, 'width++', 'W+'),
       button.builder(actionHandler, 'height--', 'H-'),
