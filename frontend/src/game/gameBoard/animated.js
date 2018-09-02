@@ -80,8 +80,8 @@ function animate(events){
 function gameSvg(game) {
   return `
 <svg xmlns="http://www.w3.org/2000/svg"
-  width="${svg.width(game.scenario)}"
-  height="${svg.height(game.scenario)}"
+  min-width="${svg.width(game.scenario)}"
+  min-height="${svg.height(game.scenario)}"
   duration="${eventSequenceDuration(game.events)}"
   viewBox="0 0 ${svg.width(game.scenario)} ${svg.height(game.scenario)}">
   <defs>${svg.defs}</defs>
