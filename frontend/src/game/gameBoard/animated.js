@@ -2,18 +2,18 @@ const _ = require('lodash')
 const h = require('snabbdom/h').default
 const svg = require('./svg')
 
-const animationSpeed = 0.5
-
-function animationDebugInfo(game){
-return `<g class="animationDebugInfo">
+function animationDebugInfo(game) {
+  return `<g class="animationDebugInfo">
     ${game.events.map((event, i) => {
-      return `
-    <text display="none" x="0" y="15" fill="black">
-        ${Object.keys(event)[0]}, ${JSON.stringify(event)}
-        <set attributeName="display" to="block" begin="${animationSpeed*i}s" dur="${animationSpeed}s" />
-    </text>
-      `}).join("")
-    }
+      const duration = eventDuration(event)
+      if (duration !== 0)
+        return `<text display="none" x="0" y="15" fill="black">
+                  ${Object.keys(event)[0]}, ${JSON.stringify(event)}
+                  <set attributeName="display" to="block" begin="${eventSequenceDuration(_.take(game.events, i))}s" dur="${duration}s" />
+                </text>`
+      else
+        return ""
+      }).join("")}
   </g>`
 }
 
@@ -29,51 +29,51 @@ function nearestRotationTarget(from, to) {
     return to + 360
 }
 
-function animateRotation(playerIndex, from, to, t){
+function animateRotation(playerIndex, from, to, begin, duration){
   return `<animateTransform attributeName="transform" type="rotate"
                             xlink:href="#robot-rotation-${playerIndex}"
                             from="${svg.directionToRotation(from)}"
                             to="${nearestRotationTarget(svg.directionToRotation(from), svg.directionToRotation(to))}"
-                            begin="${t}s" dur="${animationSpeed}s" fill="freeze" />`
+                            begin="${begin}s" dur="${duration === 0 ? 'indefinite' : duration}s" fill="freeze" />`
 }
 
-function animateTranslation(playerIndex, from, to, t) {
+function animateTranslation(playerIndex, from, to, begin, duration) {
   return `<animateTransform attributeName="transform" type="translate"
                             xlink:href="#robot-translation-${playerIndex}"
                             from="${svg.left(from.x,from.y)} ${svg.top(from.x,from.y)}" 
                             to="${svg.left(to.x,to.y)} ${svg.top(to.x,to.y)}"
-                            begin="${t}s" dur="${animationSpeed}s" fill="freeze" />`
+                            begin="${begin}s" dur="${duration === 0 ? 'indefinite' : duration}s" fill="freeze" />`
 }
 
 function initializeRobots(game) {
   return game.players.map(player => {
     const initial = game.scenario.initialRobots[player.index]
-    return animateRotation(player.index, initial.direction, initial.direction, 0)
-      + animateTranslation(player.index, initial.position, initial.position, 0)
+    return animateRotation(player.index, initial.direction, initial.direction, 0, 0)
+      + animateTranslation(player.index, initial.position, initial.position, 0, 0)
   })
 }
 
 function animate(events){
   function t(i){
-    return i * animationSpeed
+    return eventSequenceDuration(_.take(events, i))
   }
 
   const functions = {
-    RobotTurns: (event, i) =>
-      animateRotation(event.playerIndex, event.from, event.to, t(i))
+    RobotTurns: (event, data, i) =>
+      animateRotation(data.playerIndex, data.from, data.to, t(i), eventDuration(event))
     ,
-    RobotMoves: (event, i) => event.transitions
-        .map(transition => animateTranslation(transition.playerIndex, transition.from, transition.to, t(i)))
+    RobotMoves: (event, data, i) => data.transitions
+        .map(transition => animateTranslation(transition.playerIndex, transition.from, transition.to, t(i), eventDuration(event)))
         .join("")
     ,
-    RobotReset: (event, i) =>
-      animateRotation(event.playerIndex, event.from.direction, event.to.direction, t(i))
-        + animateTranslation(event.playerIndex, event.from.position, event.to.position, t(i))
+    RobotReset: (event, data, i) =>
+      animateRotation(data.playerIndex, data.from.direction, data.to.direction, t(i), eventDuration(event))
+        + animateTranslation(data.playerIndex, data.from.position, data.to.position, t(i), eventDuration(event))
   }
 
   return events.map((event, i) => {
     const f = functions[Object.keys(event)[0]]
-    return f ? f(Object.values(event)[0], i) : ''
+    return f ? f(event, Object.values(event)[0], i) : ''
   }).join("")
 }
 
@@ -82,7 +82,7 @@ function gameSvg(game) {
 <svg xmlns="http://www.w3.org/2000/svg"
   width="${svg.width(game.scenario)}"
   height="${svg.height(game.scenario)}"
-  duration="${time(game.events)}"
+  duration="${eventSequenceDuration(game.events)}"
   viewBox="0 0 ${svg.width(game.scenario)} ${svg.height(game.scenario)}">
   <defs>${svg.defs}</defs>
   <g transform="scale(${svg.tile}) translate(0.5 0.5)">
@@ -103,22 +103,35 @@ function gameSvg(game) {
 }
 
 function renderGame(game) {
-  const duration = time(game.events)
-  var timeCache
+  var oldDuration, oldTime
+  function insert(vnode){
+    const svg = vnode.elm.getElementsByTagName('svg')[0]
+    svg.dataset.duration = eventSequenceDuration(game.events)
+  }
   function prepatch(oldVNode, newVNode){
     const oldSvg = oldVNode.elm.getElementsByTagName('svg')[0]
-    const time = oldSvg.getCurrentTime()
-    timeCache = Math.min(duration, time)
+    oldDuration = parseFloat(oldSvg.dataset.duration) || 0
+    oldTime = oldSvg.getCurrentTime()
   }
   function postpatch(oldVNode, newVNode){
     const newSvg = newVNode.elm.getElementsByTagName('svg')[0]
-    newSvg.setCurrentTime(timeCache)
+    const newDuration = eventSequenceDuration(game.events)
+    console.log({oldDuration, newDuration})
+    if(oldDuration !== newDuration){
+      newSvg.dataset.duration = newDuration
+      newSvg.setCurrentTime(Math.min(oldTime, oldDuration))
+      console.log({oldTime, oldDuration, min: Math.min(oldTime, oldDuration)})
+    }
   }
-  return h('div', {props: {innerHTML: gameSvg(game)}, hook: {prepatch, postpatch}})
+  return h('div', {props: {innerHTML: gameSvg(game)}, hook: {insert, prepatch, postpatch}})
 }
 
-function time(events){
-  return events.length * animationSpeed
+function eventDuration(event){
+  return event.RobotTurns || event.RobotMoves || event.RobotReset ? 0.5 : 0
 }
 
-module.exports = {renderGame, time}
+function eventSequenceDuration(events){
+  return _.sumBy(events, eventDuration)
+}
+
+module.exports = {renderGame}
