@@ -48,6 +48,7 @@ html, body{
   flex-wrap: nowrap;
   justify-content: flex-end;
   height: 100%;
+  background: #4a4a4a;
 }
 
 .game-board {
