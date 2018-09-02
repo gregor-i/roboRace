@@ -2,7 +2,7 @@ name := "roboRace"
 
 scalaVersion in ThisBuild := "2.12.6"
 
-lazy val playService = project.in(file("playService"))
+lazy val service = project.in(file("service"))
   .dependsOn(gameLogic)
   .settings(scalaTest)
 

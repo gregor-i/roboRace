@@ -7,12 +7,15 @@
   },
   "devDependencies": {
     "browserify": "^14.4.0",
-    "uglify-js": "^3.0.27"
+    "uglify-js": "^3.0.27",
+    "clean-css-cli": "^4.2.1",
+    "svgo": "^1.0.5"
   },
   "scripts": {
-    "watch": "nodemon --watch . -e json,js --exec \"npm run build\"",
-    "build": "npm run build-js && npm run build-css",
-    "build-css": "cp node_modules/bulma/css/bulma.min.css playService/public/. && cp frontend/src/robo-race.css playService/public/.",
-    "build-js": "browserify -e frontend/src/index.js  > playService/public/robo-race.js"
+    "watch": "nodemon --watch frontend -e css,js,svg --exec \"npm run build\"",
+    "build": "npm run build-js && npm run build-css && npm run build-img",
+    "build-img": "svgo -f frontend/img -o service/public",
+    "build-css": "cleancss node_modules/bulma/css/bulma.min.css frontend/css/robo-race.css -o service/public/robo-race.css",
+    "build-js": "browserify -e frontend/src/index.js  > service/public/robo-race.js"
   }
 }

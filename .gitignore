@@ -9,10 +9,7 @@ target/
 node_modules/
 temp/
 
-gameRepo.json
-
 package-lock.json
-.heroku
-
-playService/public/*.css
-playService/public/*.js
+service/public/*.svg
+service/public/*.js
+service/public/*.css

@@ -1,1 +1,1 @@
-web: playService/target/universal/stage/bin/playservice -Dhttp.port=${PORT} ${JAVA}
+web: service/target/universal/stage/bin/service -Dhttp.port=${PORT} ${JAVA}
