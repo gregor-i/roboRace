@@ -26,7 +26,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
       assertPlayer(p1)(_.robot.position shouldBe Position(0, 2)),
       assertLog(_ should contain(RobotMoves(Seq(
-        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+        RobotPositionTransition(1, Down, Position(0, 1), Position(0, 2))
       ))))
     )
   }
@@ -38,8 +38,8 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 1)),
       assertPlayer(p1)(_.robot.position shouldBe Position(0, 2)),
       assertLog(_ should contain(RobotMoves(Seq(
-        RobotPositionTransition(0, Position(0, 0), Position(0, 1)),
-        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+        RobotPositionTransition(0, Down, Position(0, 0), Position(0, 1)),
+        RobotPositionTransition(1, Down,Position(0, 1), Position(0, 2))
       ))))
     )
   }
@@ -64,9 +64,9 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertPlayer(p0)(_.robot.direction shouldBe DownRight),
       assertPlayer(p1)(_.robot.position shouldBe Position(0, 1)),
       assertLog(_ should contain(RobotMoves(Seq(
-        RobotPositionTransition(0, Position(0, 0), Position(0, -1))
+        RobotPositionTransition(0, Down, Position(0, 0), Position(0, -1))
       )))),
-      assertLog(_ should contain(RobotReset(0, Robot(Position(5, 5), DownRight))))
+      assertLog(_ should contain(RobotReset(0, Robot(Position(0, -1), Down), Robot(Position(5, 5), DownRight))))
     )
   }
 
@@ -77,10 +77,10 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
       assertPlayer(p1)(_.robot.position shouldBe Position(0, 3)),
       assertLog(_ should contain(RobotMoves(Seq(
-        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+        RobotPositionTransition(1, Down, Position(0, 1), Position(0, 2))
       )))),
       assertLog(_ should contain(RobotMoves(Seq(
-        RobotPositionTransition(1, Position(0, 2), Position(0, 3))
+        RobotPositionTransition(1, Down, Position(0, 2), Position(0, 3))
       ))))
     )
   }
@@ -93,7 +93,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
       assertPlayer(p1)(_.robot.position shouldBe Position(0, 2)),
       assertLog(_ should contain(RobotMoves(Seq(
-        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+        RobotPositionTransition(1, Down, Position(0, 1), Position(0, 2))
       )))),
       assertLog(_ should contain(MovementBlocked(1, Robot(Position(0, 2), Down))))
     )
@@ -106,12 +106,12 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 2)),
       assertPlayer(p1)(_.robot.position shouldBe Position(0, 3)),
       assertLog(_ should contain(RobotMoves(Seq(
-        RobotPositionTransition(0, Position(0, 0), Position(0, 1)),
-        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+        RobotPositionTransition(0, Down, Position(0, 0), Position(0, 1)),
+        RobotPositionTransition(1, Down, Position(0, 1), Position(0, 2))
       )))),
       assertLog(_ should contain(RobotMoves(Seq(
-        RobotPositionTransition(0, Position(0, 1), Position(0, 2)),
-        RobotPositionTransition(1, Position(0, 2), Position(0, 3))
+        RobotPositionTransition(0, Down, Position(0, 1), Position(0, 2)),
+        RobotPositionTransition(1, Down, Position(0, 2), Position(0, 3))
       ))))
     )
   }
@@ -124,9 +124,9 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
       assertPlayer(p1)(_.robot.position shouldBe Position(6, 6)),
       assertLog(_ should contain(RobotMoves(Seq(
-        RobotPositionTransition(1, Position(0, 1), Position(0, 2))
+        RobotPositionTransition(1, Down, Position(0, 1), Position(0, 2))
       )))),
-      assertLog(_ should contain(RobotReset(1, Robot(Position(6,6), DownLeft))))
+      assertLog(_ should contain(RobotReset(1, Robot(Position(0,2),Down), Robot(Position(6,6), DownLeft))))
     )
   }
 }

@@ -4,7 +4,7 @@ sealed trait EventLog
 
 case class PlayerJoinedGame(playerIndex: Int, robot: Robot) extends EventLog
 
-case class StartCycleEvaluation(cycle: Int, players: Seq[Player]) extends EventLog
+case class StartCycleEvaluation(cycle: Int) extends EventLog
 case class FinishedCycleEvaluation(cycle: Int) extends EventLog
 
 case class RobotAction(playerIndex: Int, instruction: Instruction) extends EventLog
