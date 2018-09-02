@@ -11,8 +11,6 @@
   },
   "scripts": {
     "watch": "nodemon --watch . -e json,js --exec \"npm run build\"",
-    "build": "npm run build-js && npm run build-css",
-    "build-css": "cp node_modules/bulma/css/bulma.min.css ../public/bulma.min.css",
-    "build-js": "browserify -e src/index.js  > ../public/robo-race.js"
+    "build": "npm run --prefix frontend build"
   }
 }

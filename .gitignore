@@ -13,3 +13,6 @@ gameRepo.json
 
 package-lock.json
 .heroku
+
+playService/public/*.css
+playService/public/*.js
