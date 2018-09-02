@@ -1,6 +1,6 @@
 package gameLogic.gameUpdate
 
-import gameLogic.{Game, Instruction, InvalidScenario, Player, Scenario}
+import gameLogic._
 
 object CreateGame {
   def apply(scenario: Scenario)(player: String): CommandResponse = {
@@ -18,7 +18,7 @@ object CreateGame {
           )
         ),
         events = Seq.empty
-      ))
+      ).log(PlayerJoinedGame(0, scenario.initialRobots(0))))
     else
       CommandRejected(InvalidScenario)
   }

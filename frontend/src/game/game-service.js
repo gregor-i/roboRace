@@ -1,4 +1,4 @@
-const headers = require('../common/service-headers')
+const {headers, parseJson} = require('../common/service-util')
 
 function getState(gameId) {
     return fetch("/api/games/" + gameId, headers({}))
@@ -31,9 +31,6 @@ function updates(gameId) {
     return new EventSource("/api/games/" + gameId + "/events")
 }
 
-function parseJson(resp) {
-    return resp.json()
-}
 
 module.exports = {
     getState,

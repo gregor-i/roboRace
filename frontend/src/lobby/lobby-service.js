@@ -1,4 +1,4 @@
-const headers = require('../common/service-headers')
+const {headers, parseJson} = require('../common/service-util')
 
 function getAllGames() {
   return fetch("/api/games", headers({}))
@@ -14,10 +14,6 @@ function createGame(scenario) {
 
 function deleteGame(gameId) {
   return fetch("/api/games/" + gameId, headers({method: "DELETE"}))
-}
-
-function parseJson(resp) {
-  return resp.json()
 }
 
 function updates() {

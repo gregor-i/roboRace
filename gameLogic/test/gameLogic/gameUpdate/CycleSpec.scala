@@ -73,7 +73,7 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
         RobotAction(0, MoveForward),
         RobotMoves(List(RobotPositionTransition(0, Down, Position(0,8), Position(0, 9)))),
         RobotAction(0, Sleep),
-        PlayerFinished(0),
+        PlayerFinished(0, Robot(Position(0, 9), Down)),
         FinishedCycleEvaluation(1),
         AllPlayersFinished
       ))

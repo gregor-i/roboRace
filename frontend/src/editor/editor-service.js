@@ -1,4 +1,4 @@
-const headers = require('../common/service-headers')
+const {headers, parseJson} = require('../common/service-util')
 
 function loadAllScenarios() {
   return fetch('/api/scenarios', headers({}))
@@ -21,10 +21,6 @@ function deleteScenario(id) {
   return fetch('/api/scenarios/' + id, headers({
     method: 'DELETE'
   }))
-}
-
-function parseJson(resp) {
-  return resp.json()
 }
 
 module.exports = {

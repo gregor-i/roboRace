@@ -45,12 +45,24 @@ function animateTranslation(playerIndex, from, to, begin, duration) {
                             begin="${begin}s" dur="${duration === 0 ? 'indefinite' : duration}s" fill="freeze" />`
 }
 
-function initializeRobots(game) {
-  return game.players.map(player => {
-    const initial = game.scenario.initialRobots[player.index]
-    return animateRotation(player.index, initial.direction, initial.direction, 0, 0)
-      + animateTranslation(player.index, initial.position, initial.position, 0, 0)
-  })
+function animateScale(playerIndex, from, to, begin, duration){
+  return `<animateTransform attributeName="transform" type="scale"
+                            xlink:href="#robot-scale-${playerIndex}"
+                            from="${from}" 
+                            to="${to}"
+                            begin="${begin}s" dur="${duration === 0 ? 'indefinite' : duration}s" fill="freeze" />`
+}
+
+function animateSpawn(playerIndex, robot, begin, duration){
+  return animateRotation(playerIndex, robot.direction, robot.direction, begin, 0)
+    + animateTranslation(playerIndex, robot.position, robot.position, begin, 0)
+    + animateScale(playerIndex, 0, 1, begin, duration)
+}
+
+function animateDespawn(playerIndex, robot, begin, duration){
+  return animateRotation(playerIndex, robot.direction, robot.direction, begin, 0)
+      + animateTranslation(playerIndex, robot.position, robot.position, begin, 0)
+      + animateScale(playerIndex, 1, 0, begin, duration)
 }
 
 function animate(events){
@@ -59,21 +71,31 @@ function animate(events){
   }
 
   const functions = {
-    RobotTurns: (event, data, i) =>
-      animateRotation(data.playerIndex, data.from, data.to, t(i), eventDuration(event))
+    RobotTurns: (data, i, duration) =>
+      animateRotation(data.playerIndex, data.from, data.to, t(i), duration)
     ,
-    RobotMoves: (event, data, i) => data.transitions
-        .map(transition => animateTranslation(transition.playerIndex, transition.from, transition.to, t(i), eventDuration(event)))
+    RobotMoves: (data, i, duration) => data.transitions
+        .map(transition => animateTranslation(transition.playerIndex, transition.from, transition.to, t(i), duration))
         .join("")
     ,
-    RobotReset: (event, data, i) =>
-      animateRotation(data.playerIndex, data.from.direction, data.to.direction, t(i), eventDuration(event))
-        + animateTranslation(data.playerIndex, data.from.position, data.to.position, t(i), eventDuration(event))
+    RobotReset: (data, i, duration) =>
+      animateDespawn(data.playerIndex, data.from, t(i), duration / 2)
+      + animateSpawn(data.playerIndex, data.to, t(i) + duration / 2, duration / 2)
+    ,
+    PlayerJoinedGame: (data, i, duration) =>
+        animateSpawn(data.playerIndex, data.robot, t(i), duration),
+    PlayerFinished: (data, i, duration) =>
+        animateDespawn(data.playerIndex, data.robot, t(i), duration)
   }
 
   return events.map((event, i) => {
     const f = functions[Object.keys(event)[0]]
-    return f ? f(event, Object.values(event)[0], i) : ''
+    if(f){
+      const duration = eventDuration(event)
+      return f(Object.values(event)[0], i, duration)
+    }else{
+      return ''
+    }
   }).join("")
 }
 
@@ -93,7 +115,6 @@ function gameSvg(game) {
     <g>${svg.robots(game)}</g>
   </g>
   <g name="animation">
-    ${initializeRobots(game)}
     ${animate(game.events)}
   </g>
   <g name="debug-info">
@@ -116,18 +137,23 @@ function renderGame(game) {
   function postpatch(oldVNode, newVNode){
     const newSvg = newVNode.elm.getElementsByTagName('svg')[0]
     const newDuration = eventSequenceDuration(game.events)
-    console.log({oldDuration, newDuration})
     if(oldDuration !== newDuration){
       newSvg.dataset.duration = newDuration
       newSvg.setCurrentTime(Math.min(oldTime, oldDuration))
-      console.log({oldTime, oldDuration, min: Math.min(oldTime, oldDuration)})
     }
   }
   return h('div', {props: {innerHTML: gameSvg(game)}, hook: {insert, prepatch, postpatch}})
 }
 
 function eventDuration(event){
-  return event.RobotTurns || event.RobotMoves || event.RobotReset ? 0.5 : 0
+  const durs = {
+    RobotReset: 1,
+    RobotTurns: 0.5,
+    RobotMoves: 0.5,
+    PlayerJoinedGame: 0.5,
+    PlayerFinished: 0.5
+  }
+  return durs[Object.keys(event)[0]] || 0
 }
 
 function eventSequenceDuration(events){

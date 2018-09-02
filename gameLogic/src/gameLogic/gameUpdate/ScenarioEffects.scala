@@ -43,7 +43,7 @@ object ScenarioEffects {
 
         State.sequence(
           (Game.player(player.name) composeLens Player.finished).set(Some(stats)),
-          _.log(PlayerFinished(player.index))
+          _.log(PlayerFinished(player.index, player.robot))
         )(game)
     }
   }

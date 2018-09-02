@@ -111,7 +111,9 @@ function useRobotStartingPoint(x, y, color, direction){
 function useRobot(index, x, y, color, direction){
   return `<g id="robot-translation-${index}" transform="${translate(x, y)}">
             <g id="robot-rotation-${index}" transform="rotate(${direction})">
-              <use href="#robot" id="robot-${index}" fill="${color}"/>
+              <g id="robot-scale-${index}" transform="scale(1)">
+                <use href="#robot" id="robot-${index}" fill="${color}"/>
+              </g>
             </g>
           </g>`
 }
