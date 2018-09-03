@@ -1,4 +1,4 @@
-package gameLogic.gameUpdate
+package gameLogic.command
 
 import gameLogic.{PlayerJoinedGame, Scenario}
 import helper.GameUpdateHelper

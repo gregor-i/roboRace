@@ -1,7 +1,8 @@
 package helper
 
+import gameLogic.Game
+import gameLogic.command.{CommandAccepted, CommandRejected, CommandResponse, RejectionReason}
 import gameLogic.gameUpdate._
-import gameLogic.{Game, RejectionReason}
 import org.scalatest.Matchers
 
 trait DeconstructHelper {

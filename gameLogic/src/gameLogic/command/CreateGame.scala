@@ -1,6 +1,7 @@
-package gameLogic.gameUpdate
+package gameLogic.command
 
 import gameLogic._
+import gameLogic.gameUpdate.DealOptions
 
 object CreateGame {
   def apply(scenario: Scenario)(player: String): CommandResponse = {

@@ -1,4 +1,4 @@
-package gameLogic
+package gameLogic.command
 
 sealed trait RejectionReason
 case object InvalidScenario extends RejectionReason

@@ -3,6 +3,7 @@ package controller
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
+import gameLogic.command.{Command, CommandAccepted, CommandRejected}
 import gameLogic.gameUpdate._
 import io.circe.generic.auto._
 import io.circe.syntax._

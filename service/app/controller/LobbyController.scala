@@ -3,9 +3,8 @@ package controller
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import gameLogic.gameUpdate.{CommandAccepted, CommandRejected, CreateGame}
+import gameLogic.command.{CommandAccepted, CommandRejected, CreateGame}
 import gameLogic.{Game, Scenario}
-import io.circe.JsonObject
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.Inject

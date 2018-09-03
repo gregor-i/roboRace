@@ -1,7 +1,7 @@
 package helper
 
 import gameLogic._
-import gameLogic.gameUpdate.{CommandAccepted, CreateGame}
+import gameLogic.command.{CommandAccepted, CreateGame}
 import org.scalatest.Matchers
 
 trait TestDataHelper { _: UpdateChainHelper with Matchers =>

@@ -1,13 +1,11 @@
 package gameLogic
-package gameUpdate
+package command
+
+import gameLogic.gameUpdate.DealOptions
 
 sealed trait Command {
   def apply(player: String): Game => CommandResponse
 }
-
-sealed trait CommandResponse
-case class CommandRejected(reason: RejectionReason) extends CommandResponse
-case class CommandAccepted(newState: Game) extends CommandResponse
 
 case object RegisterForGame extends Command {
   def apply(player: String): Game => CommandResponse = {
