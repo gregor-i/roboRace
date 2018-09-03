@@ -29,7 +29,7 @@ object MoveRobots {
 
 
   def pushRobots(position: Position, direction: Direction, gameRunning: Game): Option[RobotPushed] =
-    gameRunning.players.find(_.robot.position == position) match {
+    gameRunning.players.find(player => player.robot.position == position && player.finished.isEmpty) match {
       case Some(player) if movementIsAllowed(gameRunning, position, direction) =>
         val nextPos = direction(position)
         val rec = pushRobots(nextPos, direction, gameRunning)

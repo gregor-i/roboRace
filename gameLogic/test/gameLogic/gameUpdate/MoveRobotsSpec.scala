@@ -129,4 +129,18 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertLog(_ should contain(RobotReset(1, Robot(Position(0,2),Down), Robot(Position(6,6), DownLeft))))
     )
   }
+
+  test("robots which have reached the target will not be pushed") {
+    sequenceWithAutoCycle(initialGame)(
+      (Game.player(p1) composeLens Player.finished).set(Some(FinishedStatistic(0, 0, false))),
+      forcedInstructions(p0)(MoveForward),
+      assertCycle(1),
+      assertPlayer(p0)(_.robot.position shouldBe Position(0, 1)),
+      assertPlayer(p1)(_.robot.position shouldBe Position(0, 1)),
+      assertPlayer(p1)(_.finished should not be empty),
+      assertLog(_ should contain(RobotMoves(Seq(
+        RobotPositionTransition(0, Down, Position(0, 0), Position(0, 1))
+      ))))
+    )
+  }
 }
