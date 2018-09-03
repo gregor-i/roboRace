@@ -39,7 +39,7 @@ function renderPlayerList(state) {
         style: {'max-width': '20px', 'max-height': '20px'}
       })),
       h('td', player.name),
-      h('td', player.finished ? 'finished as ' + player.finished.rank : (player.ready || _.get(player.instructions, 'length', 0) ? 'ready' : '')),
+      h('td', player.finished ? 'finished as ' + player.finished.rank : (player.instructionSlots.filter(s => s !== null).length === constants.numberOfInstructionsPerCycle ? 'ready' : '')),
     ])
   })
 
