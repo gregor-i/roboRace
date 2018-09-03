@@ -117,7 +117,7 @@ function gameSvg(game) {
   <g name="animation">
     ${animate(game.events)}
   </g>
-  <g name="debug-info">
+  <g name="debug-info" display="none">
     ${animationDebugInfo(game)}
   </g>
 </svg>`
