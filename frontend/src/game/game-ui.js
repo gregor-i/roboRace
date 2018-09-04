@@ -3,7 +3,7 @@ const h = require('snabbdom/h').default
 const constants = require('../common/constants')
 const button = require('../common/button')
 const modal = require('../common/modal')
-const gameBoardAnimated = require('./gameBoard/animated')
+const {renderGame, eventSequenceDuration} = require('./gameBoard/animated')
 const images = require('../common/images')
 
 
@@ -19,9 +19,13 @@ function render(state, actionHandler) {
   const playerIndex = _.get(game.players.find(p => p.name === state.player), "index")
   return h('div.game', [
     fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
-    fab('.fab-left-1', images.iconReplayAnimation, [actionHandler, {replayAnimations: state.animations}]),
+    fab('.fab-left-1', images.iconReplayAnimation, event => {
+      const svg = document.querySelector('.game-board svg')
+      if(svg)
+        svg.setCurrentTime(eventSequenceDuration(_.takeWhile(game.events, event => !event.StartCycleEvaluation || event.StartCycleEvaluation.cycle !== game.cycle - 1)))
+    }),
     fab('.fab-left-2', playerIndex !== undefined ? images.player(playerIndex) : images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),
-    gameBoardAnimated.renderGame(game),
+    renderGame(game),
     renderActionButtons(state, game, actionHandler),
     m])
 }

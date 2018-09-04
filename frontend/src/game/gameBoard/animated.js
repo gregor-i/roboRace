@@ -160,4 +160,4 @@ function eventSequenceDuration(events){
   return _.sumBy(events, eventDuration)
 }
 
-module.exports = {renderGame}
+module.exports = {renderGame, eventSequenceDuration}
