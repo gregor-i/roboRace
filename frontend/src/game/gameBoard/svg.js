@@ -92,8 +92,8 @@ function translate(x, y){
   return `translate(${left(x, y)} ${top(x, y)})`
 }
 
-function useTile(x, y){
-  return `<use href="#tile" class="tile" data-x="${x}" data-y="${y}" transform="${translate(x, y)}"/>`
+function useTile(x, y, isPit){
+  return `<use href="#tile" class="tile" data-x="${x}" data-y="${y}" transform="${translate(x, y)}" ${isPit ? '' : 'style="opacity:0"'}/>`
 }
 
 function useWall(x, y, rotation){
@@ -121,8 +121,7 @@ function useRobot(index, x, y, color, direction){
 function tiles(scenario) {
   return _.range(0, scenario.width).map(x => {
     return _.range(0, scenario.height)
-        .filter(y => !scenario.pits.find(p => p.x === x && p.y === y))
-        .map(y => useTile(x, y))
+        .map(y => useTile(x, y, !scenario.pits.find(p => p.x === x && p.y === y)))
         .join("")
   }).join("")
 }

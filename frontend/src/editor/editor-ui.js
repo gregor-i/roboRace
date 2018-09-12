@@ -24,7 +24,7 @@ function render(state, actionHandler) {
 
   return h('div.game', [
     fab('.fab-right-1', images.iconClose, [actionHandler, {backToLobby: true}]),
-    h('div.game-board', renderScenario(state.scenario, {hook: {postpatch: hook, insert: hook}})),
+    renderScenario(state.scenario, {hook: {postpatch: hook, insert: hook}}),
     renderEditorActionbar(actionHandler)
   ])
 }
