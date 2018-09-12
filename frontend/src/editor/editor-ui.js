@@ -4,27 +4,18 @@ const {renderScenario} = require('../game/gameBoard/static')
 const images = require('../common/images')
 
 function render(state, actionHandler) {
-  const hook = function(x, y){
-    const elm = y ? y.elm : x.elm
-    const tiles = elm.getElementsByClassName("tile")
+  function clickListener(event) {
+    const tileX = parseInt(event.target.dataset.x)
+    const tileY = parseInt(event.target.dataset.y)
 
-    function clickListener(event) {
-      const tileX = parseInt(event.target.dataset.x)
-      const tileY = parseInt(event.target.dataset.y)
-
-      const bb = event.target.getBoundingClientRect()
-      const direction = dxdy2direction(event.x - bb.x - bb.width/2, event.y - bb.y - bb.height/2)
-      clickEventHandler(state.clickAction, actionHandler)(tileX, tileY, direction)
-    }
-
-    for(let i=0; i< tiles.length; i++) {
-      tiles[i].onclick = clickListener
-    }
+    const bb = event.target.getBoundingClientRect()
+    const direction = dxdy2direction(event.x - bb.x - bb.width/2, event.y - bb.y - bb.height/2)
+    clickEventHandler(state.clickAction, actionHandler)(tileX, tileY, direction)
   }
 
   return h('div.game', [
     fab('.fab-right-1', images.iconClose, [actionHandler, {backToLobby: true}]),
-    renderScenario(state.scenario, {hook: {postpatch: hook, insert: hook}}),
+    renderScenario(state.scenario, clickListener),
     renderEditorActionbar(actionHandler)
   ])
 }
