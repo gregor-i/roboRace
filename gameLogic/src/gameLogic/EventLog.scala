@@ -15,6 +15,8 @@ case class RobotMoves(transitions: Seq[RobotPositionTransition]) extends EventLo
 case class RobotTurns(playerIndex: Int, position: Position, from: Direction, to: Direction) extends EventLog
 case class MovementBlocked(playerIndex: Int, robot: Robot) extends EventLog
 
+case class TrapEffect(playerIndex: Int, trap: Trap) extends EventLog
+
 case class PlayerFinished(playerIndex: Int, robot:Robot) extends EventLog
 case class PlayerRageQuitted(playerIndex: Int) extends EventLog
 

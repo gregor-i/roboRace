@@ -4,7 +4,8 @@ case class Scenario(width: Int, height: Int,
                     targetPosition: Position,
                     initialRobots: Seq[Robot],
                     walls: Seq[Wall],
-                    pits: Seq[Position])
+                    pits: Seq[Position],
+                    traps: Seq[Trap] = Seq.empty)
 
 object Scenario {
   private def robot(x: Int, y: Int, direction: Direction): Robot = Robot(Position(x, y), direction)
@@ -18,7 +19,7 @@ object Scenario {
       if !gameScenario.pits.contains(p)
     } yield p
 
-    def isDistinct [A](s: Seq[A]): Boolean =
+    def isDistinct[A](s: Seq[A]): Boolean =
       s.toSet.size == s.size
 
     Seq(
@@ -30,7 +31,9 @@ object Scenario {
       isDistinct(gameScenario.pits),
       gameScenario.initialRobots.forall(s => tiles.contains(s.position)),
       isDistinct(gameScenario.initialRobots.map(_.position)),
-      isDistinct(gameScenario.walls)
+      isDistinct(gameScenario.walls),
+      isDistinct(gameScenario.traps.map(_.position)),
+      gameScenario.traps.forall(t => tiles.contains(t.position))
     ).forall(identity)
   }
 
@@ -69,6 +72,10 @@ object Scenario {
       Position(1, 5),
       Position(3, 5),
       Position(5, 5)
+    ),
+    traps = Seq(
+      TurnRightTrap(Position(1,3)),
+      TurnLeftTrap(Position(5,3))
     )
   )
 }

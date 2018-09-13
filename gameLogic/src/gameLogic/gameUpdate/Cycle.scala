@@ -12,6 +12,7 @@ object Cycle extends (Game => Game){
       State.conditional(readyForCycle)(
         State.sequence(
           g => g.log(StartCycleEvaluation(g.cycle)),
+          ScenarioEffects.beforeCycle,
           execAllActions,
           ScenarioEffects.afterCycle,
           g => g.log(FinishedCycleEvaluation(g.cycle)),

@@ -26,7 +26,7 @@ object Events {
         case None => pushed
       }
     }
-    loop(event, game).log(asEvent(event))
+    TrapEffects.afterMove(event)(loop(event, game).log(asEvent(event)))
   }
 
   def turn(player: Player, nextDirection: Direction): Game => Game =

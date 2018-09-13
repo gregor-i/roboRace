@@ -21,6 +21,9 @@ trait TestDataHelper { _: UpdateChainHelper with Matchers =>
   def addPit(pit: Position): CE =
     Game.scenario.modify(s => s.copy(pits = s.pits :+ pit))
 
+  def addTrap(trap: Trap): CE =
+    Game.scenario.modify(s => s.copy(traps = s.traps :+ trap))
+
   def forcedInstructions(player: String)(instructions: Instruction*): CE =
     Game.player(player).modify(_.copy(
       instructionOptions = (instructions ++ Seq.fill(Constants.instructionsPerCycle)(Sleep)).take(Constants.instructionsPerCycle),
