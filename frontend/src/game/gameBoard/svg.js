@@ -163,72 +163,75 @@ function translate(x, y){
   return `translate(${left(x, y)} ${top(x, y)})`
 }
 
-function useTile(x, y, isPit, tileClickListener) {
-  return h('use.tile', {
-    attrs: {href: "#tile", 'data-x': x, 'data-y': y, transform: translate(x, y)},
-    style: {opacity: isPit ? '1' : '0'},
-    on: {click: tileClickListener}
-  })
-}
-
-function useWall(x, y, rotation){
-  return h('use', {attrs: {href:"#wall", transform:`${translate(x, y)} rotate(${rotation})`}})
-}
-
-function useTarget(x, y) {
-  return h('use', {attrs: {href: "#target", transform: translate(x, y)}})
-}
-
-function useTrap(trap){
-  if(trap.TurnRightTrap)
-    return h('use', {attrs: {href: '#turnRightTrap', transform: translate(trap.TurnRightTrap.position.x, trap.TurnRightTrap.position.y)}})
-  else if(trap.TurnLeftTrap)
-    return h('use', {attrs: {href: '#turnLeftTrap', transform: translate(trap.TurnLeftTrap.position.x, trap.TurnLeftTrap.position.y)}})
-}
-
-function useRobotStartingPoint(x, y, color, direction){
-  return h('use', {attrs:{href:"#robot-starting-point", stroke:color, transform:`${translate(x, y)} rotate(${direction})`}})
-}
-
-function useRobot(index, x, y, color, direction) {
-  return h(`g#robot-translation-${index}`, {attrs: {transform: translate(x, y)}},
-    h(`g#robot-rotation-${index}`, {attrs: {transform: `rotate(${direction})`}},
-      h(`g#robot-scale-${index}`, {attrs: {transform: 'scale(1)'}},
-        h(`use#robot-${index}`, {attrs: {href: "#robot", fill: color}})
-      ))
-  )
-}
-
 function tiles(scenario, tileClickListener) {
   return _.flatMap(_.range(0, scenario.width), x =>
-    _.range(0, scenario.height)
-      .map(y => useTile(x, y, !scenario.pits.find(p => p.x === x && p.y === y), tileClickListener))
+      _.range(0, scenario.height)
+          .map(y => h('use.tile', {
+            attrs: {href: "#tile", 'data-x': x, 'data-y': y, transform: translate(x, y)},
+            style: {opacity: !scenario.pits.find(p => p.x === x && p.y === y) ? '1' : '0'},
+            on: {click: tileClickListener}
+          }))
   )
 }
 
-function walls(scenario){
-  return  scenario.walls.map(w => useWall(w.position.x, w.position.y, directionToRotation(w.direction)))
+function walls(scenario) {
+  return scenario.walls.map(w => h('use', {
+    attrs: {
+      href: "#wall",
+      transform: `${translate(w.position.x, w.position.y)} rotate(${directionToRotation(w.direction)})`
+    }
+  }))
 }
 
-function target(scenario){
-  return useTarget(scenario.targetPosition.x, scenario.targetPosition.y)
-}
-
-function traps(scenario){
-  return scenario.traps.map(useTrap)
-}
-
-function startingPoints(scenario){
-  return scenario.initialRobots.map((robot, index) =>
-    useRobotStartingPoint(robot.position.x, robot.position.y, robotColor(index), directionToRotation(robot.direction))
-  )
-}
-
-function robots(game){
-  return game.players.map(player => {
-    const robot = player.robot
-    return useRobot(player.index, robot.position.x, robot.position.y, robotColor(player.index), directionToRotation(robot.direction))
+function target(scenario) {
+  return h('use', {
+    attrs: {
+      href: "#target",
+      transform: translate(scenario.targetPosition.x, scenario.targetPosition.y)
+    }
   })
+}
+
+function traps(scenario) {
+  return scenario.traps.map(function (trap) {
+    if (trap.TurnRightTrap)
+      return h('use', {
+        attrs: {
+          href: '#turnRightTrap',
+          transform: translate(trap.TurnRightTrap.position.x, trap.TurnRightTrap.position.y)
+        }
+      })
+    else if (trap.TurnLeftTrap)
+      return h('use', {
+        attrs: {
+          href: '#turnLeftTrap',
+          transform: translate(trap.TurnLeftTrap.position.x, trap.TurnLeftTrap.position.y)
+        }
+      })
+  })
+}
+
+function startingPoints(scenario) {
+  return scenario.initialRobots.map((robot, index) =>
+      h('use', {
+        attrs: {
+          href: "#robot-starting-point",
+          stroke: robotColor(index),
+          transform: `${translate(robot.position.x, robot.position.y)} rotate(${directionToRotation(robot.direction)})`
+        }
+      })
+  )
+}
+
+function robots(game) {
+  return game.players.map(player =>
+      h(`g#robot-translation-${player.index}`, {attrs: {transform: translate(player.robot.position.x, player.robot.position.y)}},
+          h(`g#robot-rotation-${player.index}`, {attrs: {transform: `rotate(${directionToRotation(player.robot.direction)})`}},
+              h(`g#robot-scale-${player.index}`, {attrs: {transform: 'scale(1)'}},
+                  h(`use#robot-${player.index}`, {attrs: {href: "#robot", fill: robotColor(player.index)}})
+              ))
+      )
+  )
 }
 
 module.exports = {
