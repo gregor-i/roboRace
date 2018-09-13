@@ -90,6 +90,42 @@ const defTarget = h('defs', h('path#target', {
   }
 }))
 
+const defTraps = h('defs', [
+    h('g#turnRightTrap', {attrs: {fill: "none", 'fill-rule': "evenodd", transform: `translate(0.5 0.5) scale(-1 1) scale(0.66) translate(-0.5 -0.5) scale(${1/56})`}}, [
+      h('circle', {attrs: {cx: "28", cy: "28", r: "28"}}),
+      h('path', {
+        attrs: {
+          fill: "red",
+          'fill-rule': "nonzero",
+          d: "M29 51.98v-6.007c5.888-.323 11.022-3.475 14.066-8.12l5.203 3.004C44.18 47.292 37.11 51.647 29 51.98zm-2 0c-8.108-.333-15.179-4.688-19.27-11.123l5.204-3.004c3.044 4.645 8.178 7.797 14.066 8.12v6.007zm0-47.96v6.007c-5.888.323-11.022 3.475-14.066 8.12L7.73 15.143C11.82 8.708 18.89 4.353 27 4.02zm2 0c8.108.333 15.179 4.688 19.27 11.123l-5.204 3.004c-3.044-4.645-8.178-7.797-14.066-8.12V4.02zm20.27 35.106l-5.202-3.004A17.924 17.924 0 0 0 46 28c0-2.922-.696-5.682-1.932-8.122l5.203-3.004A23.896 23.896 0 0 1 52 28c0 4.015-.986 7.8-2.73 11.126zM6.73 16.874l5.202 3.004A17.924 17.924 0 0 0 10 28c0 2.922.696 5.682 1.932 8.122L6.73 39.126A23.896 23.896 0 0 1 4 28c0-4.015.986-7.8 2.73-11.126z"
+        }
+      }),
+      h('path', {
+        attrs: {
+          fill: "black",
+          d: "M27 10.026c-4.974.281-9.75 2.62-13.006 6.664l2.412 1.392-8.697 3.062-1.696-9.062 2.737 1.58C13.164 7.722 19.95 4.318 27 4.018v6.008z"
+        }
+      })
+    ]),
+  h('g#turnLeftTrap', {attrs: {fill: "none", 'fill-rule': "evenodd", transform: `translate(0.5 0.5) scale(0.66) translate(-0.5 -0.5) scale(${1/56})`}}, [
+    h('circle', {attrs: {cx: "28", cy: "28", r: "28"}}),
+    h('path', {
+      attrs: {
+        fill: "red",
+        'fill-rule': "nonzero",
+        d: "M29 51.98v-6.007c5.888-.323 11.022-3.475 14.066-8.12l5.203 3.004C44.18 47.292 37.11 51.647 29 51.98zm-2 0c-8.108-.333-15.179-4.688-19.27-11.123l5.204-3.004c3.044 4.645 8.178 7.797 14.066 8.12v6.007zm0-47.96v6.007c-5.888.323-11.022 3.475-14.066 8.12L7.73 15.143C11.82 8.708 18.89 4.353 27 4.02zm2 0c8.108.333 15.179 4.688 19.27 11.123l-5.204 3.004c-3.044-4.645-8.178-7.797-14.066-8.12V4.02zm20.27 35.106l-5.202-3.004A17.924 17.924 0 0 0 46 28c0-2.922-.696-5.682-1.932-8.122l5.203-3.004A23.896 23.896 0 0 1 52 28c0 4.015-.986 7.8-2.73 11.126zM6.73 16.874l5.202 3.004A17.924 17.924 0 0 0 10 28c0 2.922.696 5.682 1.932 8.122L6.73 39.126A23.896 23.896 0 0 1 4 28c0-4.015.986-7.8 2.73-11.126z"
+      }
+    }),
+    h('path', {
+      attrs: {
+        fill: "black",
+        d: "M27 10.026c-4.974.281-9.75 2.62-13.006 6.664l2.412 1.392-8.697 3.062-1.696-9.062 2.737 1.58C13.164 7.722 19.95 4.318 27 4.018v6.008z"
+      }
+    })
+  ]),
+])
+
+
 const defRobot = h('defs', h('g#robot', {
   attrs: {
     'fill-rule': "evenodd",
@@ -121,7 +157,7 @@ const defRobotStartingPoint = h('defs',
   )
 )
 
-const defs = h('defs', [defTile, defWall, defTarget, defRobot, defRobotStartingPoint])
+const defs = h('defs', [defTile, defWall, defTarget, defTraps, defRobot, defRobotStartingPoint])
 
 function translate(x, y){
   return `translate(${left(x, y)} ${top(x, y)})`
@@ -141,6 +177,13 @@ function useWall(x, y, rotation){
 
 function useTarget(x, y) {
   return h('use', {attrs: {href: "#target", transform: translate(x, y)}})
+}
+
+function useTrap(trap){
+  if(trap.TurnRightTrap)
+    return h('use', {attrs: {href: '#turnRightTrap', transform: translate(trap.TurnRightTrap.position.x, trap.TurnRightTrap.position.y)}})
+  else if(trap.TurnLeftTrap)
+    return h('use', {attrs: {href: '#turnLeftTrap', transform: translate(trap.TurnLeftTrap.position.x, trap.TurnLeftTrap.position.y)}})
 }
 
 function useRobotStartingPoint(x, y, color, direction){
@@ -171,6 +214,10 @@ function target(scenario){
   return useTarget(scenario.targetPosition.x, scenario.targetPosition.y)
 }
 
+function traps(scenario){
+  return scenario.traps.map(useTrap)
+}
+
 function startingPoints(scenario){
   return scenario.initialRobots.map((robot, index) =>
     useRobotStartingPoint(robot.position.x, robot.position.y, robotColor(index), directionToRotation(robot.direction))
@@ -184,12 +231,9 @@ function robots(game){
   })
 }
 
-window.f = translate
-
 module.exports = {
-  directionToRotation, robotColor, translate, left, top,
-  useRobot,
+  directionToRotation, translate, left, top,
   defs,
   width, height,
-  tiles, walls, target, startingPoints, robots,
+  tiles, walls, target, traps, startingPoints, robots,
 }

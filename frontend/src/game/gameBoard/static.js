@@ -11,6 +11,7 @@ function renderScenario(scenario, tileClickListener) {
       h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.tiles(scenario, tileClickListener)),
       h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.walls(scenario)),
       h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.target(scenario)),
+      h('g', svg.traps(scenario)),
       h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.startingPoints(scenario))
     ]))
 }

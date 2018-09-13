@@ -148,6 +148,7 @@ function renderGame(game) {
       h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.tiles(game.scenario)),
       h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.walls(game.scenario)),
       h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.target(game.scenario)),
+      h('g', svg.traps(game.scenario)),
       h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.startingPoints(game.scenario)),
       h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.robots(game)),
       h('g', {attrs: {name: "animation"}}, animate(game.events))
