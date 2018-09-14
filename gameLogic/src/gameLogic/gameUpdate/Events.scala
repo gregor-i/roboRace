@@ -41,4 +41,12 @@ object Events {
       (Game.player(player.name) composeLens Player.instructionSlots).set(Instruction.emptySlots),
       _.log(RobotReset(player.index, player.robot, initialRobot))
     )
+
+  def stun(player: Player): Game => Game = game => {
+    val index = player.instructionSlots.indexWhere(_.isDefined) + 1
+    if(index >= Constants.instructionsPerCycle)
+      game
+    else
+      Game.player(player.name).composeLens(Player.instructionSlots).modify(_.updated(index, None))(game)
+  }
 }

@@ -6,3 +6,4 @@ sealed trait Trap {
 
 case class TurnRightTrap(position: Position) extends Trap
 case class TurnLeftTrap(position: Position) extends Trap
+case class StunTrap(position: Position) extends Trap

@@ -23,12 +23,12 @@ object TrapEffects {
   }
 
   def apply(trap: Trap, player: Player): Game => Game =
-    trap match {
+    (trap match {
       case _: TurnRightTrap =>
         Events.turn(player, player.robot.direction.right)
-          .compose(_.log(TrapEffect(player.index, trap)))
       case _: TurnLeftTrap  =>
         Events.turn(player, player.robot.direction.left)
-          .compose(_.log(TrapEffect(player.index, trap)))
-    }
+      case _: StunTrap      =>
+        Events.stun(player)
+    }).compose(_.log(TrapEffect(player.index, trap)))
 }

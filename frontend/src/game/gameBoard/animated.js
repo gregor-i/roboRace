@@ -93,15 +93,12 @@ function animate(events){
 
   const functions = {
     RobotTurns: (data, i, duration) =>
-      animateRotation(data.playerIndex, data.from, data.to, t(i), duration)
-    ,
+        animateRotation(data.playerIndex, data.from, data.to, t(i), duration),
     RobotMoves: (data, i, duration) => data.transitions
-        .map(transition => animateTranslation(transition.playerIndex, transition.from, transition.to, t(i), duration))
-    ,
+        .map(transition => animateTranslation(transition.playerIndex, transition.from, transition.to, t(i), duration)),
     RobotReset: (data, i, duration) =>
-      _.flatten([animateDespawn(data.playerIndex, data.from, t(i), duration / 2),
-        animateSpawn(data.playerIndex, data.to, t(i) + duration / 2, duration / 2)])
-    ,
+        _.flatten([animateDespawn(data.playerIndex, data.from, t(i), duration / 2),
+          animateSpawn(data.playerIndex, data.to, t(i) + duration / 2, duration / 2)]),
     PlayerJoinedGame: (data, i, duration) =>
         animateSpawn(data.playerIndex, data.robot, t(i), duration),
     PlayerFinished: (data, i, duration) =>
@@ -114,7 +111,7 @@ function animate(events){
       const duration = eventDuration(event)
       return f(Object.values(event)[0], i, duration)
     }else{
-      return ''
+      return []
     }
   })
 }
