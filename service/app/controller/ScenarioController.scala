@@ -12,7 +12,7 @@ import repo.{ScenarioRepository, ScenarioRow}
 class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedController with Circe {
 
   def get() = Action {
-    val list = repo.list()
+    val list = repo.list().filter(_.scenario.isDefined)
     if (list.isEmpty) {
       val defaultRow = ScenarioRow("default", "system", Some(Scenario.default))
       repo.save(defaultRow)

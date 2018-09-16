@@ -33,6 +33,22 @@ function actions(state, action) {
   }else if(action.setTarget) {
     state.scenario.targetPosition = action.setTarget
     return Promise.resolve(state)
+  }else if(action.toggleTrap) {
+    const {x, y, type} = action.toggleTrap
+
+    function match(trap) {
+      const type = Object.keys(trap)[0]
+      return trap[type].position.x === x && trap[type].position.y === y
+    }
+
+    if (state.scenario.traps.find(match))
+      state.scenario.traps = state.scenario.traps.filter(_.negate(match))
+    else {
+      let trap = {}
+      trap[type] = {position: {x, y}}
+      state.scenario.traps = [...state.scenario.traps, trap]
+    }
+    return Promise.resolve(state)
   }else if(action.toggleInitialRobot) {
     const {x, y} = action.toggleInitialRobot
     if (state.scenario.initialRobots.find(r => r.position.x === x && r.position.y === y))

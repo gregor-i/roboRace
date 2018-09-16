@@ -30,6 +30,9 @@ function renderEditorActionbar(actionHandler) {
     h('div.text-panel', [
       button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
       button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
+      button.builder(actionHandler, {setClickAction: 'ToggleTurnRightTrap'}, 'Turn Right Trap'),
+      button.builder(actionHandler, {setClickAction: 'ToggleTurnLeftTrap'}, 'Turn Left Trap'),
+      button.builder(actionHandler, {setClickAction: 'ToggleStunTrap'}, 'Turn Stun Trap'),
       button.builder(actionHandler, {setClickAction: 'SetTarget'}, 'Target'),
       button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
       button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
@@ -60,6 +63,12 @@ function clickEventHandler(clickAction, actionHandler) {
     return (x, y, direction) => actionHandler({toggleWall: {x, y, direction}})
   else if (clickAction === 'TogglePit')
     return (x, y) => actionHandler({togglePit: {x, y}})
+  else if (clickAction === 'ToggleTurnRightTrap')
+    return (x, y) => actionHandler({toggleTrap: {type: 'TurnRightTrap', x, y}})
+  else if (clickAction === 'ToggleTurnLeftTrap')
+    return (x, y) => actionHandler({toggleTrap: {type: 'TurnLeftTrap', x, y}})
+  else if (clickAction === 'ToggleStunTrap')
+    return (x, y) => actionHandler({toggleTrap: {type: 'StunTrap', x, y}})
   else if (clickAction === 'SetTarget')
     return (x, y) => actionHandler({setTarget: {x, y}})
   else if (clickAction === 'ToggleInitialRobot')
