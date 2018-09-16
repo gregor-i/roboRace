@@ -32,7 +32,7 @@ function renderEditorActionbar(actionHandler) {
       button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
       button.builder(actionHandler, {setClickAction: 'ToggleTurnRightTrap'}, 'Turn Right Trap'),
       button.builder(actionHandler, {setClickAction: 'ToggleTurnLeftTrap'}, 'Turn Left Trap'),
-      button.builder(actionHandler, {setClickAction: 'ToggleStunTrap'}, 'Turn Stun Trap'),
+      button.builder(actionHandler, {setClickAction: 'ToggleStunTrap'}, 'Stun Trap'),
       button.builder(actionHandler, {setClickAction: 'SetTarget'}, 'Target'),
       button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
       button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
