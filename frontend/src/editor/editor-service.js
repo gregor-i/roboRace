@@ -10,10 +10,10 @@ function loadSingleScenario(id){
     .then(parseJson)
 }
 
-function postScenario(scenario) {
+function postScenario(description, scenario) {
   return fetch('/api/scenarios', headers({
     method: 'POST',
-    body: JSON.stringify(scenario)
+    body: JSON.stringify({description, scenario})
   })).then(parseJson)
 }
 

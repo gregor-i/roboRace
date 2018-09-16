@@ -16,7 +16,7 @@ function render(state, actionHandler) {
   return h('div.game', [
     fab('.fab-right-1', images.iconClose, [actionHandler, {backToLobby: true}]),
     renderScenario(state.scenario, clickListener),
-    renderEditorActionbar(actionHandler)
+    renderEditorActionbar(state, actionHandler)
   ])
 }
 
@@ -25,25 +25,41 @@ function fab(classes, image, onclick){
     h('img', {props: {src: image.src}}))
 }
 
-function renderEditorActionbar(actionHandler) {
+function renderEditorActionbar(state, actionHandler) {
+  function icon(src){
+    return h('img', {style:{height:'100%'}, attrs:{src}})
+  }
+
   return h('div.footer-group', [
-    h('div.text-panel', [
-      button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
-      button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
-      button.builder(actionHandler, {setClickAction: 'ToggleTurnRightTrap'}, 'Turn Right Trap'),
-      button.builder(actionHandler, {setClickAction: 'ToggleTurnLeftTrap'}, 'Turn Left Trap'),
-      button.builder(actionHandler, {setClickAction: 'ToggleStunTrap'}, 'Stun Trap'),
-      button.builder(actionHandler, {setClickAction: 'SetTarget'}, 'Target'),
-      button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
-      button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
-    ]),
     h('div.text-panel', [
       button.builder(actionHandler, 'width--', 'W-'),
       button.builder(actionHandler, 'width++', 'W+'),
       button.builder(actionHandler, 'height--', 'H-'),
       button.builder(actionHandler, 'height++', 'H+'),
-      button.builder(actionHandler, 'save', 'Save Scenario')
-    ])
+      button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
+      button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
+      button.builder(actionHandler, {setClickAction: 'ToggleTurnLeftTrap'}, icon(images.trapTurnLeft.src)),
+      button.builder(actionHandler, {setClickAction: 'ToggleTurnRightTrap'}, icon(images.trapTurnRight.src)),
+      button.builder(actionHandler, {setClickAction: 'ToggleStunTrap'}, icon(images.trapStun.src)),
+      button.builder(actionHandler, {setClickAction: 'SetTarget'}, icon(images.target.src)),
+      button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
+      button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
+    ]),
+    h('div.text-panel',
+      h('div.field.has-addons', [
+        h('div.control.is-expanded',
+          h('input.input', {
+            attrs: {type: 'text', placeholder: 'description', value:state.description},
+            on: {
+              change: (e) => actionHandler({SetDescription: e.target.value})
+            }
+          })
+        ),
+        h('div.control',
+          button.primary(actionHandler, 'save', 'Save Scenario')
+        )
+      ])
+    )
   ])
 }
 
