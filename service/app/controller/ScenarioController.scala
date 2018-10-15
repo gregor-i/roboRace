@@ -31,15 +31,30 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
 
   def post() = Action(circe.tolerantJson[Scenario]) { request =>
     Utils.playerName(request) match {
-      case None => Unauthorized
+      case None                                    => Unauthorized
       case _ if !Scenario.validation(request.body) => BadRequest
-      case Some(player) =>
+      case Some(player)                            =>
         val row = ScenarioRow(
           id = Utils.newShortId(),
           owner = player,
           scenario = Some(request.body))
         repo.save(row)
         Created(row.asJson)
+    }
+  }
+
+  def put(id: String) = Action(circe.tolerantJson[Scenario]) { request =>
+    (Utils.playerName(request), repo.get(id)) match {
+      case (None, _)                                                        => Unauthorized
+      case _ if !Scenario.validation(request.body)                          => BadRequest
+      case (Some(player), Some(scenarioRow)) if scenarioRow.owner != player => Forbidden
+      case (Some(player), _)                                                =>
+        val row = ScenarioRow(
+          id = id,
+          owner = player,
+          scenario = Some(request.body))
+        repo.save(row)
+        Ok(row.asJson)
     }
   }
 

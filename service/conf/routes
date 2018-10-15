@@ -1,24 +1,25 @@
 #API
-POST          /api/games                          controller.LobbyController.create()
-GET           /api/games                          controller.LobbyController.list()
-DELETE        /api/games/:id                      controller.LobbyController.delete(id: String)
-GET           /api/games/events                   controller.LobbyController.sse()
+POST          /api/games                     controller.LobbyController.create()
+GET           /api/games                     controller.LobbyController.list()
+DELETE        /api/games/:id                 controller.LobbyController.delete(id: String)
+GET           /api/games/events              controller.LobbyController.sse()
 
-GET           /api/games/:id                      controller.GameController.state(id:String)
-POST          /api/games/:id/commands             controller.GameController.sendCommand(id: String)
-GET           /api/games/:id/events               controller.GameController.sse(id: String)
+GET           /api/games/:id                 controller.GameController.state(id:String)
+POST          /api/games/:id/commands        controller.GameController.sendCommand(id: String)
+GET           /api/games/:id/events          controller.GameController.sse(id: String)
 
-GET           /api/scenarios                      controller.ScenarioController.get()
-GET           /api/scenarios/:id                  controller.ScenarioController.getSingle(id:String)
-POST          /api/scenarios                      controller.ScenarioController.post()
-DELETE        /api/scenarios/:id                  controller.ScenarioController.delete(id: String)
+GET           /api/scenarios                 controller.ScenarioController.get()
+GET           /api/scenarios/:id             controller.ScenarioController.getSingle(id:String)
+POST          /api/scenarios                 controller.ScenarioController.post()
+PUT           /api/scenarios/:id             controller.ScenarioController.put(id: String)
+DELETE        /api/scenarios/:id             controller.ScenarioController.delete(id: String)
 
 #Frontend
-GET           /                                   controller.UiController.lobby()
-GET           /editor/:id                         controller.UiController.editor(id: String)
-GET           /game/:id                           controller.UiController.game(id: String)
-GET           /assets/*file                       controller.UiController.asset(file)
+GET           /                              controller.UiController.lobby()
+GET           /editor/:id                    controller.UiController.editor(id: String)
+GET           /game/:id                      controller.UiController.game(id: String)
+GET           /assets/*file                  controller.UiController.asset(file)
 
 #Admin
-GET           /admin                              controller.AdminController.ui()
-POST          /admin/garbage-collect              controller.AdminController.garbageCollect()
+GET           /admin                         controller.AdminController.ui()
+POST          /admin/garbage-collect         controller.AdminController.garbageCollect()
