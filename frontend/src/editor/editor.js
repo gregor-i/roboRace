@@ -31,6 +31,7 @@ function Editor(element, player, scenarioId) {
     renderState({
       player,
       scenario: scenario.scenario,
+      description: scenario.description,
       scenarioId: scenario.id,
       scenarioOwner: scenario.owner
     }, element)

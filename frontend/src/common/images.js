@@ -22,7 +22,7 @@ function player(index) {
 }
 
 // https://materialdesignicons.com/icon/flag-variant-outline
-// const target = image('/assets/target.svg')
+const target = image('/assets/target.svg')
 
 const actions = {
   MoveForward: image('/assets/action-move-forward.svg'),
@@ -40,7 +40,13 @@ function action(name) {
   return actions[name]
 }
 
+const trapStun = image('/assets/trap-stun.svg')
+const trapTurnRight = image('/assets/trap-turn-right.svg')
+const trapTurnLeft = image('/assets/trap-turn-left.svg')
+
 module.exports = {
   player, action,
-  iconClose, iconGamerlist, iconReplayAnimation
+  iconClose, iconGamerlist, iconReplayAnimation,
+  trapStun, trapTurnLeft, trapTurnRight,
+  target
 }

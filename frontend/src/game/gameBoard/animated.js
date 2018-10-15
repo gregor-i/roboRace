@@ -20,7 +20,8 @@ function eventDuration(event){
     RobotTurns: 0.5,
     RobotMoves: 0.5,
     PlayerJoinedGame: 0.5,
-    PlayerFinished: 0.5
+    PlayerFinished: 0.5,
+    TrapEffect: 0.5
   }
   return durs[Object.keys(event)[0]] || 0
 }

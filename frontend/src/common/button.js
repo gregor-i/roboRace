@@ -3,7 +3,7 @@ var _ = require('lodash')
 
 function builder(props) {
     var f = function (actionHandler, action, text) {
-        return h('button.button.is-small', _.merge({}, props, {on: {click: [actionHandler, action]}}), text)
+        return h('button.button.is-light', _.merge({}, props, {on: {click: [actionHandler, action]}}), text)
     }
     f.addProperty = function (p) {
         return builder(_.merge({}, props, p))
@@ -18,8 +18,8 @@ function builder(props) {
 }
 
 function group() {
-    var args = Array.prototype.slice.call(arguments)
-    var wrappedInControl = args.map((button) => h('span.control', button))
+    let args = Array.prototype.slice.call(arguments)
+    let wrappedInControl = args.map((button) => h('span.control', button))
     return h('div.field.has-addons', wrappedInControl)
 }
 

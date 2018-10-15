@@ -59,12 +59,12 @@ function renderGameTable(state, games, actionHandler) {
 }
 
 function renderScenarioList(player, scenarios, actionHandler) {
-  const header = h('tr', [h('th', 'id'), h('th', 'owner'), h('th', 'actions')])
+  const header = h('tr', [h('th', 'player slots'), h('th', 'description'), h('th', 'actions')])
 
   const rows = scenarios.map(row =>
       h('tr', [
-        h('td', row.id),
-        h('td', row.owner),
+        h('td', row.scenario.initialRobots.length.toString()),
+        h('td', row.description),
         h('td', button.group(
             button.primary(actionHandler, {createGame: row.scenario}, 'Start Game'),
             button.builder(actionHandler, {editScenario: row.id}, 'Edit'),

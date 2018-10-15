@@ -8,15 +8,16 @@ import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
 import play.api.db.Database
 
-case class ScenarioRow(id: String, owner: String, scenario: Option[Scenario])
+case class ScenarioRow(id: String, owner: String, description: String, scenario: Option[Scenario])
 
 @Singleton
 class ScenarioRepository @Inject()(db: Database){
   private val rowParser: RowParser[ScenarioRow] = for {
     id <- SqlParser.str("id")
     owner <- SqlParser.str("owner")
+    description <- SqlParser.str("description")
     maybeScenario <- SqlParser.str("scenario").map(data => decode[Scenario](data).toOption)
-  } yield ScenarioRow(id, owner, maybeScenario)
+  } yield ScenarioRow(id, owner, description, maybeScenario)
 
   def get(id: String): Option[ScenarioRow] =
     db.withConnection { implicit con =>
@@ -36,11 +37,12 @@ class ScenarioRepository @Inject()(db: Database){
 
   def save(row: ScenarioRow): Int = db.withConnection { implicit con =>
     val data = row.scenario.map(_.asJson.noSpaces)
-    SQL"""INSERT INTO scenarios (id, owner, scenario)
-          VALUES (${row.id}, ${row.owner}, $data)
+    SQL"""INSERT INTO scenarios (id, owner, description, scenario)
+          VALUES (${row.id}, ${row.owner}, ${row.description}, $data)
           ON CONFLICT (id) DO UPDATE
           SET scenario = $data,
-              owner = ${row.owner}"""
+              owner = ${row.owner},
+              description = ${row.description}"""
       .executeUpdate()
   }
 

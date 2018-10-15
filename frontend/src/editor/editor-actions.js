@@ -33,6 +33,22 @@ function actions(state, action) {
   }else if(action.setTarget) {
     state.scenario.targetPosition = action.setTarget
     return Promise.resolve(state)
+  }else if(action.toggleTrap) {
+    const {x, y, type} = action.toggleTrap
+
+    function match(trap) {
+      const type = Object.keys(trap)[0]
+      return trap[type].position.x === x && trap[type].position.y === y
+    }
+
+    if (state.scenario.traps.find(match))
+      state.scenario.traps = state.scenario.traps.filter(_.negate(match))
+    else {
+      let trap = {}
+      trap[type] = {position: {x, y}}
+      state.scenario.traps = [...state.scenario.traps, trap]
+    }
+    return Promise.resolve(state)
   }else if(action.toggleInitialRobot) {
     const {x, y} = action.toggleInitialRobot
     if (state.scenario.initialRobots.find(r => r.position.x === x && r.position.y === y))
@@ -59,18 +75,18 @@ function actions(state, action) {
     if (state.scenario.initialRobots.find(r => r.position.x === x && r.position.y === y))
       state.scenario.initialRobots = state.scenario.initialRobots.map(r => r.position.x === x && r.position.y === y ? {position: r.position, direction: rot(r.direction)} : r)
     return Promise.resolve(state)
-  }else if(action.toggleWall){
+  }else if(action.toggleWall) {
     let {x, y, direction} = action.toggleWall
     if (direction.Up) {
       y--
       direction = {Down: {}}
     } else if (direction.UpLeft) {
-      if(x %2 === 0)
+      if (x % 2 === 0)
         y--
       x--
       direction = {DownRight: {}}
     } else if (direction.DownLeft) {
-      if(x %2 === 1)
+      if (x % 2 === 1)
         y++
       x--
       direction = {UpRight: {}}
@@ -79,11 +95,13 @@ function actions(state, action) {
     if (state.scenario.walls.find(p))
       state.scenario.walls = state.scenario.walls.filter(w => !p(w))
     else
-      state.scenario.walls = [...state.scenario.walls, {position : {x, y}, direction}]
+      state.scenario.walls = [...state.scenario.walls, {position: {x, y}, direction}]
     return Promise.resolve(state)
-
+  }else if (action.SetDescription){
+    state.description = action.SetDescription
+    return Promise.resolve(state)
   } else if (action === 'save') {
-    editorService.postScenario(state.scenario)
+    editorService.postScenario(state.description, state.scenario)
         .then(row => window.location = "/editor/" + row.id)
   } else {
     console.error("unknown action", action)
