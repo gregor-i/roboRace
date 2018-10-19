@@ -7,7 +7,7 @@ lazy val gameLogic = project.in(file("gameLogic"))
 
 
 lazy val ai = project.in(file("ai"))
-  .dependsOn(gameLogic)
+  .dependsOn(gameLogic % "compile->compile;test->test")
   .settings(folderSettings, breeze, scalaTest)
 
 

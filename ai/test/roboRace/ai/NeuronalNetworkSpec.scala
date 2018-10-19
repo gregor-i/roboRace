@@ -2,9 +2,12 @@ package roboRace.ai
 
 import gameLogic._
 import gameLogic.gameUpdate.DealOptions
+import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
 
-class NeuronalNetworkSpec extends FunSuite with Matchers {
+import scala.annotation.tailrec
+
+class NeuronalNetworkSpec extends FunSuite with Matchers with GameUpdateHelper with BotHelper {
   test("enumerateView") {
     val p = Position(5, 4)
     NeuronalNetwork.enumerateView(p, -1) shouldBe Seq.empty
@@ -25,9 +28,8 @@ class NeuronalNetworkSpec extends FunSuite with Matchers {
       NeuronalNetwork.enumerateView(p, i).size shouldBe NeuronalNetwork.enumeratedViewSize(i)
   }
 
-  test("start with initial random weights") {
-    val weights = NeuronalNetworkWeights.fromSeed(1l)
-    val nn = NeuronalNetwork(weights)
+  test("start with initial random genes") {
+    val nn = NeuronalNetwork(NeuronalNetwork.genesFromSeed(1l))
 
     val thisRobot = Robot(Position(1, 9), Up)
     val scenario = Scenario(10, 10, Position(1,1), Seq(thisRobot), Seq.empty, Seq.empty, Seq.empty)
@@ -40,5 +42,30 @@ class NeuronalNetworkSpec extends FunSuite with Matchers {
       i should be >= 0
       i should be < Constants.instructionOptionsPerCycle
     }
+  }
+
+  test("learn a very simple scenario") {
+    val genePool = (1L to 1000L).map(NeuronalNetwork.genesFromSeed)
+
+    val scenario = Scenario(1, 3, Position(0,0), Seq(Robot(Position(0, 2), Up)), Seq.empty, Seq.empty, Seq.empty)
+
+    def success(gene: NeuronalNetworkGens): Boolean = botFinishesGame(NeuronalNetwork(gene), 1, scenario)
+
+    @tailrec
+    def learn(scenario: Scenario, initialGenePool: Seq[NeuronalNetworkGens], iterations: Int,
+              filtering: NeuronalNetworkGens => Boolean,
+              breeding: Seq[NeuronalNetworkGens] => Seq[NeuronalNetworkGens]): Seq[NeuronalNetworkGens] = {
+      if(iterations == 0)
+        initialGenePool
+      else {
+        val newGenePool =  breeding(initialGenePool)
+        val newSurvivors = newGenePool.filter(filtering)
+        println(newSurvivors.size)
+        learn(scenario, newSurvivors, iterations -1, filtering, breeding)
+      }
+    }
+
+    val learnedGenePool = learn(scenario, genePool, 10, success, NeuronalNetwork.breed(_, 1000, 1L))
+    learnedGenePool.size should be > 250
   }
 }
