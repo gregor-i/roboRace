@@ -27,15 +27,16 @@ object ScenarioEffects {
     }
   }
 
+  def isPit(scenario: Scenario, position: Position): Boolean =
+    position.x >= scenario.width ||
+      position.x < 0 ||
+      position.y >= scenario.height ||
+      position.y < 0 ||
+      scenario.pits.contains(position)
+
   private def fallenRobots(game: Game): Game = {
     game.players.find {
-      player =>
-        val robot = player.robot
-        robot.position.x >= game.scenario.width ||
-          robot.position.x < 0 ||
-          robot.position.y >= game.scenario.height ||
-          robot.position.y < 0 ||
-          game.scenario.pits.contains(robot.position)
+      player => isPit(game.scenario, player.robot.position)
     } match {
       case None         => game
       case Some(player) =>

@@ -36,6 +36,10 @@ sealed trait Direction {
   def back = left.left.left
 }
 
+object Direction {
+  val directions = Seq(Up, UpRight, DownRight, Down, DownLeft, UpLeft)
+}
+
 sealed trait WallDirection
 
 case object Up extends Direction
