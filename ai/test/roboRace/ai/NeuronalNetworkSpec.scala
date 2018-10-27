@@ -44,28 +44,4 @@ class NeuronalNetworkSpec extends FunSuite with Matchers with GameUpdateHelper w
     }
   }
 
-  test("learn a very simple scenario") {
-    val genePool = (1L to 1000L).map(NeuronalNetwork.genesFromSeed)
-
-    val scenario = Scenario(1, 3, Position(0,0), Seq(Robot(Position(0, 2), Up)), Seq.empty, Seq.empty, Seq.empty)
-
-    def success(gene: NeuronalNetworkGens): Boolean = botFinishesGame(NeuronalNetwork(gene), 1, scenario)
-
-    @tailrec
-    def learn(scenario: Scenario, initialGenePool: Seq[NeuronalNetworkGens], iterations: Int,
-              filtering: NeuronalNetworkGens => Boolean,
-              breeding: Seq[NeuronalNetworkGens] => Seq[NeuronalNetworkGens]): Seq[NeuronalNetworkGens] = {
-      if(iterations == 0)
-        initialGenePool
-      else {
-        val newGenePool =  breeding(initialGenePool)
-        val newSurvivors = newGenePool.filter(filtering)
-        println(newSurvivors.size)
-        learn(scenario, newSurvivors, iterations -1, filtering, breeding)
-      }
-    }
-
-    val learnedGenePool = learn(scenario, genePool, 10, success, NeuronalNetwork.breed(_, 1000, 1L))
-    learnedGenePool.size should be > 250
-  }
 }

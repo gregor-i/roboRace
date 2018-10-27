@@ -27,7 +27,10 @@ def folderSettings = Seq(
   scalaSource in Test := baseDirectory.value / "test"
 )
 
-def scalaTest = libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
+def scalaTest = Seq(
+  libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test,
+  testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-eD")
+)
 
 def monocle = Seq(
   libraryDependencies ++= Seq(
