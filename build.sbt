@@ -12,7 +12,7 @@ lazy val ai = project.in(file("ai"))
 
 
 lazy val service = project.in(file("service"))
-  .dependsOn(gameLogic)
+  .dependsOn(gameLogic, ai)
   .settings(scalaTest)
   .enablePlugins(PlayScala)
   .settings(playDependencies)

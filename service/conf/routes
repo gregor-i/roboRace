@@ -23,3 +23,6 @@ GET           /assets/*file                  controller.UiController.asset(file)
 #Admin
 GET           /admin                         controller.AdminController.ui()
 POST          /admin/garbage-collect         controller.AdminController.garbageCollect()
+
+#AI
+POST          /ai/:id                        controller.AiController.learn(id)
