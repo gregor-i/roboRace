@@ -1,5 +1,7 @@
 package gameLogic
 
+import gameLogic.util.PathFinding
+
 case class Scenario(width: Int, height: Int,
                     targetPosition: Position,
                     initialRobots: Seq[Robot],
@@ -12,29 +14,24 @@ object Scenario {
   private def wall(x: Int, y: Int, direction: WallDirection): Wall = Wall(Position(x, y), direction)
 
   def validation(gameScenario: Scenario): Boolean = {
-    val tiles = for {
-      x <- 0 until gameScenario.width
-      y <- 0 until gameScenario.height
-      p = Position(x,y)
-      if !gameScenario.pits.contains(p)
-    } yield p
-
     def isDistinct[A](s: Seq[A]): Boolean =
       s.toSet.size == s.size
 
+    val pathing = PathFinding.toTarget(gameScenario)
+
+    def isReachable(position: Position): Boolean = pathing.isDefinedAt(position)
+
     Seq(
       gameScenario.initialRobots.nonEmpty,
-      gameScenario.height >= 1,
-      gameScenario.width >= 1,
-      tiles.nonEmpty,
-      tiles.contains(gameScenario.targetPosition),
-      isDistinct(gameScenario.pits),
-      gameScenario.initialRobots.forall(s => tiles.contains(s.position)),
-      isDistinct(gameScenario.initialRobots.map(_.position)),
+      isDistinct(Seq(gameScenario.targetPosition)
+        ++ gameScenario.traps
+        ++ gameScenario.pits
+        ++ gameScenario.initialRobots.map(_.position)),
       isDistinct(gameScenario.walls),
-      isDistinct(gameScenario.traps.map(_.position)),
-      gameScenario.traps.forall(t => tiles.contains(t.position))
-    ).forall(identity)
+      gameScenario.traps.map(_.position).forall(isReachable),
+      gameScenario.initialRobots.map(_.position).forall(isReachable),
+      isReachable(gameScenario.targetPosition)
+    ).reduce(_ && _)
   }
 
   val default = Scenario(

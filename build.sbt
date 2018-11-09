@@ -8,11 +8,11 @@ lazy val gameLogic = project.in(file("gameLogic"))
 
 lazy val ai = project.in(file("ai"))
   .dependsOn(gameLogic % "compile->compile;test->test")
-  .settings(folderSettings, breeze, scalaTest)
+  .settings(folderSettings, breeze, scalaTest, circe)
 
 
 lazy val service = project.in(file("service"))
-  .dependsOn(gameLogic, ai)
+  .dependsOn(gameLogic)
   .settings(scalaTest)
   .enablePlugins(PlayScala)
   .settings(playDependencies)
@@ -43,15 +43,17 @@ def monocle = Seq(
 
 def playDependencies = Seq(
   libraryDependencies += guice,
-  libraryDependencies += "com.dripower" %% "play-circe" % "2609.1",
   libraryDependencies += "org.postgresql" % "postgresql" % "42.2.5",
   libraryDependencies += evolutions,
   libraryDependencies += jdbc,
   libraryDependencies += "org.playframework.anorm" %% "anorm" % "2.6.2",
-  libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
+  libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
+  circe
 )
 
 def breeze = Seq(
   libraryDependencies += "org.scalanlp" %% "breeze" % "0.13.2",
   resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
 )
+
+def circe = libraryDependencies += "com.dripower" %% "play-circe" % "2609.1"

@@ -5,7 +5,7 @@ import org.scalatest.tagobjects.Slow
 import org.scalatest.{FunSuite, Matchers}
 
 class LearnSpec extends FunSuite with BotHelper with Matchers {
-  def filtering(scenario: Scenario, iterations: Int = 1): NeuronalNetworkGenes => Boolean = genes => botFinishesGame(NeuronalNetwork(genes), iterations, scenario)
+  def filtering(scenario: Scenario, iterations: Int = 1): NeuronalNetworkGenes => Boolean = genes => BotFinishesGame(iterations, scenario)(NeuronalNetwork(genes))
 
   val scenario1 = Scenario(1, 3, Position(0, 0), Seq(Robot(Position(0, 2), Up)), Seq.empty, Seq.empty, Seq.empty)
   val scenario2 = Scenario(2,2, Position(0, 0), Seq(Robot(Position(1, 1), Up)), Seq.empty, Seq.empty, Seq.empty)

@@ -37,18 +37,18 @@ object MoveRobots {
       case _ => None
     }
 
+  def blockedByWall(scenario: Scenario)(position: Position, direction: Direction): Boolean =
+    direction match {
+      case Up => scenario.walls.contains(Wall(Up(position), Down))
+      case UpRight => scenario.walls.contains(Wall(position, UpRight))
+      case DownRight => scenario.walls.contains(Wall(position, DownRight))
+      case Down => scenario.walls.contains(Wall(position, Down))
+      case DownLeft => scenario.walls.contains(Wall(DownLeft(position), UpRight))
+      case UpLeft => scenario.walls.contains(Wall(UpLeft(position), DownRight))
+    }
 
   private def movementIsAllowed(game: Game, position: Position, direction: Direction): Boolean = {
-    val walls = game.scenario.walls
-    val blockedByWall = direction match {
-      case Up => walls.contains(Wall(Up(position), Down))
-      case UpRight => walls.contains(Wall(position, UpRight))
-      case DownRight => walls.contains(Wall(position, DownRight))
-      case Down => walls.contains(Wall(position, Down))
-      case DownLeft => walls.contains(Wall(DownLeft(position), UpRight))
-      case UpLeft => walls.contains(Wall(UpLeft(position), DownRight))
-    }
-    if (blockedByWall)
+    if (blockedByWall(game.scenario)(position, direction))
       false
     else if (game.players.exists(player => player.robot.position == direction(position) && player.finished.isEmpty))
       movementIsAllowed(game, direction(position), direction)

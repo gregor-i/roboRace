@@ -1,23 +1,17 @@
-package repo
+package roboRace.ai
 
 import java.io.FileWriter
 
-import io.circe.Json
-import javax.inject.{Inject, Singleton}
-import roboRace.ai.NeuronalNetworkGenes
+import io.circe._
 import io.circe.generic.auto._
+import io.circe.parser._
 import io.circe.syntax._
 
 import scala.io.Source
-import io.circe._
-import io.circe.parser._
-
 import scala.util.Try
 
-
-@Singleton
-class NeuronalNetworkRepository @Inject()() {
-  val file = new java.io.File("neuronal-network-genes.json")
+class NeuronalNetworkRepository(fileName:String) {
+  val file = new java.io.File(fileName)
 
   def save(genes: Seq[NeuronalNetworkGenes]) = {
     val writer = new FileWriter(file)

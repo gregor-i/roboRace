@@ -4,6 +4,7 @@ import breeze.linalg.{DenseMatrix, DenseVector}
 import gameLogic._
 import gameLogic.gameUpdate.ScenarioEffects
 import gameLogic.Constants._
+import gameLogic.util.PathFinding
 
 import scala.annotation.tailrec
 import scala.util.Random
@@ -33,19 +34,13 @@ object NeuronalNetwork {
   val weightsSize = inputSize * outputSize
 
   def enumerateView(center: Position, distance: Int): Seq[Position] = {
-    @tailrec
-    def ntimes(direction: Direction, n: Int)(p: Position): Position =
-      if (n == 0)
-        p
-      else ntimes(direction, n - 1)(direction(p))
-
     if (distance >= 0)
       center +: (for {
         d <- Direction.directions
         rd = d.right
         i <- 1 to distance
         j <- 0 to distance - i
-      } yield ntimes(rd, j)(ntimes(d, i)(center)))
+      } yield (NTimes(j)(rd.apply) andThen NTimes(i)(d.apply))(center))
     else
       Seq.empty
   }
@@ -65,7 +60,8 @@ object NeuronalNetwork {
     val view = enumerateView(thisRobot.position, viewDistance)
 
     val pits = boolsToWeights(view.map(ScenarioEffects.isPit(scenario, _))) ensuring (_.size == viewSize)
-    val distances = intsToWeights(view.map(p => (scenario.targetPosition.x - p.x).abs + (scenario.targetPosition.y - p.y).abs)) ensuring (_.size == viewSize)
+
+    val distances = intsToWeights(view.map(PathFinding.toTarget(scenario).get).map(_.fold(1000)(_.length))) ensuring (_.size == viewSize)
     val instruction = boolsToWeights(for {
       i <- instructionOptions
       bools <- Instruction.instructions.map(_ == i)
@@ -98,6 +94,11 @@ object NeuronalNetwork {
     val weights = Vector.fill(NeuronalNetwork.weightsSize)(r.nextDouble())
     val offsets = Vector.fill(NeuronalNetwork.outputSize)(r.nextDouble())
     NeuronalNetworkGenes(weights, offsets)
+  }
+
+  def poolFromSeed(size: Int, seed: Long): Seq[NeuronalNetworkGenes] = {
+    val r = new Random(seed)
+    Seq.tabulate(size)(i => NeuronalNetwork.genesFromSeed(r.nextLong()))
   }
 
   def genesFromPool(genes: Seq[NeuronalNetworkGenes], seed: Long): NeuronalNetworkGenes = {
