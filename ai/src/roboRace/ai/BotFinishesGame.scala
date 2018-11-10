@@ -13,7 +13,7 @@ object BotFinishesGame {
 
   def botInstructions(bot: Bot, player: String): Game => Game = game => {
     val p = game.players.find(_.name == player).get
-    val chosen = bot.apply(game.scenario, game.players.filter(_.name != player).map(_.robot))(p.robot, p.instructionOptions)
+    val chosen = bot(game.scenario, game.players.filter(_.name != player).map(_.robot), p)
     Game.player(player).composeLens(Player.instructionSlots).set(chosen.map(Some.apply))(game)
   }
 

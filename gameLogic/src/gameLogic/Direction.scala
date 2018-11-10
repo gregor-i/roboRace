@@ -37,7 +37,7 @@ sealed trait Direction {
 }
 
 object Direction {
-  val directions = Seq(Up, UpRight, DownRight, Down, DownLeft, UpLeft)
+  val directions = Set(Up, UpRight, DownRight, Down, DownLeft, UpLeft)
 }
 
 sealed trait WallDirection
