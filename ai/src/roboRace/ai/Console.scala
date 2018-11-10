@@ -1,24 +1,42 @@
 package roboRace.ai
 
-import gameLogic.{Position, Robot, Scenario, Up}
+import gameLogic.util.PathFinding
+import gameLogic.{Game, _}
+import gameLogic.gameUpdate.DealOptions
+import monocle.function.Each
 
 object Console extends App {
   val repo = new NeuronalNetworkRepository("neuronal-network-genes.json")
 
-  def filtering(scenario: Scenario, iterations: Int = 1): NeuronalNetworkGenes => Boolean = genes => BotFinishesGame(iterations, scenario)(NeuronalNetwork(genes))
+  val scenario = Scenario(10, 10, Position(0, 0), Seq(Robot(Position(9, 9), Up)), Seq.empty, Seq.empty, Seq.empty)
+  val pathing = PathFinding.toTarget(scenario)
 
-  val scenario1 = Scenario(1, 3, Position(0, 0), Seq(Robot(Position(0, 2), Up)), Seq.empty, Seq.empty, Seq.empty)
-  val scenario2 = Scenario(2,2, Position(0, 0), Seq(Robot(Position(1, 1), Up)), Seq.empty, Seq.empty, Seq.empty)
-  val scenario3 = Scenario(2,1, Position(1, 0), Seq(Robot(Position(0, 0), Up)), Seq.empty, Seq.empty, Seq.empty)
-
-  val filter1 = filtering(scenario1)
-  val filter2 = filtering(scenario2)
-  val filter3 = filtering(scenario3)
+  def fitnessFunction(genes: NeuronalNetworkGenes): Double = {
+    val bot = NeuronalNetwork(genes)
+    val gameAfter1 = BotFinishesGame.sequenceWithAutoCycle(BotFinishesGame.createGame(scenario)("bot"))(
+      BotFinishesGame.botInstructions(bot, "bot"),
+      Game.players.composeTraversal(Each.each).composeLens(Player.instructionOptions).set(DealOptions.initial),
+      BotFinishesGame.botInstructions(bot, "bot"),
+      Game.players.composeTraversal(Each.each).composeLens(Player.instructionOptions).set(DealOptions.initial),
+      BotFinishesGame.botInstructions(bot, "bot")
+    )
+    assert(gameAfter1.cycle == 1)
+    val botPlayer = gameAfter1.players.head
+    if(botPlayer.finished.isDefined) {
+      0d
+    }else{
+      pathing(botPlayer.robot.position).length
+    }
+  }
 
   var iteration = 0
+  var state: Option[Seq[NeuronalNetworkGenes]] = null
   while(true){
     println(s"Iteration $iteration:")
-    val state = repo.read()
+    if(state == null) {
+      println("reading state from disk")
+      state = repo.read()
+    }
     println(s"current gene pool size: ${state.map(_.size)}")
 
     val nextState = state match {
@@ -26,13 +44,17 @@ object Console extends App {
         println("initializing gene pool")
         NeuronalNetwork.poolFromSeed(1000, 1L)
       case Some(pool) =>
-        val filtered = pool.filter(filter1)
-        println(s"${filtered.size} genes survived filter")
-        val bred = NeuronalNetwork.breed(filtered, 1000, iteration.toLong)
+        println("calculating fitness")
+        val genesWithFitness = pool.map(genes => (genes, fitnessFunction(genes)))
+        val genesGrouped = genesWithFitness.groupBy(_._2).mapValues(_.map(_._1)).toSeq.sortBy(_._1)
+        println(s"Gene pool grouped by fitness: ${genesGrouped.map(t => (t._1, t._2.size))}")
+        val bestGroup = genesGrouped.head._2
+        val bred = NeuronalNetwork.breed(bestGroup, Math.min(bestGroup.size * 2, 1000), iteration.toLong)
         println(s"breeding gene pool to ${bred.size}")
         bred
     }
 
+    println("writing state to disk")
     repo.save(nextState)
     iteration += 1
   }

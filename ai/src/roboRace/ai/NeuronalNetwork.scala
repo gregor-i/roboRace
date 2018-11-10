@@ -72,7 +72,7 @@ object NeuronalNetwork {
       pits,
       distances,
       instruction
-    ).flatten
+    ).flatten ensuring (_.size == inputSize)
   }
 
   def outputToInstructions(output: Seq[Double]): Seq[Int] = {
