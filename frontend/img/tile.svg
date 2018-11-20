@@ -1,21 +1,12 @@
-
-<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" viewBox="-500 -500 1000 1000">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="-250 -250 500 500">
   <defs>
     <polygon id="hex"
-            points="-0.50, 0.0
+             points="-0.50, 0.0
                     -0.25,-0.433
                      0.25,-0.433
                      0.50, 0.0
                      0.25, 0.433
                     -0.25, 0.433 "/>
-
-    <polygon id="wall"
-             points=" 0.25, 0.433
-                      0.225,0.3897
-                     -0.225,0.3897
-                     -0.25, 0.433
-                     -0.225,0.4763
-                      0.225,0.4763"/>
 
     <clipPath id="hexagon-cutout">
       <use href="#hex"/>
@@ -27,10 +18,10 @@
     </linearGradient>
   </defs>
 
-  <g transform="scale(500)">
-    <use href="#wall"
-         fill="grey"
-         stroke="black" stroke-width="0.02"/>
-  </g>
+  <use transform="scale(500)"
+       href="#hex"
+       clip-path="url(#hexagon-cutout)"
+       fill="#EAEAEA"
+       stroke="url(#stroke-gradient)" stroke-width="0.07"/>
 
 </svg>

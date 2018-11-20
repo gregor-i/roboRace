@@ -142,13 +142,12 @@ function renderGame(game) {
   return h('div.game-board',
     {hook: {insert, prepatch, postpatch}},
     h('svg', {attrs: {xmlns: "http://www.w3.org/2000/svg", viewBox: `0 0 ${width} ${height}`}}, [
-      svg.defs,
-      h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.tiles(game.scenario)),
-      h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.walls(game.scenario)),
-      h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.target(game.scenario)),
+      h('g', svg.tiles(game.scenario)),
+      h('g', svg.walls(game.scenario)),
+      h('g', svg.target(game.scenario)),
       h('g', svg.traps(game.scenario)),
-      h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.startingPoints(game.scenario)),
-      h('g', {attrs: {transform: "translate(0.5 0.5)"}}, svg.robots(game)),
+      h('g', svg.startingPoints(game.scenario)),
+      h('g', svg.robots(game)),
       h('g', {attrs: {name: "animation"}}, animate(game.events))
     ]))
 }
