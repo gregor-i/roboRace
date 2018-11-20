@@ -32,14 +32,14 @@ function render(state, actionHandler) {
 
 function fab(classes, image, onclick){
   return h('div.fab'+classes, {on: {click: onclick}},
-      h('img', {props: {src: image.src}}))
+      h('img', {props: {src: image}}))
 }
 
 function renderPlayerList(state) {
   let rows = state.game.players.map(function (player) {
     return h('tr', [
       h('td', h('img', {
-        props: {src: images.player(player.index).src},
+        props: {src: images.player(player.index)},
         style: {'max-width': '20px', 'max-height': '20px'}
       })),
       h('td', player.name),
@@ -69,7 +69,7 @@ function renderActionButtons(state, game, actionHandler) {
     const unusedIndex = _.findIndex(player.instructionOptions, unusedAndThisType)
     return h('div.action',
         {on: {click: count !== 0 ? () => actionHandler({setInstruction: true, slot: focusedSlot, instruction: unusedIndex}) : undefined}},
-        [h('img', {props: {src: image.src}}), h('div.badge', count)])
+        [h('img', {props: {src: image}}), h('div.badge', count)])
   }
 
   function instructionSlot(index) {
@@ -85,7 +85,7 @@ function renderActionButtons(state, game, actionHandler) {
     if (instruction !== undefined && instruction !== null) {
       const image = images.action(Object.keys(player.instructionOptions[instruction])[0])
       return h('span.slot.filled', props,
-          h('img', {props: {src: image.src}}))
+          h('img', {props: {src: image}}))
     } else {
       return h('span.slot', props, index+1)
     }

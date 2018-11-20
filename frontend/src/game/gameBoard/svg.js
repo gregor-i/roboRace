@@ -40,7 +40,7 @@ function tiles(scenario, tileClickListener) {
   return _.flatMap(_.range(0, scenario.width), x =>
       _.range(0, scenario.height)
           .map(y => h('image.tile', {
-            attrs: imageAttrs(images.tile.src, {'data-x': x, 'data-y': y, transform: translate(x, y)}),
+            attrs: imageAttrs(images.tile, {'data-x': x, 'data-y': y, transform: translate(x, y)}),
             style: {opacity: !scenario.pits.find(p => p.x === x && p.y === y) ? '1' : '0'},
             on: {click: tileClickListener}
           }))
@@ -49,7 +49,7 @@ function tiles(scenario, tileClickListener) {
 
 function walls(scenario) {
   return scenario.walls.map(w => h('image', {
-    attrs: imageAttrs(images.wall(w.direction).src, {
+    attrs: imageAttrs(images.wall(w.direction), {
       transform: `${translate(w.position.x, w.position.y)}`
     })
   }))
@@ -57,7 +57,7 @@ function walls(scenario) {
 
 function target(scenario) {
   return h('image', {
-    attrs: imageAttrs(images.target.src, {
+    attrs: imageAttrs(images.target, {
       transform: translate(scenario.targetPosition.x, scenario.targetPosition.y)
     })
   })
@@ -67,19 +67,19 @@ function traps(scenario) {
   return scenario.traps.map(function (trap) {
     if (trap.TurnRightTrap)
       return h('image', {
-        attrs: imageAttrs(images.trapTurnRight.src, {
+        attrs: imageAttrs(images.trapTurnRight, {
           transform: translate(trap.TurnRightTrap.position.x, trap.TurnRightTrap.position.y)
         })
       })
     else if (trap.TurnLeftTrap)
       return h('image', {
-        attrs: imageAttrs(images.trapTurnLeft.src, {
+        attrs: imageAttrs(images.trapTurnLeft, {
           transform: translate(trap.TurnLeftTrap.position.x, trap.TurnLeftTrap.position.y)
         })
       })
     else if (trap.StunTrap)
       return h('use', {
-        attrs: imageAttrs(images.trapStun.src, {
+        attrs: imageAttrs(images.trapStun, {
           transform: translate(trap.StunTrap.position.x, trap.StunTrap.position.y)
         })
       })
@@ -89,7 +89,7 @@ function traps(scenario) {
 function startingPoints(scenario) {
   return scenario.initialRobots.map((robot, index) =>
       h('image', {
-        attrs: imageAttrs(images.playerStart(index).src, {
+        attrs: imageAttrs(images.playerStart(index), {
           transform: `${translate(robot.position.x, robot.position.y)} rotate(${directionToRotation(robot.direction)})`
         })
       })
@@ -103,7 +103,7 @@ function robots(game) {
               h(`g#robot-rotation-${player.index}`, {attrs: {transform: `rotate(${directionToRotation(player.robot.direction)})`}},
                   h(`g#robot-scale-${player.index}`, {attrs: {transform: 'scale(1)'}},
                       h('g', {attrs: {transform: 'translate(-0.5 -0.5)'}},
-                          h('image', {attrs: imageAttrs(images.player(player.index).src)})
+                          h('image', {attrs: imageAttrs(images.player(player.index))})
                       )
                   ))
           )

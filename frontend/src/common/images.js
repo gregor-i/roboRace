@@ -1,80 +1,71 @@
-function image(url) {
-  const img = new Image
-  img.src = url
-  return img
+const iconClose = '/assets/ic-close.svg'
+const iconGamerlist = '/assets/ic-gamerlist.svg'
+const iconReplayAnimation = '/assets/ic-replay-animation.svg'
+
+const tile = '/assets/tile.svg'
+
+// https://materialdesignicons.com/icon/flag-variant-outline
+const target = '/assets/target.svg'
+
+const walls = {
+  'Down': '/assets/wall-down.svg',
+  'UpRight': '/assets/wall-up-right.svg',
+  'DownRight': '/assets/wall-down-right.svg'
 }
 
-const iconClose = image('/assets/ic-close.svg')
-const iconGamerlist = image('/assets/ic-gamerlist.svg')
-const iconReplayAnimation = image('/assets/ic-replay-animation.svg')
+function wall(direction) {
+  return walls[Object.keys(direction)[0]]
+}
 
 const players = [
-  image('/assets/player1.svg'),
-  image('/assets/player2.svg'),
-  image('/assets/player3.svg'),
-  image('/assets/player4.svg'),
-  image('/assets/player5.svg'),
-  image('/assets/player6.svg')
-]
-
-const playerStarts = [
-  image('/assets/player1-start.svg'),
-  image('/assets/player2-start.svg'),
-  image('/assets/player3-start.svg'),
-  image('/assets/player4-start.svg'),
-  image('/assets/player5-start.svg'),
-  image('/assets/player6-start.svg')
+  '/assets/player1.svg',
+  '/assets/player2.svg',
+  '/assets/player3.svg',
+  '/assets/player4.svg',
+  '/assets/player5.svg',
+  '/assets/player6.svg'
 ]
 
 function player(index) {
   return players[index % 6]
 }
 
+const playerStarts = [
+  '/assets/player1-start.svg',
+  '/assets/player2-start.svg',
+  '/assets/player3-start.svg',
+  '/assets/player4-start.svg',
+  '/assets/player5-start.svg',
+  '/assets/player6-start.svg'
+]
+
 function playerStart(index){
   return playerStarts[index % 6];
 }
 
-// https://materialdesignicons.com/icon/flag-variant-outline
-const target = image('/assets/target.svg')
-
-const tile = image('/assets/tile.svg')
-
-const wallDown = image('/assets/wall-down.svg')
-const wallDownRight = image('/assets/wall-down-right.svg')
-const wallUpRight = image('/assets/wall-up-right.svg')
-
-function wall(direction){
-  switch (Object.keys(direction)[0]) {
-    case 'Down' : return wallDown
-    case 'UpRight' : return wallUpRight
-    case 'DownRight' : return wallDownRight
-  }
-}
-
 const actions = {
-  MoveForward: image('/assets/action-move-forward.svg'),
-  MoveBackward: image('/assets/action-move-backward.svg'),
-// StepRight : image('/assets/action_StepRight.svg'),
-// StepLeft : image('/assets/action_StepLeft.svg'),
-  MoveTwiceForward: image('/assets/action-move-forward-twice.svg'),
-  TurnRight: image('/assets/action-turn-right-60.svg'),
-  TurnLeft: image('/assets/action-turn-left-60.svg'),
-  UTurn: image('/assets/action-turn-left-180.svg'),
-  Sleep: image('/assets/action-sleep.svg'),
+  MoveForward: '/assets/action-move-forward.svg',
+  MoveBackward: '/assets/action-move-backward.svg',
+// StepRight : '/assets/action_StepRight.svg',
+// StepLeft : '/assets/action_StepLeft.svg',
+  MoveTwiceForward: '/assets/action-move-forward-twice.svg',
+  TurnRight: '/assets/action-turn-right-60.svg',
+  TurnLeft: '/assets/action-turn-left-60.svg',
+  UTurn: '/assets/action-turn-left-180.svg',
+  Sleep: '/assets/action-sleep.svg',
 }
 
 function action(name) {
   return actions[name]
 }
 
-const trapStun = image('/assets/trap-stun.svg')
-const trapTurnRight = image('/assets/trap-turn-right.svg')
-const trapTurnLeft = image('/assets/trap-turn-left.svg')
+const trapStun = '/assets/trap-stun.svg'
+const trapTurnRight = '/assets/trap-turn-right.svg'
+const trapTurnLeft = '/assets/trap-turn-left.svg'
 
 module.exports = {
-  player, playerStart, action,
+  player, playerStart, action, wall,
   iconClose, iconGamerlist, iconReplayAnimation,
   trapStun, trapTurnLeft, trapTurnRight,
-  target, tile,
-  wallDown, wallDownRight, wallUpRight, wall
+  target, tile
 }

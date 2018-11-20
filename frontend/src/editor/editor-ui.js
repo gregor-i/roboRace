@@ -22,7 +22,7 @@ function render(state, actionHandler) {
 
 function fab(classes, image, onclick){
   return h('div.fab'+classes, {on: {click: onclick}},
-    h('img', {props: {src: image.src}}))
+    h('img', {props: {src: image}}))
 }
 
 function renderEditorActionbar(state, actionHandler) {
@@ -38,10 +38,10 @@ function renderEditorActionbar(state, actionHandler) {
       button.builder(actionHandler, 'height++', 'H+'),
       button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
       button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
-      button.builder(actionHandler, {setClickAction: 'ToggleTurnLeftTrap'}, icon(images.trapTurnLeft.src)),
-      button.builder(actionHandler, {setClickAction: 'ToggleTurnRightTrap'}, icon(images.trapTurnRight.src)),
-      button.builder(actionHandler, {setClickAction: 'ToggleStunTrap'}, icon(images.trapStun.src)),
-      button.builder(actionHandler, {setClickAction: 'SetTarget'}, icon(images.target.src)),
+      button.builder(actionHandler, {setClickAction: 'ToggleTurnLeftTrap'}, icon(images.trapTurnLeft)),
+      button.builder(actionHandler, {setClickAction: 'ToggleTurnRightTrap'}, icon(images.trapTurnRight)),
+      button.builder(actionHandler, {setClickAction: 'ToggleStunTrap'}, icon(images.trapStun)),
+      button.builder(actionHandler, {setClickAction: 'SetTarget'}, icon(images.target)),
       button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
       button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
     ]),
