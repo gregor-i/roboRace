@@ -1,27 +1,68 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="-250 -250 500 500">
-  <defs>
-    <polygon id="hex"
-             points="-0.50, 0.0
-                    -0.25,-0.433
-                     0.25,-0.433
-                     0.50, 0.0
-                     0.25, 0.433
-                    -0.25, 0.433 "/>
-
-    <clipPath id="hexagon-cutout">
-      <use href="#hex"/>
-    </clipPath>
-
-    <linearGradient id="stroke-gradient" x1="4.425%" x2="98.163%" y1="3.974%" y2="97.917%">
-      <stop offset="0%" stop-color="#FFF"/>
-      <stop offset="100%" stop-color="#AFAFAF"/>
-    </linearGradient>
-  </defs>
-
-  <use transform="scale(500)"
-       href="#hex"
-       clip-path="url(#hexagon-cutout)"
-       fill="#EAEAEA"
-       stroke="url(#stroke-gradient)" stroke-width="0.07"/>
-
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   id="svg827"
+   version="1.1"
+   viewBox="0 0 1 1"
+   height="1in"
+   width="1in">
+  <defs
+     id="defs821" />
+  <metadata
+     id="metadata824">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     style="display:inline"
+     id="layer2">
+    <path
+       id="path3896-3-5-3"
+       d="M 0.7470545,0.07209 0.99410894,0.50001 0.7470545,0.92792 H 0.25294561 L 0.00589118,0.50001 0.25294561,0.07209 Z"
+       style="display:inline;opacity:1;fill:#4a4552;stroke:none;stroke-width:0.01020363;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;fill-opacity:1" />
+  </g>
+  <g
+     style="display:inline"
+     transform="translate(0,-271.59999)"
+     id="layer1">
+    <path
+       id="path14563"
+       d="m 0.50000001,272.1 -0.24705443,0.42791 h 0.49410889 z"
+       style="fill:#bbb9bd;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       id="path14565"
+       d="M 0.50000007,272.1 0.74705459,272.52791 0.99410894,272.1 Z"
+       style="fill:#cbc7c8;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       id="path14567"
+       d="M 0.50000007,272.1 0.74705447,271.67208 0.99410894,272.1 Z"
+       style="fill:#cbc7c8;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       id="path14569"
+       d="M 0.50000007,272.1 0.25294558,271.67208 H 0.74705447 Z"
+       style="fill:#c8c4c8;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       id="path14573"
+       d="M 0.00589127,272.09999 0.25294558,271.67208 0.50000007,272.1 Z"
+       style="fill:#bbb9bd;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       id="path14571"
+       d="M 0.00589116,272.1 0.25294561,272.52791 0.50000007,272.1 Z"
+       style="fill:#bbb9bd;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       id="path3896-3-5"
+       d="M 0.7470545,271.67208 0.99410894,272.1 0.7470545,272.52791 H 0.25294561 L 0.00589118,272.1 0.25294561,271.67208 Z"
+       style="display:inline;opacity:1;fill:none;stroke:#4a4552;stroke-width:0.01020363;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+  </g>
 </svg>
