@@ -48,7 +48,13 @@ object NeuronalNetworkInput {
         boolToWeight(player.instructionOptions(index) == instruction)
     }).toSet
 
-    pits ++ distances ++ instruction
+    val direction: Set[Input] = for(direction <- Direction.directions)
+      yield new Input("robot direction is $direction"){
+        override def activation(scenario: Scenario, player: Player, pathing: Map[Position, List[Direction]]): Double =
+          boolToWeight(player.robot.direction == direction)
+      }
+
+    pits ++ distances ++ instruction ++ direction
   }
 
   val inputKeys = inputTemplates.map(_.label)

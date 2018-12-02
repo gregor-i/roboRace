@@ -1,11 +1,11 @@
 package roboRace.ai
 
-import gameLogic.gameUpdate.DealOptions
+import gameLogic._
 import gameLogic.util.PathFinding
-import gameLogic.{Game, _}
 import io.circe.generic.auto._
-import monocle.function.Each
 import roboRace.ai.neuronalNetwork.{JsonRepository, NeuronalNetwork, NeuronalNetworkBreeding}
+
+import scala.util.Random
 
 object Console {
   val geneRepo = new JsonRepository[Seq[NeuronalNetwork]]("neuronal-network-genes.json")
@@ -13,6 +13,7 @@ object Console {
 
   val scenario = Scenario(10, 10, Position(0, 0), Seq(Robot(Position(9, 9), Up)), Seq.empty, Seq.empty, Seq.empty)
   val pathing = PathFinding.toTarget(scenario)
+  val r = new Random(0)
 
   def fitnessFunction(bot: Bot): Double = {
     val gameAfter1 = BotFinishesGame.sequenceWithAutoCycle(BotFinishesGame.createGame(scenario)("bot"))(
@@ -24,9 +25,9 @@ object Console {
     )
     val botPlayer = gameAfter1.players.head
     if (botPlayer.finished.isDefined) {
-      0d
+      botPlayer.finished.get.cycle
     } else {
-      pathing(botPlayer.robot.position).length
+      (pathing(botPlayer.robot.position).length +1 ) * 10
     }
   }
 
@@ -51,13 +52,12 @@ object Console {
           val genesWithFitness = pool.map(genes => (genes, fitnessFunction(genes)))
           val genesGrouped = genesWithFitness.groupBy(_._2).mapValues(_.map(_._1)).toSeq.sortBy(_._1)
           println(s"Gene pool grouped by fitness: ${genesGrouped.map(t => (t._1, t._2.size))}")
-          val bestGroup = genesGrouped.head._2
-          val bred = bestGroup.take(2000).flatMap(network => Seq(
+          val bred = genesGrouped.flatMap(_._2).take(2000).flatMap(network => Seq(
             network,
-            NeuronalNetworkBreeding.mutate(network)(iteration + 1),
-            NeuronalNetworkBreeding.mutate(network)(iteration + 2),
-            NeuronalNetworkBreeding.mutate(network)(iteration + 3),
-            NeuronalNetworkBreeding.mutate(network)(iteration + 4)
+            NeuronalNetworkBreeding.mutate(network)(r.nextLong()),
+            NeuronalNetworkBreeding.mutate(network)(r.nextLong()),
+            NeuronalNetworkBreeding.mutate(network)(r.nextLong()),
+            NeuronalNetworkBreeding.mutate(network)(r.nextLong())
           ))
           if (genesGrouped.head._1 == 0 && genesGrouped.head._2.size > 1000) {
             println("more then 1000 bots finished level. stopped breeding")

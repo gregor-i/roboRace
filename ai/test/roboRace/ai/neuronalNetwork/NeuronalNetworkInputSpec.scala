@@ -1,9 +1,9 @@
-package roboRace.ai
+package roboRace.ai.neuronalNetwork
 
 import gameLogic._
 import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
-import roboRace.ai.neuronalNetwork.NeuronalNetworkInput
+import roboRace.ai.BotHelper
 
 class NeuronalNetworkInputSpec extends FunSuite with Matchers with GameUpdateHelper with BotHelper {
   test("enumerateView") {
@@ -19,21 +19,4 @@ class NeuronalNetworkInputSpec extends FunSuite with Matchers with GameUpdateHel
       viewB should contain allElementsOf viewA
     }
   }
-
-  //  test("start with initial random genes") {
-//    val nn = NeuronalNetwork(NeuronalNetwork.genesFromSeed(1l))
-//
-//    val thisRobot = Robot(Position(1, 9), Up)
-//    val scenario = Scenario(10, 10, Position(1,1), Seq(thisRobot), Seq.empty, Seq.empty, Seq.empty)
-//
-//    val chosen = nn.apply(scenario, Seq.empty)(thisRobot, DealOptions.initial)
-//
-//    chosen.distinct.size shouldBe chosen.size
-//    chosen.size shouldBe Constants.instructionsPerCycle
-//    chosen.foreach { i =>
-//      i should be >= 0
-//      i should be < Constants.instructionOptionsPerCycle
-//    }
-//  }
-
 }
