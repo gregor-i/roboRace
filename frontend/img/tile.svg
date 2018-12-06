@@ -26,43 +26,39 @@
   </metadata>
   <g
      style="display:inline"
-     id="layer2">
-    <path
-       id="path3896-3-5-3"
-       d="M 0.7470545,0.07209 0.99410894,0.50001 0.7470545,0.92792 H 0.25294561 L 0.00589118,0.50001 0.25294561,0.07209 Z"
-       style="display:inline;opacity:1;fill:#4a4552;stroke:none;stroke-width:0.01020363;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;fill-opacity:1" />
-  </g>
-  <g
-     style="display:inline"
      transform="translate(0,-271.59999)"
      id="layer1">
     <path
        id="path14563"
        d="m 0.50000001,272.1 -0.24705443,0.42791 h 0.49410889 z"
-       style="fill:#bbb9bd;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+       style="fill:#c7c5c9;fill-opacity:1;stroke:#c7c5c9;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     <path
        id="path14565"
        d="M 0.50000007,272.1 0.74705459,272.52791 0.99410894,272.1 Z"
-       style="fill:#cbc7c8;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+       style="fill:#d1cdce;fill-opacity:1;stroke:#d1cdce;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     <path
        id="path14567"
        d="M 0.50000007,272.1 0.74705447,271.67208 0.99410894,272.1 Z"
-       style="fill:#cbc7c8;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+       style="fill:#d1cdce;fill-opacity:1;stroke:#d1cdce;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     <path
        id="path14569"
        d="M 0.50000007,272.1 0.25294558,271.67208 H 0.74705447 Z"
-       style="fill:#c8c4c8;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+       style="fill:#cecace;fill-opacity:1;stroke:#cecace;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     <path
        id="path14573"
        d="M 0.00589127,272.09999 0.25294558,271.67208 0.50000007,272.1 Z"
-       style="fill:#bbb9bd;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+       style="fill:#cac8cc;fill-opacity:1;stroke:#cac8cc;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     <path
        id="path14571"
        d="M 0.00589116,272.1 0.25294561,272.52791 0.50000007,272.1 Z"
-       style="fill:#bbb9bd;fill-opacity:1;stroke:none;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+       style="fill:#cac8cc;fill-opacity:1;stroke:#cac8cc;stroke-width:0.00685205px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+  </g>
+  <g
+     style="display:inline"
+     id="layer2">
     <path
-       id="path3896-3-5"
-       d="M 0.7470545,271.67208 0.99410894,272.1 0.7470545,272.52791 H 0.25294561 L 0.00589118,272.1 0.25294561,271.67208 Z"
-       style="display:inline;opacity:1;fill:none;stroke:#4a4552;stroke-width:0.01020363;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+       id="path3896-3-5-3"
+       d="M 0.7470545,0.07209 0.99410894,0.50001 0.7470545,0.92792 H 0.25294561 L 0.00589118,0.50001 0.25294561,0.07209 Z"
+       style="display:inline;opacity:1;fill:none;fill-opacity:1;stroke:#aeabb4;stroke-width:0.01020363;stroke-linecap:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   </g>
 </svg>
