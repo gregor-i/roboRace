@@ -5,16 +5,13 @@ const {renderScenario} = require('../game/gameBoard/static')
 
 function render(state, actionHandler) {
   let m = null
-  if (!state.player) {
-    m = renderLoginModal(state.player, actionHandler)
-  } else if (state.previewScenario) {
+  if (state.previewScenario) {
     m = modal(renderScenario(state.previewScenario), [actionHandler, {closeModal: true}])
   }
 
   return h('div',
       [h('section.hero.is-primary', [
             h('div.hero-head', h('nav.navbar', h('div.container', h('div.navbar-end', [
-                  h('a.navbar-item', {on: {click: [actionHandler, {resetUserName: true}]}}, 'Logout'),
                   h('a.navbar-item', {props: {href: 'https://github.com/gregor-i/roboRace'}}, 'Sources @ Github')
                 ]
             )))),
@@ -78,32 +75,6 @@ function renderScenarioList(player, scenarios, actionHandler) {
         h('h4.title', 'Scenario List: '),
         h('table.table', [header, ...rows])
       ]))
-}
-
-function renderLoginModal(player, actionHandler) {
-  function submit() {
-    if (input.elm.value)
-      actionHandler({definePlayerName: input.elm.value})
-  }
-
-  let input = h('input.input.is-primary', {
-        props: {
-          placeholder: 'username',
-        },
-        on: {
-          keydown: function (event) {
-            if (event.key === 'Enter')
-              submit()
-          }
-        }
-      }
-  )
-
-  return modal([
-    h('h3.title.is-3', 'choose a username:'),
-    h('div.field', h('p.control', input)),
-    h('div.field', h('p.control', h('button.button.is-primary', {on: {click: submit}}, 'Enter'))),
-  ])
 }
 
 module.exports = render

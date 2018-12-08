@@ -20,7 +20,7 @@ class AdminController @Inject()(configuration: Configuration,
   }
 
   def postDefault() = Action{
-    scenarioRepo.save(ScenarioRow(Utils.newShortId(), "system", "default", Some(Scenario.default)))
+    scenarioRepo.save(ScenarioRow(Utils.newId(), "system", "default", Some(Scenario.default)))
     NoContent
   }
 

@@ -1,4 +1,4 @@
-@(mode: String, gameId: String, scenarioId: String)
+@(mode: String, gameId: String, scenarioId: String, sessionId: String)
 <!DOCTYPE html>
 <html>
     <head>
@@ -11,7 +11,7 @@
         <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css?family=Roboto:700" rel="stylesheet">
     </head>
-    <body data-mode="@mode" data-game-id="@gameId" data-scenario-id="@scenarioId">
+    <body data-mode="@mode" data-game-id="@gameId" data-scenario-id="@scenarioId" data-session-id="@sessionId">
         <div id="robo-race"></div>
     </body>
 </html>

@@ -17,7 +17,8 @@ import repo.{GameRepository, GameRow}
 import scala.concurrent.ExecutionContext
 
 
-class LobbyController @Inject()(gameRepo: GameRepository)
+class LobbyController @Inject()(sessionAction: SessionAction,
+                                gameRepo: GameRepository)
                                (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
   extends InjectedController with Circe {
 
@@ -27,28 +28,23 @@ class LobbyController @Inject()(gameRepo: GameRepository)
     Ok(gameList().asJson)
   }
 
-  def create() = Action(circe.tolerantJson[Scenario]) { request =>
-    Utils.playerName(request) match {
-      case None => Unauthorized
-      case Some(player) =>
-        CreateGame(request.body)(player) match {
-          case CommandRejected(reason) =>
-            BadRequest(reason.asJson)
-          case CommandAccepted(game) =>
-            val row = GameRow(id = Utils.newShortId(), owner = player, game = Some(game))
-            gameRepo.save(row)
-            Source.single(gameList().asJson.noSpaces).runWith(sink)
-            Created(row.asJson)
-        }
+  def create() = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>
+    CreateGame(request.body)(session.id) match {
+      case CommandRejected(reason) =>
+        BadRequest(reason.asJson)
+      case CommandAccepted(game)   =>
+        val row = GameRow(id = Utils.newId(), owner = session.id, game = Some(game))
+        gameRepo.save(row)
+        Source.single(gameList().asJson.noSpaces).runWith(sink)
+        Created(row.asJson)
     }
   }
 
-  def delete(id: String) = Action { request =>
-    (gameRepo.get(id), Utils.playerName(request)) match {
-      case (None, _) => NotFound
-      case (_, None) => Unauthorized
-      case (Some(row), Some(player)) if row.owner != player => Unauthorized
-      case (Some(_), Some(_)) =>
+  def delete(id: String) = sessionAction { (session, request) =>
+    gameRepo.get(id) match {
+      case None => NotFound
+      case Some(row) if row.owner != session.id => Unauthorized
+      case Some(_) =>
         gameRepo.delete(id)
         Source.single(gameList().asJson.noSpaces).runWith(sink)
         NoContent

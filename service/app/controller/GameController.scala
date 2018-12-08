@@ -17,7 +17,8 @@ import repo.GameRepository
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class GameController @Inject()(repo: GameRepository)
+class GameController @Inject()(sessionAction: SessionAction,
+                               repo: GameRepository)
                               (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
   extends InjectedController with Circe {
 
@@ -28,11 +29,11 @@ class GameController @Inject()(repo: GameRepository)
     }
   }
 
-  def sendCommand(id: String) = Action(circe.tolerantJson[Command]) { request =>
-    (repo.get(id), Utils.playerName(request)) match {
-      case (Some(row), Some(player)) if row.game.isDefined =>
+  def sendCommand(id: String) = sessionAction(circe.tolerantJson[Command]) { (session, request) =>
+    repo.get(id) match {
+      case Some(row) if row.game.isDefined =>
         val command = request.body
-        command(player)(row.game.get) match {
+        command(session.id)(row.game.get) match {
           case CommandAccepted(afterCommand) =>
             val afterCycle = Cycle(afterCommand)
             repo.save(row.copy(game = Some(afterCycle)))
@@ -43,9 +44,8 @@ class GameController @Inject()(repo: GameRepository)
           case CommandRejected(reason) =>
             BadRequest(reason.asJson)
         }
-      case (_, None) => Unauthorized
-      case (None, _) => NotFound
-      case (Some(row), _) if row.game.isEmpty => NotFound
+      case None => NotFound
+      case Some(row) if row.game.isEmpty => NotFound
     }
   }
 

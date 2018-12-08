@@ -11,12 +11,13 @@ import repo.{ScenarioRepository, ScenarioRow}
 case class ScenarioPost(description: String, scenario: Scenario)
 
 @Singleton
-class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedController with Circe {
+class ScenarioController @Inject()(sessionAction: SessionAction,
+                                   repo: ScenarioRepository) extends InjectedController with Circe {
 
   def get() = Action {
     val list = repo.list().filter(_.scenario.isDefined)
     if (list.isEmpty) {
-      val defaultRow = ScenarioRow(Utils.newShortId(), "system", "default", Some(Scenario.default))
+      val defaultRow = ScenarioRow(Utils.newId(), "system", "default", Some(Scenario.default))
       repo.save(defaultRow)
       Ok(List(defaultRow).asJson)
     } else {
@@ -26,35 +27,33 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
 
   def getSingle(id: String) = Action {
     repo.get(id) match {
-      case None => NotFound
+      case None      => NotFound
       case Some(row) => Ok(row.asJson)
     }
   }
 
-  def post() = Action(circe.tolerantJson[ScenarioPost]) { request =>
-    Utils.playerName(request) match {
-      case None => Unauthorized
-      case _ if !Scenario.validation(request.body.scenario) => BadRequest
-      case Some(player) =>
-        val row = ScenarioRow(
-          id = Utils.newShortId(),
-          owner = player,
-          description = request.body.description,
-          scenario = Some(request.body.scenario))
-        repo.save(row)
-        Created(row.asJson)
+  def post() = sessionAction(circe.tolerantJson[ScenarioPost]) { (session, request) =>
+    if (Scenario.validation(request.body.scenario)) {
+      val row = ScenarioRow(
+        id = Utils.newId(),
+        owner = session.id,
+        description = request.body.description,
+        scenario = Some(request.body.scenario))
+      repo.save(row)
+      Created(row.asJson)
+    } else {
+      BadRequest
     }
   }
 
-  def put(id: String) = Action(circe.tolerantJson[ScenarioPost]) { request =>
-    (Utils.playerName(request), repo.get(id)) match {
-      case (None, _)                                                        => Unauthorized
-      case _ if !Scenario.validation(request.body.scenario)                 => BadRequest
-      case (Some(player), Some(scenarioRow)) if scenarioRow.owner != player => Forbidden
-      case (Some(player), _)                                                =>
+  def put(id: String) = sessionAction(circe.tolerantJson[ScenarioPost]) { (session, request) =>
+    repo.get(id) match {
+      case _ if !Scenario.validation(request.body.scenario)     => BadRequest
+      case Some(scenarioRow) if scenarioRow.owner != session.id => Forbidden
+      case _                                                    =>
         val row = ScenarioRow(
           id = id,
-          owner = player,
+          owner = session.id,
           description = request.body.description,
           scenario = Some(request.body.scenario))
         repo.save(row)
@@ -62,12 +61,11 @@ class ScenarioController @Inject()(repo: ScenarioRepository) extends InjectedCon
     }
   }
 
-  def delete(id: String) = Action { request =>
-    (repo.get(id), Utils.playerName(request)) match {
-      case (None, _) => NotFound
-      case (_, None) => Unauthorized
-      case (Some(row), Some(player)) if row.owner != player => Unauthorized
-      case (Some(row), Some(_)) => repo.delete(row.id)
+  def delete(id: String) = sessionAction { (session, request) =>
+    repo.get(id) match {
+      case None                                 => NotFound
+      case Some(row) if row.owner != session.id => Unauthorized
+      case Some(row)                            => repo.delete(id)
         NoContent
     }
   }
