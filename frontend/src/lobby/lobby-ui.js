@@ -32,44 +32,55 @@ function render(state, actionHandler) {
 
 }
 
-function renderGameList(state, games, actionHandler) {
-  function renderPlayerSlots(game) {
-    return game.scenario.initialRobots.map(robot =>
-        h('img', {
-          style: {
-            background: (_.get(game.you, 'index') === robot.index ? 'radial-gradient(closest-side, #1d97e2, rgba(0,0,0,0)), ' : '')
-                + 'url(' + images.tile + ')'
-          },
-          props: {
-            src: game.robots.find(r => r.index === robot.index) ?
-                images.player(robot.index) :
-                images.playerStart(robot.index)
-          }
-        }))
-  }
+function card(content){
+  return h('div.card', {style: {'marginBottom': '16px'}},
+      h('div.card-content', content))
+}
 
-  function renderGame(game, index) {
-    const content = h('article.media', [
-      // h('figure.media-left',
-      //     h('p.image', {style: {width: '64px', height: '64px'}},
-      //         h('img', {props: {src: images.player(index)}})
-      //     )
-      // ),
-      h('div.media-content',
-          h('div.content', [
-                h('p', [h('strong', 'state: '), 'game.state']),
-                h('p', renderPlayerSlots(game)),
-                button.group(
-                    button.builder.primary()(actionHandler, {openGame: game.id}, 'Enter'),
-                    button.builder.disabled(game.owner !== state.player)(actionHandler, {deleteGame: game.id}, 'Delete')
-                )
-              ]
-          )
+function mediaObject(left, content) {
+  return h('article.media', [
+    left ? h('figure.media-left',
+        h('p.image', {style: {width: '64px', height: '64px'}},
+            left
+        )
+    ) : null,
+    h('div.media-content', content)
+  ])
+}
+
+function robotImage(index, filled, you) {
+  return h('img', {
+    class: {
+      'robot-tile': true,
+      'robot-tile-you': you
+    },
+    props: {
+      src: filled ? images.player(index) : images.playerStart(index)
+    }
+  })
+}
+
+
+function renderPlayerSlots(game) {
+  return game.scenario.initialRobots.map(robot =>
+      robotImage(
+          robot.index,
+          game.robots.find(r => r.index === robot.index),
+          _.get(game.you, 'index') === robot.index
       )
-    ])
+  )
+}
 
-    return h('div.card', {style: {'marginBottom': '16px'}},
-        h('div.card-content', content))
+function renderGameList(state, games, actionHandler) {
+  function renderGame(gameRow) {
+    return card(mediaObject(null, [
+      h('div', [h('strong', 'state: '), 'game.state']),
+      h('div', renderPlayerSlots(gameRow)),
+      button.group(
+          button.builder.primary()(actionHandler, {openGame: gameRow.id}, 'Enter'),
+          button.builder.disabled(gameRow.owner !== state.player)(actionHandler, {deleteGame: gameRow.id}, 'Delete')
+      )
+    ]))
   }
 
   return h('section.section',
@@ -80,24 +91,26 @@ function renderGameList(state, games, actionHandler) {
 }
 
 function renderScenarioList(player, scenarios, actionHandler) {
-  const header = h('tr', [h('th', 'player slots'), h('th', 'description'), h('th', 'actions')])
-
-  const rows = scenarios.map(row =>
-      h('tr', [
-        h('td', row.scenario.initialRobots.length.toString()),
-        h('td', row.description),
-        h('td', button.group(
-            button.primary(actionHandler, {createGame: row.scenario}, 'Start Game'),
-            button.builder(actionHandler, {editScenario: row.id}, 'Edit'),
-            button.builder(actionHandler, {previewScenario: row.scenario}, 'Preview'),
-            button.builder.disabled(row.owner !== player)(actionHandler, {deleteScenario: true, id: row.id}, 'Delete')
-        ))
-      ]))
+  function renderScenario(scenarioRow) {
+    return card(mediaObject(null,[
+      h('div', [h('strong', 'Scenario description: '), scenarioRow.description]),
+      h('div', scenarioRow.scenario.initialRobots.map(robot => robotImage(robot.index, false, false))),
+      button.group(
+            button.primary(actionHandler, {createGame: scenarioRow.scenario}, 'Start Game'),
+            button.builder(actionHandler, {editScenario: scenarioRow.id}, 'Edit'),
+            button.builder(actionHandler, {previewScenario: scenarioRow.scenario}, 'Preview'),
+            button.builder.disabled(scenarioRow.owner !== player)(actionHandler, {
+              deleteScenario: true,
+              id: scenarioRow.id
+            }, 'Delete')
+        )]
+    ))
+  }
 
   return h('section.section',
       h('div.container', [
         h('h4.title', 'Scenario List: '),
-        h('table.table', [header, ...rows])
+        ...scenarios.map(renderScenario)
       ]))
 }
 

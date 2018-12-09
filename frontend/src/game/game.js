@@ -33,12 +33,11 @@ function Game(element, player, gameId) {
   function gameEventHandler(state) {
     return function (event) {
       const serverState = JSON.parse(event.data)
-      const oldState = state.game
-      const newCycle = oldState.cycle !== serverState.cycle
+      const newCycle = state.game.cycle !== serverState.cycle
 
       state.game = serverState
       if (newCycle) {
-        state.focusedSlot = undefined
+        state.focusedSlot = 0
       }
       renderState(state)
     }

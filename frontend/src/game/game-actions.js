@@ -23,9 +23,10 @@ function actions(state, action) {
         .then(newGameState => ({
           ...state,
           game: newGameState,
-          focusedSlot: _.range(constants.numberOfInstructionsPerCycle)
-              .map(i => (i + (state.focusedSlot || 0)) % constants.numberOfInstructionsPerCycle)
-              .find(i => newGameState.you.instructionSlots[i] === null)
+          focusedSlot: newGameState.cycle !== state.game.cycle ? 0 :
+              _.range(constants.numberOfInstructionsPerCycle)
+                  .map(i => (i + (state.focusedSlot || 0)) % constants.numberOfInstructionsPerCycle)
+                  .find(i => newGameState.you.instructionSlots[i] === null)
         }))
   } else if (action.replayAnimations) {
     return Promise.resolve({...state, animationStart: new Date()})
