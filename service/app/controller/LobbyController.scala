@@ -1,5 +1,7 @@
 package controller
 
+import java.time.ZonedDateTime
+
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
@@ -20,7 +22,7 @@ import scala.concurrent.ExecutionContext
 class LobbyController @Inject()(sessionAction: SessionAction,
                                 gameRepo: GameRepository)
                                (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
-  extends InjectedController with Circe {
+  extends InjectedController with Circe with JsonUtil {
 
   private val (sink, source) = SinkSourceCache.createPair()
 
@@ -33,7 +35,12 @@ class LobbyController @Inject()(sessionAction: SessionAction,
       case CommandRejected(reason) =>
         BadRequest(reason.asJson)
       case CommandAccepted(game)   =>
-        val row = GameRow(id = Utils.newId(), owner = session.id, game = Some(game))
+        val row = GameRow(
+          id = Utils.newId(),
+          owner = session.id,
+          game = Some(game),
+          creationTime = ZonedDateTime.now()
+        )
         gameRepo.save(row)
         Source.single(gameList().asJson.noSpaces).runWith(sink)
         Created(row.asJson)

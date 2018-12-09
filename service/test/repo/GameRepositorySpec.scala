@@ -1,5 +1,7 @@
 package repo
 
+import java.time.ZonedDateTime
+
 import gameLogic._
 import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
@@ -7,8 +9,16 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 class GameRepositorySpec extends FunSuite with Matchers with GuiceOneAppPerSuite with BeforeAndAfterEach{
   def repo = app.injector.instanceOf[GameRepository]
 
-  val g1 = GameRow("initial", "player", Some(Game(2, Scenario.default, List.empty, Seq(RobotTurns(0, Position(0,0), UpRight, Up)))))
-  val g2 = GameRow("starting", "player", Some(Game(0, Scenario.default, List.empty, Seq())))
+  val g1 = GameRow(
+    id = "initial",
+    owner = "player",
+    game = Some(Game(2, Scenario.default, List.empty, Seq(RobotTurns(0, Position(0,0), UpRight, Up)))),
+    creationTime = ZonedDateTime.now().withNano(0))
+  val g2 = GameRow(
+    id = "starting",
+    owner = "player",
+    game = Some(Game(0, Scenario.default, List.empty, Seq())),
+    creationTime = ZonedDateTime.now().withNano(0))
 
   override def beforeEach = {
     repo.list().foreach(row => repo.delete(row.id))

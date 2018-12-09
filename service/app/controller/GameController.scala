@@ -20,7 +20,7 @@ import scala.concurrent.ExecutionContext
 class GameController @Inject()(sessionAction: SessionAction,
                                repo: GameRepository)
                               (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
-  extends InjectedController with Circe {
+  extends InjectedController with Circe with JsonUtil {
 
   def state(id: String) = Action {
     repo.get(id) match {
