@@ -18,6 +18,7 @@ import scala.concurrent.ExecutionContext
 
 @Singleton
 class GameController @Inject()(sessionAction: SessionAction,
+                               lobbyController: LobbyController,
                                repo: GameRepository)
                               (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
   extends InjectedController with Circe with JsonUtil {
@@ -40,6 +41,8 @@ class GameController @Inject()(sessionAction: SessionAction,
             if(afterCycle.events != row.game.get.events)
               Source.single(afterCycle.asJson.noSpaces)
                 .runWith(SinkSourceCache.sink(id))
+            if(afterCycle.events != row.game.get.events && afterCycle.cycle == 0)
+              lobbyController.sendStateToClients()
             Ok(afterCycle.asJson)
           case CommandRejected(reason) =>
             BadRequest(reason.asJson)

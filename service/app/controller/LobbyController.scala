@@ -5,11 +5,11 @@ import java.time.ZonedDateTime
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
+import gameLogic.Scenario
 import gameLogic.command.{CommandAccepted, CommandRejected, CreateGame}
-import gameLogic.{Game, Scenario}
 import io.circe.generic.auto._
 import io.circe.syntax._
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.libs.circe.Circe
@@ -18,7 +18,7 @@ import repo.{GameRepository, GameRow}
 
 import scala.concurrent.ExecutionContext
 
-
+@Singleton
 class LobbyController @Inject()(sessionAction: SessionAction,
                                 gameRepo: GameRepository)
                                (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
@@ -42,7 +42,7 @@ class LobbyController @Inject()(sessionAction: SessionAction,
           creationTime = ZonedDateTime.now()
         )
         gameRepo.save(row)
-        Source.single(gameList().asJson.noSpaces).runWith(sink)
+        sendStateToClients()
         Created(row.asJson)
     }
   }
@@ -53,28 +53,17 @@ class LobbyController @Inject()(sessionAction: SessionAction,
       case Some(row) if row.owner != session.id => Unauthorized
       case Some(_) =>
         gameRepo.delete(id)
-        Source.single(gameList().asJson.noSpaces).runWith(sink)
+        sendStateToClients()
         NoContent
     }
   }
+
+  def sendStateToClients() =
+    Source.single(gameList().asJson.noSpaces).runWith(sink)
 
   def sse() = Action {
     Ok.chunked(source via EventSource.flow).as(ContentTypes.EVENT_STREAM)
   }
 
-  def stateDescription(gameState:Game): String = gameState match{
-    case game if game.cycle == 0 && game.players.length < game.scenario.initialRobots.length =>
-      s"Open for new Player. ${game.players.length} / ${game.scenario.initialRobots.length}"
-    case game if game.cycle != 0 && game.players.forall(_.finished.isDefined) =>
-      s"Game finished"
-    case _ =>
-      s"Game in Progress"
-  }
-
-  def gameList() =
-    gameRepo.list()
-      .filter(_.game.isDefined)
-      .map(row => GameOverview(row.id, row.owner, stateDescription(row.game.get)))
+  private def gameList() = gameRepo.list().filter(_.game.isDefined)
 }
-
-case class GameOverview(id: String, owner: String, state: String)

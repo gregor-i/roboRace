@@ -12,10 +12,6 @@ import play.api.db.Database
 
 case class GameRow(id: String, owner: String, game: Option[Game], creationTime: ZonedDateTime)
 
-object GameRow {
-  implicit val ordering: Ordering[GameRow] = Ordering.String.on(_.id)
-}
-
 @Singleton
 class GameRepository @Inject()(db: Database) {
   private val rowParser: RowParser[GameRow] = for {

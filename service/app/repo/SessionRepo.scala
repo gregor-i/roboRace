@@ -4,6 +4,8 @@ import java.time.ZonedDateTime
 
 import javax.inject.Singleton
 
+case class Session(id: String, startedAt: ZonedDateTime, lastActivityAt: ZonedDateTime)
+
 @Singleton
 class SessionRepo {
   private var cache: Map[String, Session] = Map.empty
@@ -13,4 +15,3 @@ class SessionRepo {
   def set(session: Session): Unit = cache += (session.id -> session)
 }
 
-case class Session(id: String, startedAt: ZonedDateTime, lastActivityAt: ZonedDateTime)
