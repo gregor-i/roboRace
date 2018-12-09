@@ -3,6 +3,7 @@ const button = require('../common/button')
 const modal = require('../common/modal')
 const images = require('../common/images')
 const {renderScenario} = require('../game/gameBoard/static')
+const _ = require('lodash')
 
 function render(state, actionHandler) {
   let m = null
@@ -24,18 +25,21 @@ function render(state, actionHandler) {
             )
           ]
       ),
-        renderGameTable(state, state.games, actionHandler),
+        renderGameList(state, state.games, actionHandler),
         renderScenarioList(state.player, state.scenarios, actionHandler),
         m
       ])
 
 }
 
-function renderGameTable(state, games, actionHandler) {
+function renderGameList(state, games, actionHandler) {
   function renderPlayerSlots(game) {
     return game.scenario.initialRobots.map(robot =>
         h('img', {
-          style: {background: 'url(' + images.tile + ')'},
+          style: {
+            background: (_.get(game.you, 'index') === robot.index ? 'radial-gradient(closest-side, #1d97e2, rgba(0,0,0,0)), ' : '')
+                + 'url(' + images.tile + ')'
+          },
           props: {
             src: game.robots.find(r => r.index === robot.index) ?
                 images.player(robot.index) :
@@ -56,7 +60,7 @@ function renderGameTable(state, games, actionHandler) {
                 h('p', [h('strong', 'state: '), 'game.state']),
                 h('p', renderPlayerSlots(game)),
                 button.group(
-                    button.builder.primary()(actionHandler, {redirectTo: '/game/' + game.id}, 'Enter'),
+                    button.builder.primary()(actionHandler, {openGame: game.id}, 'Enter'),
                     button.builder.disabled(game.owner !== state.player)(actionHandler, {deleteGame: game.id}, 'Delete')
                 )
               ]

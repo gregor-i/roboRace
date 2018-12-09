@@ -4,11 +4,11 @@ const constants = require('../common/constants')
 
 function actions(state, action) {
   if (action.leaveGame) {
-    if (state.game.you) {
+    if (state.game.you && !state.game.you.finished) {
       return gameService.quitGame(state.gameId)
           .then(newGameState => ({...state, game: newGameState}))
     } else {
-      document.location = "/"
+      require('../index').goToLobby()
     }
   } else if (action.joinGame)
     return gameService.joinGame(action.joinGame)
@@ -25,7 +25,7 @@ function actions(state, action) {
           game: newGameState,
           focusedSlot: _.range(constants.numberOfInstructionsPerCycle)
               .map(i => (i + (state.focusedSlot || 0)) % constants.numberOfInstructionsPerCycle)
-              .find(i => state.game.you.instructionSlots[i] === null)
+              .find(i => newGameState.you.instructionSlots[i] === null)
         }))
   } else if (action.replayAnimations) {
     return Promise.resolve({...state, animationStart: new Date()})

@@ -1,4 +1,4 @@
-@(mode: String, gameId: String, scenarioId: String, sessionId: String)
+@(sessionId: String)
 <!DOCTYPE html>
 <html>
     <head>
@@ -8,10 +8,8 @@
         <script type="text/javascript" src="/assets/robo-race.js"></script>
         <link rel="icon" href="/assets/favicon.svg" sizes="any" type="image/svg+xml">
         <link rel="stylesheet" type="text/css" href="/assets/robo-race.css">
-        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css?family=Roboto:700" rel="stylesheet">
     </head>
-    <body data-mode="@mode" data-game-id="@gameId" data-scenario-id="@scenarioId" data-session-id="@sessionId">
-        <div id="robo-race"></div>
+    <body data-session-id="@sessionId" id="robo-race">
+        <div></div>
     </body>
 </html>

@@ -16,7 +16,9 @@ case object RegisterForGame extends Command {
     case game if game.players.size >= game.scenario.initialRobots.size =>
       CommandRejected(TooMuchPlayersRegistered)
     case game =>
-      val newPlayer = Player(index = game.players.size,
+      val newPlayer = Player(
+        index = game.scenario.initialRobots.indices
+          .find(i => !game.players.exists(_.index == i)).get,
         name = player,
         robot = game.scenario.initialRobots(game.players.size),
         instructionSlots = Instruction.emptySlots,
@@ -31,22 +33,24 @@ case object RegisterForGame extends Command {
 }
 
 case object DeregisterForGame extends Command {
-  def apply(player: String): Game => CommandResponse = {
-    case game if !game.players.exists(_.name == player) =>
+  def apply(playerName: String): Game => CommandResponse = {
+    case game if !game.players.exists(_.name == playerName)                           =>
       CommandRejected(PlayerNotFound)
-    case game if game.players.find(_.name == player).exists(_.finished.isDefined) =>
+    case game if game.players.find(_.name == playerName).exists(_.finished.isDefined) =>
       CommandRejected(PlayerAlreadyFinished)
 
     case game if game.cycle == 0 =>
+      val player = game.players.find(_.name == playerName).get
       CommandAccepted(
-        Game.players.modify(_.filter(_.name != player).zipWithIndex.map{case (player, index) => player.copy(index =index)})(game)
-        .log(PlayerQuitted(game.players.find(_.name == player).get.index))
+        Game.players.modify(_.filter(_ != player))(game)
+          .log(PlayerQuitted(player.index, player.robot))
       )
-    case game =>
+    case game                    =>
+      val player = game.players.find(_.name == playerName).get
       CommandAccepted(
-        (Game.player(player) composeLens Player.finished)
-        .set(Some(FinishedStatistic(game.players.count(_.finished.isEmpty), game.cycle, true)))(game)
-          .log(PlayerQuitted(game.players.find(_.name == player).get.index))
+        (Game.player(playerName) composeLens Player.finished)
+          .set(Some(FinishedStatistic(game.players.count(_.finished.isEmpty), game.cycle, true)))(game)
+          .log(PlayerQuitted(player.index, player.robot))
       )
 
   }

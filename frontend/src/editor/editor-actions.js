@@ -4,10 +4,7 @@ const constants = require('../common/constants')
 
 function actions(state, action) {
   if (action.backToLobby) {
-    window.location.href = "/"
-  }else if (action.deleteScenario) {
-    editorService.deleteScenario(action.deleteScenario)
-
+    require('../index').goToLobby()
   } else if (action === 'width++') {
     state.scenario.width++
     return Promise.resolve(state)
@@ -102,7 +99,7 @@ function actions(state, action) {
     return Promise.resolve(state)
   } else if (action === 'save') {
     editorService.postScenario(state.description, state.scenario)
-        .then(row => window.location = "/editor/" + row.id)
+        .then(row => require('../index').goToEditor(row.id))
   } else {
     console.error("unknown action", action)
   }

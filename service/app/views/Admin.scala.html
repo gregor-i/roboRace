@@ -1,4 +1,4 @@
-@(config: play.api.Configuration)
+@()
 <!DOCTYPE html>
 <html>
     <head>
@@ -7,28 +7,10 @@
         <title>Robo Race - Admin</title>
         <link rel="icon" href="/assets/favicon.svg" sizes="any" type="image/svg+xml">
         <link rel="stylesheet" type="text/css" href="/assets/robo-race.css">
-        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/css?family=Roboto:700" rel="stylesheet">
-        <script>
-            function garbageCollect(){
-                fetch('/admin/garbage-collect', {method:'POST'})
-                        .then(resp => resp.text())
-                        .then(resp => alert(resp))
-            }
-        </script>
+        @*<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">*@
+        @*<link href="https://fonts.googleapis.com/css?family=Roboto:700" rel="stylesheet">*@
     </head>
     <body class="content">
         <h1>Admin</h1>
-
-        <h2>Garbage Collection</h2>
-        <div><button class="button" onclick="garbageCollect()">Garbage Collection</button></div>
-
-        <h2>Config</h2>
-        <div>
-            <table>
-                <tr><th>key</th><th>value</th></tr>
-                @config.entrySet.map{ case (key, value) => <tr><td>@key</td><td>@value.unwrapped()</td></tr> }
-            </table>
-        </div>
     </body>
 </html>
