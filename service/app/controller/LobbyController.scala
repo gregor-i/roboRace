@@ -10,11 +10,12 @@ import gameLogic.command.{CommandAccepted, CommandRejected, CreateGame}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
+import model.GameResponse
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
-import repo.{GameRepository, GameRow}
+import repo.{GameRepository, GameRow, Session}
 
 import scala.concurrent.ExecutionContext
 
@@ -24,33 +25,33 @@ class LobbyController @Inject()(sessionAction: SessionAction,
                                (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
   extends InjectedController with Circe with JsonUtil {
 
-  private val (sink, source) = SinkSourceCache.createPair()
+  private val (sink, source) = new SinkSourceCache[Seq[GameRow]].createPair()
 
-  def list() = Action {
-    Ok(gameList().asJson)
+  def list() = sessionAction {(session, _) =>
+    Ok(gameList().map(GameResponse(_)(session)).asJson)
   }
 
   def create() = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>
-    CreateGame(request.body)(session.id) match {
+    CreateGame(request.body)(session.playerId) match {
       case CommandRejected(reason) =>
         BadRequest(reason.asJson)
       case CommandAccepted(game)   =>
         val row = GameRow(
           id = Utils.newId(),
-          owner = session.id,
+          owner = session.playerId,
           game = Some(game),
           creationTime = ZonedDateTime.now()
         )
         gameRepo.save(row)
         sendStateToClients()
-        Created(row.asJson)
+        Created(GameResponse(game, row.id)(session).asJson)
     }
   }
 
   def delete(id: String) = sessionAction { (session, request) =>
     gameRepo.get(id) match {
       case None => NotFound
-      case Some(row) if row.owner != session.id => Unauthorized
+      case Some(row) if row.owner != session.playerId => Unauthorized
       case Some(_) =>
         gameRepo.delete(id)
         sendStateToClients()
@@ -59,11 +60,16 @@ class LobbyController @Inject()(sessionAction: SessionAction,
   }
 
   def sendStateToClients() =
-    Source.single(gameList().asJson.noSpaces).runWith(sink)
+    Source.single(gameList()).runWith(sink)
 
-  def sse() = Action {
-    Ok.chunked(source via EventSource.flow).as(ContentTypes.EVENT_STREAM)
+  def sse() = sessionAction { (session, _) =>
+    Ok.chunked(
+      source
+        .map(games => games.flatMap(GameResponse(_)(session)))
+        .map(_.asJson.noSpaces)
+        .via(EventSource.flow)
+    ).as(ContentTypes.EVENT_STREAM)
   }
 
-  private def gameList() = gameRepo.list().filter(_.game.isDefined)
+  private def gameList(): Seq[GameRow] = gameRepo.list()
 }

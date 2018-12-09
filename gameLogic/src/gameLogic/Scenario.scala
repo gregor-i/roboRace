@@ -8,7 +8,7 @@ case class Scenario(width: Int, height: Int,
                     traps: Seq[Trap] = Seq.empty)
 
 object Scenario {
-  private def robot(x: Int, y: Int, direction: Direction): Robot = Robot(Position(x, y), direction)
+  private def robot(index: Int, x: Int, y: Int, direction: Direction): Robot = Robot(index, Position(x, y), direction)
   private def wall(x: Int, y: Int, direction: WallDirection): Wall = Wall(Position(x, y), direction)
 
   def validation(gameScenario: Scenario): Boolean = {
@@ -42,12 +42,12 @@ object Scenario {
     height = 9,
     targetPosition = Position(3, 1),
     initialRobots = Seq(
-      robot(1, 8, Up),
-      robot(5, 8, Up),
-      robot(2, 8, Up),
-      robot(4, 8, Up),
-      robot(0, 8, Up),
-      robot(6, 8, Up)
+      robot(0, 1, 8, Up),
+      robot(1, 5, 8, Up),
+      robot(2, 2, 8, Up),
+      robot(3, 4, 8, Up),
+      robot(4, 0, 8, Up),
+      robot(5, 6, 8, Up)
     ),
     walls = Seq(
       wall(3, 2, Down),

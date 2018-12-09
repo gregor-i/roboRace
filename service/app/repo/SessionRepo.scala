@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 
 import javax.inject.Singleton
 
-case class Session(id: String, startedAt: ZonedDateTime, lastActivityAt: ZonedDateTime)
+case class Session(id: String, playerId: String, startedAt: ZonedDateTime, lastActivityAt: ZonedDateTime)
 
 @Singleton
 class SessionRepo {

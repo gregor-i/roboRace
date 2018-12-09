@@ -45,10 +45,9 @@ function Game(element, player, gameId) {
   }
 
   return gameService.getState(gameId)
-    .then(gameRow => {
+    .then(game => {
       renderState({
-        player, gameId,
-        game: gameRow.game,
+        player, gameId, game,
         eventSource: gameService.updates(gameId),
         modal: 'none'
       }, element)

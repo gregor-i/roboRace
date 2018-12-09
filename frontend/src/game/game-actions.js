@@ -24,7 +24,7 @@ function actions(state, action) {
     return gameService.setInstruction(state.gameId, state.game.cycle, action.slot, action.instruction)
         .then(newGameState => {
           state.game = newGameState
-          const slots = state.game.players.find(p => p.name === state.player).instructionSlots
+          const slots = state.game.you.instructionSlots
           state.focusedSlot = _.range(constants.numberOfInstructionsPerCycle)
               .map(i => (i + (state.focusedSlot || 0)) % constants.numberOfInstructionsPerCycle)
               .find(i => slots[i] === null)

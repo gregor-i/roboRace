@@ -1,17 +1,14 @@
 package controller
 
-import akka.NotUsed
 import akka.stream.Materializer
-import akka.stream.scaladsl.{BroadcastHub, Keep, MergeHub}
+import akka.stream.scaladsl.{BroadcastHub, Keep, MergeHub, Sink, Source}
 
-object SinkSourceCache {
-  type Sink = akka.stream.scaladsl.Sink[String, NotUsed]
-  type Source = akka.stream.scaladsl.Source[String, NotUsed]
-  type Pair = (Sink, Source)
+class SinkSourceCache[A] {
+  type Pair = (Sink[A, _], Source[A, _])
 
   private var memory = Map[String, Pair]()
 
-  def createPair()(implicit mat: Materializer): Pair = MergeHub.source[String](perProducerBufferSize = 16)
+  def createPair()(implicit mat: Materializer): Pair = MergeHub.source[A](perProducerBufferSize = 16)
     .toMat(BroadcastHub.sink(bufferSize = 256))(Keep.both)
     .run()
 
@@ -21,7 +18,7 @@ object SinkSourceCache {
     memory(id)
   }
 
-  def sink(id: String)(implicit mat: Materializer): Sink = pair(id)._1
+  def sink(id: String)(implicit mat: Materializer): Sink[A, _] = pair(id)._1
 
-  def source(id: String)(implicit mat: Materializer): Source = pair(id)._2
+  def source(id: String)(implicit mat: Materializer): Source[A, _] = pair(id)._2
 }

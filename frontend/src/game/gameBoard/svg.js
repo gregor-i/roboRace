@@ -97,13 +97,13 @@ function startingPoints(scenario) {
 }
 
 function robots(game) {
-  return game.players.map(player =>
+  return game.robots.map(robot =>
       h('g', {attrs: {transform: 'translate(0.5 0.5)'}},
-          h(`g#robot-translation-${player.index}`, {attrs: {transform: translate(player.robot.position.x, player.robot.position.y)}},
-              h(`g#robot-rotation-${player.index}`, {attrs: {transform: `rotate(${directionToRotation(player.robot.direction)})`}},
-                  h(`g#robot-scale-${player.index}`, {attrs: {transform: 'scale(1)'}},
+          h(`g#robot-translation-${robot.index}`, {attrs: {transform: translate(robot.position.x, robot.position.y)}},
+              h(`g#robot-rotation-${robot.index}`, {attrs: {transform: `rotate(${directionToRotation(robot.direction)})`}},
+                  h(`g#robot-scale-${robot.index}`, {attrs: {transform: 'scale(1)'}},
                       h('g', {attrs: {transform: 'translate(-0.5 -0.5)'}},
-                          h('image', {attrs: imageAttrs(images.player(player.index))})
+                          h('image', {attrs: imageAttrs(images.player(robot.index))})
                       )
                   ))
           )

@@ -36,7 +36,7 @@ class ScenarioController @Inject()(sessionAction: SessionAction,
     if (Scenario.validation(request.body.scenario)) {
       val row = ScenarioRow(
         id = Utils.newId(),
-        owner = session.id,
+        owner = session.playerId,
         description = request.body.description,
         scenario = Some(request.body.scenario))
       repo.save(row)
@@ -48,12 +48,12 @@ class ScenarioController @Inject()(sessionAction: SessionAction,
 
   def put(id: String) = sessionAction(circe.tolerantJson[ScenarioPost]) { (session, request) =>
     repo.get(id) match {
-      case _ if !Scenario.validation(request.body.scenario)     => BadRequest
-      case Some(scenarioRow) if scenarioRow.owner != session.id => Forbidden
-      case _                                                    =>
+      case _ if !Scenario.validation(request.body.scenario)           => BadRequest
+      case Some(scenarioRow) if scenarioRow.owner != session.playerId => Forbidden
+      case _                                                          =>
         val row = ScenarioRow(
           id = id,
-          owner = session.id,
+          owner = session.playerId,
           description = request.body.description,
           scenario = Some(request.body.scenario))
         repo.save(row)
@@ -63,9 +63,9 @@ class ScenarioController @Inject()(sessionAction: SessionAction,
 
   def delete(id: String) = sessionAction { (session, request) =>
     repo.get(id) match {
-      case None                                 => NotFound
-      case Some(row) if row.owner != session.id => Unauthorized
-      case Some(row)                            => repo.delete(id)
+      case None                                       => NotFound
+      case Some(row) if row.owner != session.playerId => Unauthorized
+      case Some(row)                                  => repo.delete(id)
         NoContent
     }
   }

@@ -16,7 +16,7 @@ function render(state, actionHandler) {
     m = modal(renderPlayerList(state), closeAction)
 
   const game = state.game
-  const playerIndex = _.get(game.players.find(p => p.name === state.player), "index")
+  const playerIndex = _.get(game.you, "index")
   return h('div.game', [
     fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
     fab('.fab-left-1', images.iconReplayAnimation, event => {
@@ -57,7 +57,7 @@ function renderPlayerList(state) {
 
 function renderActionButtons(state, game, actionHandler) {
   const focusedSlot = state.focusedSlot || 0
-  const player = game.players.find((player) => player.name === state.player)
+  const player = game.you
 
   function instructionCard(type) {
     function unusedAndThisType(opt, index) {

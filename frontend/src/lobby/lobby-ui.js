@@ -1,6 +1,7 @@
 const h = require('snabbdom/h').default
 const button = require('../common/button')
 const modal = require('../common/modal')
+const images = require('../common/images')
 const {renderScenario} = require('../game/gameBoard/static')
 
 function render(state, actionHandler) {
@@ -31,27 +32,46 @@ function render(state, actionHandler) {
 }
 
 function renderGameTable(state, games, actionHandler) {
-  const header = h('tr', [
-    h('th', 'id'),
-    h('th', 'owner'),
-    h('th', 'state'),
-    h('th', 'actions'),
-  ])
+  function renderPlayerSlots(game) {
+    return game.scenario.initialRobots.map(robot =>
+        h('img', {
+          style: {background: 'url(' + images.tile + ')'},
+          props: {
+            src: game.robots.find(r => r.index === robot.index) ?
+                images.player(robot.index) :
+                images.playerStart(robot.index)
+          }
+        }))
+  }
 
-  const rows = games.map(row => h('tr', [
-    h('td', row.id),
-    h('td', row.owner),
-    h('td', row.state),
-    h('td', button.group(
-        button.builder.primary()(actionHandler, {redirectTo: '/game/' + row.id}, 'Enter'),
-        button.builder.disabled(row.owner !== state.player)(actionHandler, {deleteGame: row.id}, 'Delete')
-    ))
-  ]))
+  function renderGame(game, index) {
+    const content = h('article.media', [
+      // h('figure.media-left',
+      //     h('p.image', {style: {width: '64px', height: '64px'}},
+      //         h('img', {props: {src: images.player(index)}})
+      //     )
+      // ),
+      h('div.media-content',
+          h('div.content', [
+                h('p', [h('strong', 'state: '), 'game.state']),
+                h('p', renderPlayerSlots(game)),
+                button.group(
+                    button.builder.primary()(actionHandler, {redirectTo: '/game/' + game.id}, 'Enter'),
+                    button.builder.disabled(game.owner !== state.player)(actionHandler, {deleteGame: game.id}, 'Delete')
+                )
+              ]
+          )
+      )
+    ])
+
+    return h('div.card', {style: {'marginBottom': '16px'}},
+        h('div.card-content', content))
+  }
 
   return h('section.section',
       h('div.container', [
         h('h4.title', 'Game List: '),
-        h('table.table', [header, ...rows])
+        ...games.map(renderGame)
       ]))
 }
 
