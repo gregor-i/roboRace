@@ -5,8 +5,8 @@ import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
 
 class ResetInstructionSpec extends FunSuite with Matchers with GameUpdateHelper {
-  val initialGame = sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
-    RegisterForGame(p1).accepted,
+  val initialGame = sequenceWithAutoCycle(createGame()(p0))(
+    RegisterForGame(1)(p1).accepted,
     clearHistory
   )
 

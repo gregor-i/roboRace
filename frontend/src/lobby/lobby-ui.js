@@ -26,7 +26,7 @@ function render(state, actionHandler) {
           ]
       ),
         renderGameList(state, state.games, actionHandler),
-        renderScenarioList(state.player, state.scenarios, actionHandler),
+        renderScenarioList(state, state.scenarios, actionHandler),
         m
       ])
 
@@ -71,15 +71,19 @@ function renderPlayerSlots(game) {
   )
 }
 
+function gameState(game){
+  if(game.cycle === 0)
+    return 'Game waiting for players'
+  else
+    return 'Game running'
+}
+
 function renderGameList(state, games, actionHandler) {
   function renderGame(gameRow) {
     return card(mediaObject(null, [
-      h('div', [h('strong', 'state: '), 'game.state']),
+      h('div', [h('strong', 'state: '), gameState(gameRow)]),
       h('div', renderPlayerSlots(gameRow)),
-      button.group(
-          button.builder.primary()(actionHandler, {openGame: gameRow.id}, 'Enter'),
-          button.builder.disabled(gameRow.owner !== state.player)(actionHandler, {deleteGame: gameRow.id}, 'Delete')
-      )
+      button.builder.primary()(actionHandler, {openGame: gameRow}, 'Enter')
     ]))
   }
 
@@ -90,16 +94,16 @@ function renderGameList(state, games, actionHandler) {
       ]))
 }
 
-function renderScenarioList(player, scenarios, actionHandler) {
+function renderScenarioList(state, scenarios, actionHandler) {
   function renderScenario(scenarioRow) {
     return card(mediaObject(null,[
       h('div', [h('strong', 'Scenario description: '), scenarioRow.description]),
       h('div', scenarioRow.scenario.initialRobots.map(robot => robotImage(robot.index, false, false))),
       button.group(
-            button.primary(actionHandler, {createGame: scenarioRow.scenario}, 'Start Game'),
+            button.primary(actionHandler, {openScenario: scenarioRow}, 'Enter'),
             button.builder(actionHandler, {editScenario: scenarioRow.id}, 'Edit'),
             button.builder(actionHandler, {previewScenario: scenarioRow.scenario}, 'Preview'),
-            button.builder.disabled(scenarioRow.owner !== player)(actionHandler, {
+            button.builder.disabled(scenarioRow.owner !== state.player)(actionHandler, {
               deleteScenario: true,
               id: scenarioRow.id
             }, 'Delete')

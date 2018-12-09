@@ -50,8 +50,10 @@ function actions(state, action) {
     const {x, y} = action.toggleInitialRobot
     if (state.scenario.initialRobots.find(r => r.position.x === x && r.position.y === y))
       state.scenario.initialRobots = state.scenario.initialRobots.filter(r => r.position.x !== x || r.position.y !== y)
+          .map((robot, index) => ({...robot, index}))
     else
-      state.scenario.initialRobots = [...state.scenario.initialRobots, {position: {x, y}, direction: {Up: {}}}]
+      state.scenario.initialRobots = [...state.scenario.initialRobots, {indexposition: {x, y}, direction: {Up: {}}}]
+          .map((robot, index) => ({...robot, index}))
     return Promise.resolve(state)
   }else if(action.rotateRobot){
     const {x, y} = action.rotateRobot

@@ -1,5 +1,5 @@
 #API
-POST          /api/games                     controller.LobbyController.create()
+POST          /api/games                     controller.LobbyController.create(index: Int)
 GET           /api/games                     controller.LobbyController.list()
 DELETE        /api/games/:id                 controller.LobbyController.delete(id: String)
 GET           /api/games/events              controller.LobbyController.sse()

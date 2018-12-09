@@ -11,13 +11,11 @@ function goToLobby(){
   Lobby(container().firstElementChild, player)
 }
 
-function goToGame(gameId){
-  const player = document.body.dataset.sessionId
-  Game(container().firstElementChild, player, gameId)
+function goToGame(gameRow, scenarioRow){
+  Game(container().firstElementChild, gameRow, scenarioRow)
 }
 
 function goToEditor(scenarioId){
-  const player = document.body.dataset.sessionId
   Editor(container().firstElementChild, player, scenarioId)
 }
 

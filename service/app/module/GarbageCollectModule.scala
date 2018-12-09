@@ -30,7 +30,8 @@ class GarbageCollectorThread @Inject()(gameRepository: GameRepository,
 
   def gameDeletePredicate(activePlayers: Seq[String])(gameRow: GameRow) : Boolean =
     gameRow.game.isEmpty ||
-    !gameRow.game.get.players.map(_.name).exists(activePlayers.contains)
+    !gameRow.game.get.players.map(_.name).exists(activePlayers.contains) ||
+    gameRow.game.get.players.forall(_.finished.isDefined)
 
   def scenarioDeletePredicate(scenarioRow: ScenarioRow): Boolean =
     scenarioRow.scenario.isEmpty

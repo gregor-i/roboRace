@@ -12,11 +12,27 @@ const gameUi = require('./game-ui')
 const gameService = require('./game-service')
 const actions = require('./game-actions')
 
-function Game(element, player, gameId) {
+function Game(element, gameRow, scenarioRow) {
   var node = element
+  var eventSource = gameRow ? gameService.updates(gameRow.id) : null
 
   function renderState(state) {
-    state.eventSource.onmessage = gameEventHandler(state)
+    if(!eventSource && state.game){
+      eventSource = gameService.updates(state.game.id)
+    }
+
+    if (eventSource){
+      eventSource.onmessage = function (event) {
+        const serverState = JSON.parse(event.data)
+        const newCycle = state.game.cycle !== serverState.cycle
+
+        state.game = serverState
+        if (newCycle) {
+          state.focusedSlot = 0
+        }
+        renderState(state)
+      }
+    }
 
     window.currentState = state
     node = patch(node, gameUi(state, actionHandler(state)))
@@ -30,29 +46,11 @@ function Game(element, player, gameId) {
     }
   }
 
-  function gameEventHandler(state) {
-    return function (event) {
-      const serverState = JSON.parse(event.data)
-      const newCycle = state.game.cycle !== serverState.cycle
-
-      state.game = serverState
-      if (newCycle) {
-        state.focusedSlot = 0
-      }
-      renderState(state)
-    }
-  }
-
-  return gameService.getState(gameId)
-    .then(game => {
-      renderState({
-        player, gameId, game,
-        eventSource: gameService.updates(gameId),
-        modal: 'none'
-      }, element)
-    }).catch(function (ex) {
-      console.error(ex)
-    })
+  renderState({
+    game:gameRow,
+    scenario: scenarioRow,
+    modal: 'none'
+  }, element)
 
   return this
 }

@@ -6,17 +6,17 @@ import org.scalatest.{FunSuite, Matchers}
 
 class DeregisterForGameSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("deregister players") {
-    sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
-      RegisterForGame(p1).accepted,
+    sequenceWithAutoCycle(createGame()(p0))(
+      RegisterForGame(1)(p1).accepted,
       DeregisterForGame(p0).accepted,
       assert(_.players.map(_.name) shouldBe List(p1))
     )
   }
 
   test("finish players in order") {
-    sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
-      RegisterForGame(p1).accepted,
-      RegisterForGame(p2).accepted,
+    sequenceWithAutoCycle(createGame()(p0))(
+      RegisterForGame(1)(p1).accepted,
+      RegisterForGame(2)(p2).accepted,
       DeregisterForGame(p2).accepted,
       forcedInstructions(p0)(),
       forcedInstructions(p1)(),

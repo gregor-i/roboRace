@@ -31,8 +31,8 @@ class LobbyController @Inject()(sessionAction: SessionAction,
     Ok(gameList().flatMap(GameResponse(_)(session)).asJson)
   }
 
-  def create() = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>
-    CreateGame(request.body)(session.playerId) match {
+  def create(index: Int) = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>
+    CreateGame(request.body, index)(session.playerId) match {
       case CommandRejected(reason) =>
         BadRequest(reason.asJson)
       case CommandAccepted(game)   =>

@@ -6,7 +6,7 @@ import org.scalatest.{FunSuite, Matchers}
 
 class SetInstructionSpec extends FunSuite with Matchers with GameUpdateHelper {
   val initialGame = sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
-    RegisterForGame(p1).accepted,
+    RegisterForGame(1)(p1).accepted,
     clearHistory
   )
 

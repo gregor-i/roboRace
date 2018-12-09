@@ -9,8 +9,8 @@ trait TestDataHelper { _: UpdateChainHelper with Matchers =>
   val p1 = "p1"
   val p2 = "p2"
 
-  def createGame(scenario: Scenario)(player: String): Game = {
-    val resp = CreateGame(scenario)(player)
+  def createGame(scenario: Scenario = Scenario.default, index: Int = 0)(player: String): Game = {
+    val resp = CreateGame(scenario, index)(player)
     resp shouldBe a[CommandAccepted]
     resp.asInstanceOf[CommandAccepted].newState
   }

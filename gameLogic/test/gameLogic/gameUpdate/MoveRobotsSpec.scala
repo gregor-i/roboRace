@@ -9,14 +9,14 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
   val scenario = Scenario(10, 10,
     Position(9, 8),
     List(
-      Robot(Position(5, 5), DownRight),
-      Robot(Position(6, 6), DownLeft)
+      Robot(0, Position(5, 5), DownRight),
+      Robot(1, Position(6, 6), DownLeft)
     ), List.empty, List.empty)
 
   val initialGame = sequenceWithAutoCycle(createGame(scenario)(p0))(
-    RegisterForGame(p1).accepted,
-    placeRobot(p0, Robot(Position(0, 0), Down)),
-    placeRobot(p1, Robot(Position(0, 1), Down)),
+    RegisterForGame(1)(p1).accepted,
+    placeRobot(p0, Robot(0, Position(0, 0), Down)),
+    placeRobot(p1, Robot(1, Position(0, 1), Down)),
     clearHistory
   )
 
@@ -52,8 +52,8 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       forcedInstructions(p1)(MoveForward),
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 0)),
       assertPlayer(p1)(_.robot.position shouldBe Position(0, 1)),
-      assertLog(_ should contain(MovementBlocked(0, Robot(Position(0, 0), Down)))),
-      assertLog(_ should contain(MovementBlocked(1, Robot(Position(0, 1), Down))))
+      assertLog(_ should contain(MovementBlocked(0, Robot(0, Position(0, 0), Down)))),
+      assertLog(_ should contain(MovementBlocked(1, Robot(1, Position(0, 1), Down))))
     )
   }
 
@@ -67,7 +67,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertLog(_ should contain(RobotMoves(Seq(
         RobotPositionTransition(0, Down, Position(0, 0), Position(0, -1))
       )))),
-      assertLog(_ should contain(RobotReset(0, Robot(Position(0, -1), Down), Robot(Position(5, 5), DownRight))))
+      assertLog(_ should contain(RobotReset(0, Robot(0, Position(0, -1), Down), Robot(0, Position(5, 5), DownRight))))
     )
   }
 
@@ -96,7 +96,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertLog(_ should contain(RobotMoves(Seq(
         RobotPositionTransition(1, Down, Position(0, 1), Position(0, 2))
       )))),
-      assertLog(_ should contain(MovementBlocked(1, Robot(Position(0, 2), Down))))
+      assertLog(_ should contain(MovementBlocked(1, Robot(1, Position(0, 2), Down))))
     )
   }
 
@@ -127,7 +127,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
       assertLog(_ should contain(RobotMoves(Seq(
         RobotPositionTransition(1, Down, Position(0, 1), Position(0, 2))
       )))),
-      assertLog(_ should contain(RobotReset(1, Robot(Position(0,2),Down), Robot(Position(6,6), DownLeft))))
+      assertLog(_ should contain(RobotReset(1, Robot(1, Position(0,2),Down), Robot(1, Position(6,6), DownLeft))))
     )
   }
 

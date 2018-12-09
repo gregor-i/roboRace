@@ -8,26 +8,30 @@ const images = require('../common/images')
 
 
 function render(state, actionHandler) {
-  let m = null
-  const closeAction = [actionHandler, {closeModal: true}]
-  if (state.modal === 'log')
-    m = modal(renderLog(state.game.events), closeAction)
-  else if (state.modal === 'playerList')
-    m = modal(renderPlayerList(state), closeAction)
+  if (state.game) {
+    let m = null
+    const closeAction = [actionHandler, {closeModal: true}]
+    if (state.modal === 'log')
+      m = modal(renderLog(state.game.events), closeAction)
 
-  const game = state.game
-  const playerIndex = _.get(game.you, "index")
-  return h('div.game', [
-    fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
-    fab('.fab-left-1', images.iconReplayAnimation, event => {
-      const svg = document.querySelector('.game-board svg')
-      if(svg)
-        svg.setCurrentTime(eventSequenceDuration(_.takeWhile(game.events, event => !event.StartCycleEvaluation || event.StartCycleEvaluation.cycle !== game.cycle - 1)))
-    }),
-    fab('.fab-left-2', playerIndex !== undefined ? images.player(playerIndex) : images.iconGamerlist, [actionHandler, {setModal: 'playerList'}]),
-    renderGame(game),
-    renderActionButtons(state, game, actionHandler),
-    m])
+    const playerIndex = _.get(state.game.you, "index")
+    return h('div.game', [
+      fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
+      fab('.fab-left-1', images.iconReplayAnimation, event => {
+        const svg = document.querySelector('.game-board svg')
+        if (svg)
+          svg.setCurrentTime(eventSequenceDuration(_.takeWhile(state.game.events, event => !event.StartCycleEvaluation || event.StartCycleEvaluation.cycle !== state.game.cycle - 1)))
+      }),
+      renderGame(state.game),
+      renderActionButtons(state, actionHandler),
+      m])
+  } else {
+    return h('div.game', [
+      fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
+      renderGame({scenario: state.scenario.scenario, robots: []}),
+      renderActionButtons(state, actionHandler)
+    ])
+  }
 }
 
 function fab(classes, image, onclick){
@@ -35,29 +39,22 @@ function fab(classes, image, onclick){
       h('img', {props: {src: image}}))
 }
 
-function renderPlayerList(state) {
-  let rows = state.game.players.map(function (player) {
-    return h('tr', [
-      h('td', h('img', {
-        props: {src: images.player(player.index)},
-        style: {'max-width': '20px', 'max-height': '20px'}
-      })),
-      h('td', player.name),
-      h('td', player.finished ? 'finished as ' + player.finished.rank : (player.instructionSlots.filter(s => s !== null).length === constants.numberOfInstructionsPerCycle ? 'ready' : '')),
-    ])
+function robotImage(index, filled, you, onclick) {
+  return h('img', {
+    class: {
+      'robot-tile': true,
+      'robot-tile-you': you
+    },
+    props: {
+      src: filled ? images.player(index) : images.playerStart(index)
+    },
+    on: {click: onclick}
   })
-
-  const header = h('tr', [h('th', ''), h('th', 'name'), h('th', 'state')])
-
-  return h('div', [
-    h('h4', 'Players: '),
-    h('table', [header, ...rows])
-  ])
 }
 
-function renderActionButtons(state, game, actionHandler) {
+function renderActionButtons(state, actionHandler) {
   const focusedSlot = state.focusedSlot || 0
-  const player = game.you
+  const player = _.get(state, 'game.you')
 
   function instructionCard(type) {
     function unusedAndThisType(opt, index) {
@@ -91,19 +88,22 @@ function renderActionButtons(state, game, actionHandler) {
     }
   }
 
-  if (!player && game.cycle === 0) {
-    return h('div.footer-group', [
-      h('div.text-panel', 'observer mode'),
-      h('div.text-panel', button.builder.primary()(actionHandler, {joinGame: state.gameId}, 'Join Game'))
-    ])
+  if (!state.game) {
+    return h('div.text-panel', state.scenario.scenario.initialRobots
+        .map(robot => robotImage(robot.index, false, false, () => actionHandler({createGame: robot.index}))))
+  } else if (!player && _.get(state, 'game.cycle') === 0) {
+    return h('div.text-panel', state.game.scenario.initialRobots
+        .map(robot => robotImage(robot.index, false, false, () => actionHandler({joinGame: robot.index}))))
   } else if (!player) {
     return h('div.text-panel', 'observer mode')
-  } else if (player.finished) {
+  } else if (player.finished && player.finished.rageQuitted === false) {
     return h('div.text-panel', 'target reached')
+  } else if (player.finished && player.finished.rageQuitted === true) {
+    return h('div.text-panel', 'game quitted')
   } else {
     let instructionTypes = []
     let instr = _.clone(player.instructionOptions)
-    while(instr.length !== 0) {
+    while (instr.length !== 0) {
       let head = instr[0]
       let type = Object.keys(head)[0]
       instructionTypes.push(type)

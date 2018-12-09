@@ -5,8 +5,8 @@ function getAllGames() {
     .then(parseJson)
 }
 
-function createGame(scenario) {
-  return fetch("/api/games", headers({
+function createGame(scenario, index) {
+  return fetch("/api/games?index="+index, headers({
     method: "POST",
     body: JSON.stringify(scenario)
   })).then(parseJson)

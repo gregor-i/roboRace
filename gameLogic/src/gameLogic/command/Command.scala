@@ -7,20 +7,21 @@ sealed trait Command {
   def apply(player: String): Game => CommandResponse
 }
 
-case object RegisterForGame extends Command {
+case class RegisterForGame(index: Int) extends Command {
   def apply(player: String): Game => CommandResponse = {
     case game if game.cycle != 0 =>
       CommandRejected(WrongCycle)
     case game if game.players.exists(_.name == player) =>
       CommandRejected(PlayerAlreadyRegistered)
-    case game if game.players.size >= game.scenario.initialRobots.size =>
-      CommandRejected(TooMuchPlayersRegistered)
+    case game if !game.scenario.initialRobots.indices.contains(index) =>
+      CommandRejected(InvalidIndex)
+    case game if game.players.exists(_.index == index) =>
+      CommandRejected(RobotAlreadyTaken)
     case game =>
       val newPlayer = Player(
-        index = game.scenario.initialRobots.indices
-          .find(i => !game.players.exists(_.index == i)).get,
+        index = index,
         name = player,
-        robot = game.scenario.initialRobots(game.players.size),
+        robot = game.scenario.initialRobots(index),
         instructionSlots = Instruction.emptySlots,
         instructionOptions = DealOptions.initial,
         finished = None

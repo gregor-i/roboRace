@@ -4,23 +4,19 @@ import gameLogic._
 import gameLogic.gameUpdate.DealOptions
 
 object CreateGame {
-  def apply(scenario: Scenario)(player: String): CommandResponse = {
-    if (Scenario.validation(scenario))
-      CommandAccepted(Game(
+  def apply(scenario: Scenario, index: Int)(player: String): CommandResponse = {
+    if(!Scenario.validation(scenario))
+      CommandRejected(InvalidScenario)
+    else if(!scenario.initialRobots.indices.contains(index))
+      CommandRejected(InvalidIndex)
+    else {
+      val game = Game(
         cycle = 0,
         scenario = scenario,
-        players = List(
-          Player(index = 0,
-            name = player,
-            robot = scenario.initialRobots(0),
-            instructionSlots = Instruction.emptySlots,
-            instructionOptions = DealOptions.initial,
-            finished = None
-          )
-        ),
+        players = List.empty,
         events = Seq.empty
-      ).log(PlayerJoinedGame(0, scenario.initialRobots(0))))
-    else
-      CommandRejected(InvalidScenario)
+      )
+      RegisterForGame(index)(player)(game)
+    }
   }
 }

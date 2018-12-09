@@ -7,8 +7,8 @@ import org.scalatest.{FunSuite, Matchers}
 
 class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("should execute actions if all players are entered their action") {
-    sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
-      RegisterForGame(p1).accepted,
+    sequenceWithAutoCycle(createGame()(p0))(
+      RegisterForGame(1)(p1).accepted,
       forcedInstructions(p0)(),
       forcedInstructions(p1)(),
       assert{ game =>
@@ -21,7 +21,7 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
         }
         succeed
       },
-      RegisterForGame(p2).rejected(),
+      RegisterForGame(2)(p2).rejected(),
       forcedInstructions(p0)(),
       forcedInstructions(p1)(),
       assert{ game =>
@@ -40,13 +40,13 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("should create logs for all actions in the right order") {
     val scenario = Scenario(10, 10,
       Position(0, 9),
-      List(Robot(Position(0, 0), Down)),
+      List(Robot(0, Position(0, 0), Down)),
       List.empty, List.empty)
 
     val initialGame = sequenceWithAutoCycle(createGame(scenario)(p0))(
       clearHistory,
       forcedInstructions(p0)(MoveForward, MoveForward, MoveForward, MoveForward, MoveForward),
-      assertPlayer(p0)(_.robot shouldBe Robot(Position(0, 5), Down)),
+      assertPlayer(p0)(_.robot shouldBe Robot(0, Position(0, 5), Down)),
       assertLog(_ shouldBe Seq(
         StartCycleEvaluation(0),
         RobotAction(0, MoveForward),
@@ -74,7 +74,7 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
         RobotAction(0, MoveForward),
         RobotMoves(List(RobotPositionTransition(0, Down, Position(0,8), Position(0, 9)))),
         RobotAction(0, Sleep),
-        PlayerFinished(0, Robot(Position(0, 9), Down)),
+        PlayerFinished(0, Robot(0, Position(0, 9), Down)),
         FinishedCycleEvaluation(1),
         AllPlayersFinished
       ))

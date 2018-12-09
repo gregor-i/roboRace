@@ -18,8 +18,10 @@ function actions(state, action) {
   }else if(action.deleteScenario){
     editorService.deleteScenario(action.id)
       .then(() => window.location.reload())
+  }else if(action.openScenario){
+    require('../index').goToGame(undefined, action.openScenario)
   }else if(action.openGame){
-    require('../index').goToGame(action.openGame)
+    require('../index').goToGame(action.openGame, undefined)
   } else {
     console.error("unknown action", action)
   }

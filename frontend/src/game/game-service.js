@@ -22,8 +22,8 @@ function resetInstruction(gameId, cycle, slot){
       .then(parseJson)
 }
 
-function joinGame(gameId) {
-    return sendCommand(gameId, {RegisterForGame: {}})
+function joinGame(gameId, index) {
+    return sendCommand(gameId, {RegisterForGame: {index}})
         .then(parseJson)
 }
 

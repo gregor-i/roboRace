@@ -1,25 +1,30 @@
 const _ = require('lodash')
 const gameService = require('./game-service')
 const constants = require('../common/constants')
+const lobbyService = require('../lobby/lobby-service')
 
 function actions(state, action) {
   if (action.leaveGame) {
-    if (state.game.you && !state.game.you.finished) {
-      return gameService.quitGame(state.gameId)
+    if (state.game && state.game.you && !state.game.you.finished) {
+      return gameService.quitGame(state.game.id)
           .then(newGameState => ({...state, game: newGameState}))
     } else {
+      console.log('goto Lobby')
       require('../index').goToLobby()
     }
+  } else if (action.createGame !== undefined){
+    return lobbyService.createGame(state.scenario.scenario, action.createGame)
+        .then(game => ({game, scenario: undefined}))
   } else if (action.joinGame)
-    return gameService.joinGame(action.joinGame)
+    return gameService.joinGame(state.game.id, action.joinGame)
         .then(newGameState => ({...state, game: newGameState}))
   else if (action.focusSlot !== undefined) {
     return Promise.resolve({...state, focusedSlot: action.focusSlot})
   } else if (action.resetSlot) {
-    return gameService.resetInstruction(state.gameId, state.game.cycle, action.slot)
+    return gameService.resetInstruction(state.game.id, state.game.cycle, action.slot)
         .then(newGameState => ({...state, game: newGameState}))
   } else if (action.setInstruction) {
-    return gameService.setInstruction(state.gameId, state.game.cycle, action.slot, action.instruction)
+    return gameService.setInstruction(state.game.id, state.game.cycle, action.slot, action.instruction)
         .then(newGameState => ({
           ...state,
           game: newGameState,
