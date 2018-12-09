@@ -27,6 +27,11 @@ function joinGame(gameId) {
         .then(parseJson)
 }
 
+function quitGame(gameId){
+  return sendCommand(gameId, {DeregisterForGame: {}})
+      .then(parseJson)
+}
+
 function updates(gameId) {
     return new EventSource("/api/games/" + gameId + "/events")
 }
@@ -37,5 +42,6 @@ module.exports = {
     setInstruction,
     resetInstruction,
     joinGame,
+    quitGame,
     updates
 }

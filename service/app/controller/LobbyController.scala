@@ -28,7 +28,7 @@ class LobbyController @Inject()(sessionAction: SessionAction,
   private val (sink, source) = new SinkSourceCache[Seq[GameRow]].createPair()
 
   def list() = sessionAction {(session, _) =>
-    Ok(gameList().map(GameResponse(_)(session)).asJson)
+    Ok(gameList().flatMap(GameResponse(_)(session)).asJson)
   }
 
   def create() = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>

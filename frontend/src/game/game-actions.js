@@ -3,42 +3,36 @@ const gameService = require('./game-service')
 const constants = require('../common/constants')
 
 function actions(state, action) {
-  if (action.leaveGame)
-    window.location.href = "/"
-  else if (action.joinGame)
+  if (action.leaveGame) {
+    if (state.game.you) {
+      return gameService.quitGame(state.gameId)
+          .then(newGameState => ({...state, game: newGameState}))
+    } else {
+      document.location = "/"
+    }
+  } else if (action.joinGame)
     return gameService.joinGame(action.joinGame)
-        .then(newGameState => {
-          state.game = newGameState
-          return state
-        })
+        .then(newGameState => ({...state, game: newGameState}))
   else if (action.focusSlot !== undefined) {
-    state.focusedSlot = action.focusSlot
-    return Promise.resolve(state)
+    return Promise.resolve({...state, focusedSlot: action.focusSlot})
   } else if (action.resetSlot) {
     return gameService.resetInstruction(state.gameId, state.game.cycle, action.slot)
-        .then(newGameState => {
-          state.game = newGameState
-          return state
-        })
+        .then(newGameState => ({...state, game: newGameState}))
   } else if (action.setInstruction) {
     return gameService.setInstruction(state.gameId, state.game.cycle, action.slot, action.instruction)
-        .then(newGameState => {
-          state.game = newGameState
-          const slots = state.game.you.instructionSlots
-          state.focusedSlot = _.range(constants.numberOfInstructionsPerCycle)
+        .then(newGameState => ({
+          ...state,
+          game: newGameState,
+          focusedSlot: _.range(constants.numberOfInstructionsPerCycle)
               .map(i => (i + (state.focusedSlot || 0)) % constants.numberOfInstructionsPerCycle)
-              .find(i => slots[i] === null)
-          return state
-        })
+              .find(i => state.game.you.instructionSlots[i] === null)
+        }))
   } else if (action.replayAnimations) {
-    state.animationStart = new Date()
-    return Promise.resolve(state)
+    return Promise.resolve({...state, animationStart: new Date()})
   } else if (action.setModal) {
-    state.modal = action.setModal
-    return Promise.resolve(state)
+    return Promise.resolve({...state, modal: action.setModal})
   } else if (action.closeModal) {
-    delete state.modal
-    return Promise.resolve(state)
+    return Promise.resolve({...state, modal: undefined})
   } else {
     console.error("unknown action", action)
   }

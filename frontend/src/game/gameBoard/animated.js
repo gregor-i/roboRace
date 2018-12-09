@@ -20,6 +20,7 @@ function eventDuration(event){
     RobotTurns: 0.5,
     RobotMoves: 0.5,
     PlayerJoinedGame: 0.5,
+    PlayerQuitted: 0.5,
     PlayerFinished: 0.5,
     TrapEffect: 0.5
   }
@@ -102,6 +103,8 @@ function animate(events){
           animateSpawn(data.playerIndex, data.to, t(i) + duration / 2, duration / 2)]),
     PlayerJoinedGame: (data, i, duration) =>
         animateSpawn(data.playerIndex, data.robot, t(i), duration),
+    PlayerQuitted: (data, i, duration) =>
+        animateDespawn(data.playerIndex, data.robot, t(i), duration),
     PlayerFinished: (data, i, duration) =>
         animateDespawn(data.playerIndex, data.robot, t(i), duration)
   }
