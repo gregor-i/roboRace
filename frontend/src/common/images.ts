@@ -63,7 +63,7 @@ const trapStun = '/assets/trap-stun.svg'
 const trapTurnRight = '/assets/trap-turn-right.svg'
 const trapTurnLeft = '/assets/trap-turn-left.svg'
 
-module.exports = {
+export const images = {
   player, playerStart, action, wall,
   iconClose, iconGamerlist, iconReplayAnimation,
   trapStun, trapTurnLeft, trapTurnRight,

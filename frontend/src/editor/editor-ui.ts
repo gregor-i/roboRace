@@ -1,15 +1,15 @@
-const h = require('snabbdom/h').default
-const button = require('../common/button')
-const {renderScenario} = require('../game/gameBoard/static')
-const images = require('../common/images')
+import {h} from 'snabbdom'
+import {button} from '../common/button'
+import {renderScenario} from '../game/gameBoard/static'
+import {images} from '../common/images'
 
-function render(state, actionHandler) {
+export function render(state, actionHandler) {
   function clickListener(event) {
     const tileX = parseInt(event.target.dataset.x)
     const tileY = parseInt(event.target.dataset.y)
 
     const bb = event.target.getBoundingClientRect()
-    const direction = dxdy2direction(event.x - bb.x - bb.width/2, event.y - bb.y - bb.height/2)
+    const direction = dxdy2direction(event.x - bb.x - bb.width / 2, event.y - bb.y - bb.height / 2)
     clickEventHandler(state.clickAction, actionHandler)(tileX, tileY, direction)
   }
 
@@ -20,43 +20,43 @@ function render(state, actionHandler) {
   ])
 }
 
-function fab(classes, image, onclick){
-  return h('div.fab'+classes, {on: {click: onclick}},
+function fab(classes, image, onclick) {
+  return h('div.fab' + classes, {on: {click: onclick}},
     h('img', {props: {src: image}}))
 }
 
 function renderEditorActionbar(state, actionHandler) {
-  function icon(src){
-    return h('img', {style:{height:'100%'}, attrs:{src}})
+  function icon(src) {
+    return h('img', {style: {height: '100%'}, attrs: {src}})
   }
 
   return h('div.footer-group', [
     h('div.text-panel', [
-      button.builder(actionHandler, 'width--', 'W-'),
-      button.builder(actionHandler, 'width++', 'W+'),
-      button.builder(actionHandler, 'height--', 'H-'),
-      button.builder(actionHandler, 'height++', 'H+'),
-      button.builder(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
-      button.builder(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
-      button.builder(actionHandler, {setClickAction: 'ToggleTurnLeftTrap'}, icon(images.trapTurnLeft)),
-      button.builder(actionHandler, {setClickAction: 'ToggleTurnRightTrap'}, icon(images.trapTurnRight)),
-      button.builder(actionHandler, {setClickAction: 'ToggleStunTrap'}, icon(images.trapStun)),
-      button.builder(actionHandler, {setClickAction: 'SetTarget'}, icon(images.target)),
-      button.builder(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
-      button.builder(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
+      button(actionHandler, 'width--', 'W-'),
+      button(actionHandler, 'width++', 'W+'),
+      button(actionHandler, 'height--', 'H-'),
+      button(actionHandler, 'height++', 'H+'),
+      button(actionHandler, {setClickAction: 'ToggleWall'}, 'Wall'),
+      button(actionHandler, {setClickAction: 'TogglePit'}, 'Pit'),
+      button(actionHandler, {setClickAction: 'ToggleTurnLeftTrap'}, icon(images.trapTurnLeft)),
+      button(actionHandler, {setClickAction: 'ToggleTurnRightTrap'}, icon(images.trapTurnRight)),
+      button(actionHandler, {setClickAction: 'ToggleStunTrap'}, icon(images.trapStun)),
+      button(actionHandler, {setClickAction: 'SetTarget'}, icon(images.target)),
+      button(actionHandler, {setClickAction: 'ToggleInitialRobot'}, 'Set Robot'),
+      button(actionHandler, {setClickAction: 'RotateRobot'}, 'Rotate Robot')
     ]),
     h('div.text-panel',
       h('div.field.has-addons', [
         h('div.control.is-expanded',
           h('input.input', {
-            attrs: {type: 'text', placeholder: 'description', value:state.description},
+            attrs: {type: 'text', placeholder: 'description', value: state.description},
             on: {
-              change: (e) => actionHandler({SetDescription: e.target.value})
+              change: (e) => actionHandler({SetDescription: (<HTMLInputElement>e.target).value})
             }
           })
         ),
         h('div.control',
-          button.primary(actionHandler, 'save', 'Save Scenario')
+          h('button.button.is-light.is-primary', {on: {click: () => actionHandler('save')}}, 'Save Scenario')
         )
       ])
     )
@@ -65,12 +65,18 @@ function renderEditorActionbar(state, actionHandler) {
 
 function dxdy2direction(dx, dy) {
   switch (Math.floor((Math.atan2(dy, dx) / Math.PI * 3 + 6) % 6)) {
-    case 0: return {DownRight: {}}
-    case 1: return {Down: {}}
-    case 2: return {DownLeft: {}}
-    case 3: return {UpLeft: {}}
-    case 4: return {Up: {}}
-    case 5: return {UpRight: {}}
+    case 0:
+      return {DownRight: {}}
+    case 1:
+      return {Down: {}}
+    case 2:
+      return {DownLeft: {}}
+    case 3:
+      return {UpLeft: {}}
+    case 4:
+      return {Up: {}}
+    case 5:
+      return {UpRight: {}}
   }
 }
 
@@ -92,7 +98,6 @@ function clickEventHandler(clickAction, actionHandler) {
   else if (clickAction === 'RotateRobot')
     return (x, y) => actionHandler({rotateRobot: {x, y}})
   else
-    return (x, y, direction) => {}
+    return (x, y, direction) => {
+    }
 }
-
-module.exports = render

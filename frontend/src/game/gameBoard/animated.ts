@@ -1,6 +1,8 @@
-const _ = require('lodash')
-const h = require('snabbdom/h').default
-const svg = require('./svg')
+import {h} from 'snabbdom'
+import * as _ from 'lodash'
+import {width, height, directionToRotation, left, top, tiles, walls, target, traps, startingPoints, robots} from './svg'
+
+
 
 function nearestRotationTarget(from, to) {
   const a = Math.abs(from - to)
@@ -27,7 +29,7 @@ function eventDuration(event){
   return durs[Object.keys(event)[0]] || 0
 }
 
-function eventSequenceDuration(events){
+export function eventSequenceDuration(events){
   return _.sumBy(events, eventDuration)
 }
 
@@ -37,8 +39,8 @@ function animateRotation(playerIndex, from, to, begin, duration) {
       attributeName: "transform",
       type: "rotate",
       'xlink:href': `#robot-rotation-${playerIndex}`,
-      from: svg.directionToRotation(from),
-      to: nearestRotationTarget(svg.directionToRotation(from), svg.directionToRotation(to)),
+      from: directionToRotation(from),
+      to: nearestRotationTarget(directionToRotation(from), directionToRotation(to)),
       begin: `${begin}s`,
       dur: duration === 0 ? 'indefinite' : duration + 's',
       fill: "freeze"
@@ -52,8 +54,8 @@ function animateTranslation(playerIndex, from, to, begin, duration) {
       attributeName: "transform",
       type: "translate",
       'xlink:href': `#robot-translation-${playerIndex}`,
-      from: `${svg.left(from.x, from.y)} ${svg.top(from.x, from.y)}`,
-      to: `${svg.left(to.x, to.y)} ${svg.top(to.x, to.y)}`,
+      from: `${left(from.x, from.y)} ${top(from.x, from.y)}`,
+      to: `${left(to.x, to.y)} ${top(to.x, to.y)}`,
       begin: begin + 's',
       dur: duration === 0 ? 'indefinite' : duration + 's',
       fill: "freeze"
@@ -99,8 +101,8 @@ function animate(events){
     RobotMoves: (data, i, duration) => data.transitions
         .map(transition => animateTranslation(transition.playerIndex, transition.from, transition.to, t(i), duration)),
     RobotReset: (data, i, duration) =>
-        _.flatten([animateDespawn(data.playerIndex, data.from, t(i), duration / 2),
-          animateSpawn(data.playerIndex, data.to, t(i) + duration / 2, duration / 2)]),
+        [animateDespawn(data.playerIndex, data.from, t(i), duration / 2),
+          animateSpawn(data.playerIndex, data.to, t(i) + duration / 2, duration / 2)],
     PlayerJoinedGame: (data, i, duration) =>
         animateSpawn(data.playerIndex, data.robot, t(i), duration),
     PlayerQuitted: (data, i, duration) =>
@@ -113,14 +115,18 @@ function animate(events){
     const f = functions[Object.keys(event)[0]]
     if(f){
       const duration = eventDuration(event)
-      return f(Object.values(event)[0], i, duration)
+        const r = f(Object.values(event)[0], i, duration)
+      if(r.length)
+        return _.flatten(r)
+      else
+        return r
     }else{
       return []
     }
   })
 }
 
-function renderGame(game) {
+export function renderGame(game) {
   var oldDuration, oldTime
   function insert(vnode){
     const svg = vnode.elm.getElementsByTagName('svg')[0]
@@ -140,19 +146,15 @@ function renderGame(game) {
     }
   }
 
-  const height = svg.height(game.scenario)
-  const width = svg.width(game.scenario)
   return h('div.game-board',
     {hook: {insert, prepatch, postpatch}},
-    h('svg', {attrs: {xmlns: "http://www.w3.org/2000/svg", viewBox: `0 0 ${width} ${height}`}}, [
-      h('g', svg.tiles(game.scenario)),
-      h('g', svg.walls(game.scenario)),
-      h('g', svg.target(game.scenario)),
-      h('g', svg.traps(game.scenario)),
-      h('g', svg.startingPoints(game.scenario)),
-      h('g', svg.robots(game)),
+    h('svg', {attrs: {xmlns: "http://www.w3.org/2000/svg", viewBox: `0 0 ${width(game.scenario)} ${height(game.scenario)}`}}, [
+      h('g', tiles(game.scenario, undefined)),
+      h('g', walls(game.scenario)),
+      h('g', target(game.scenario)),
+      h('g', traps(game.scenario)),
+      h('g', startingPoints(game.scenario)),
+      h('g', robots(game)),
       h('g', {attrs: {name: "animation"}}, animate(game.events))
     ]))
 }
-
-module.exports = {renderGame, eventSequenceDuration}

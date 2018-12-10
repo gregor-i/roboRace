@@ -1,13 +1,11 @@
-const _ = require('lodash')
-const h = require('snabbdom/h').default
-const constants = require('../common/constants')
-const button = require('../common/button')
-const modal = require('../common/modal')
-const {renderGame, eventSequenceDuration} = require('./gameBoard/animated')
-const images = require('../common/images')
+import * as _ from 'lodash'
+import {modal} from '../common/modal'
+import {images} from '../common/images'
+import {eventSequenceDuration, renderGame} from './gameBoard/animated'
+import {h} from 'snabbdom'
+import {numberOfInstructionsPerCycle} from '../common/constants'
 
-
-function render(state, actionHandler) {
+export function render(state, actionHandler) {
   if (state.game) {
     let m = null
     const closeAction = [actionHandler, {closeModal: true}]
@@ -20,7 +18,9 @@ function render(state, actionHandler) {
       fab('.fab-left-1', images.iconReplayAnimation, event => {
         const svg = document.querySelector('.game-board svg')
         if (svg)
-          svg.setCurrentTime(eventSequenceDuration(_.takeWhile(state.game.events, event => !event.StartCycleEvaluation || event.StartCycleEvaluation.cycle !== state.game.cycle - 1)))
+            (<HTMLMediaElement>svg).currentTime = eventSequenceDuration(
+                _.takeWhile(state.game.events, (event:any) => !event.StartCycleEvaluation || event.StartCycleEvaluation.cycle !== state.game.cycle - 1)
+            )
       }),
       renderGame(state.game),
       renderActionButtons(state, actionHandler),
@@ -54,7 +54,7 @@ function robotImage(index, filled, you, onclick) {
 
 function renderActionButtons(state, actionHandler) {
   const focusedSlot = state.focusedSlot || 0
-  const player = _.get(state, 'game.you')
+  const player: any = _.get(state, 'game.you')
 
   function instructionCard(type) {
     function unusedAndThisType(opt, index) {
@@ -111,7 +111,7 @@ function renderActionButtons(state, actionHandler) {
     }
 
     return h('div.footer-group', [
-      h('div.slots-panel', _.range(constants.numberOfInstructionsPerCycle).map(instructionSlot)),
+      h('div.slots-panel', _.range(numberOfInstructionsPerCycle).map(instructionSlot)),
       h('div.cards-panel', instructionTypes.map(instructionCard))
     ])
   }
@@ -123,5 +123,3 @@ function renderLog(events) {
     h('div', events.map(log => h('div', log)))
   ])
 }
-
-module.exports = render

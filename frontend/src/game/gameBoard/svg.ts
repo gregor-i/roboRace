@@ -1,17 +1,17 @@
-const _ = require('lodash')
-const h = require('snabbdom/h').default
+import {h} from 'snabbdom'
+import * as _ from 'lodash'
 
-const images = require('../../common/images')
+import {images} from '../../common/images'
 
 const deltaLeft = 0.75
 const deltaTop = Math.sqrt(3) / 2
 
-function left(x, y) { return deltaLeft * x }
-function top(x, y) { return  deltaTop * (y + ((x % 2 + 2) % 2) / 2) }
-function height(scenario) { return  (top(0, scenario.height) + 0.5) }
-function width(scenario) { return  (left(scenario.width, 0) + (1-deltaLeft)) }
+export function left(x, y) { return deltaLeft * x }
+export function top(x, y) { return  deltaTop * (y + ((x % 2 + 2) % 2) / 2) }
+export function height(scenario) { return  (top(0, scenario.height) + 0.5) }
+export function width(scenario) { return  (left(scenario.width, 0) + (1-deltaLeft)) }
 
-function directionToRotation(dir) {
+export function directionToRotation(dir) {
   switch (Object.keys(dir)[0]) {
     case 'Up' : return 0
     case 'UpRight' : return 60
@@ -22,11 +22,11 @@ function directionToRotation(dir) {
   }
 }
 
-function translate(x, y){
+export function translate(x, y){
   return `translate(${left(x, y)} ${top(x, y)})`
 }
 
-function imageAttrs(src, additionalAttrs) {
+function imageAttrs(src, additionalAttrs?) {
   return _.merge({
     href: src,
     width: '1',
@@ -36,7 +36,7 @@ function imageAttrs(src, additionalAttrs) {
   }, additionalAttrs)
 }
 
-function tiles(scenario, tileClickListener) {
+export function tiles(scenario, tileClickListener) {
   return _.flatMap(_.range(0, scenario.width), x =>
       _.range(0, scenario.height)
           .map(y => h('image.tile', {
@@ -47,7 +47,7 @@ function tiles(scenario, tileClickListener) {
   )
 }
 
-function walls(scenario) {
+export function walls(scenario) {
   return scenario.walls.map(w => h('image', {
     attrs: imageAttrs(images.wall(w.direction), {
       transform: `${translate(w.position.x, w.position.y)}`
@@ -55,7 +55,7 @@ function walls(scenario) {
   }))
 }
 
-function target(scenario) {
+export function target(scenario) {
   return h('image', {
     attrs: imageAttrs(images.target, {
       transform: translate(scenario.targetPosition.x, scenario.targetPosition.y)
@@ -63,7 +63,7 @@ function target(scenario) {
   })
 }
 
-function traps(scenario) {
+export function traps(scenario) {
   return scenario.traps.map(function (trap) {
     if (trap.TurnRightTrap)
       return h('image', {
@@ -86,7 +86,7 @@ function traps(scenario) {
   })
 }
 
-function startingPoints(scenario) {
+export function startingPoints(scenario) {
   return scenario.initialRobots.map((robot, index) =>
       h('image', {
         attrs: imageAttrs(images.playerStart(index), {
@@ -96,7 +96,7 @@ function startingPoints(scenario) {
   )
 }
 
-function robots(game) {
+export function robots(game) {
   return game.robots.map(robot =>
       h('g', {attrs: {transform: 'translate(0.5 0.5)'}},
           h(`g#robot-translation-${robot.index}`, {attrs: {transform: translate(robot.position.x, robot.position.y)}},
@@ -109,10 +109,4 @@ function robots(game) {
           )
       )
   )
-}
-
-module.exports = {
-  directionToRotation, translate, left, top,
-  width, height,
-  tiles, walls, target, traps, startingPoints, robots,
 }

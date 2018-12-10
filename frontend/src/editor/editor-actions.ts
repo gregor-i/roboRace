@@ -1,10 +1,10 @@
-const _ = require('lodash')
-const editorService = require('./editor-service')
-const constants = require('../common/constants')
+import {postScenario} from './editor-service'
+import * as _ from 'lodash'
+import {goToEditor, goToLobby} from '../index'
 
-function actions(state, action) {
+export function actions(state, action) {
   if (action.backToLobby) {
-    require('../index').goToLobby()
+    goToLobby()
   } else if (action === 'width++') {
     state.scenario.width++
     return Promise.resolve(state)
@@ -100,12 +100,10 @@ function actions(state, action) {
     state.description = action.SetDescription
     return Promise.resolve(state)
   } else if (action === 'save') {
-    editorService.postScenario(state.description, state.scenario)
-        .then(row => require('../index').goToEditor(row.id))
+    postScenario(state.description, state.scenario)
+        .then(row => goToEditor(row.id))
   } else {
     console.error("unknown action", action)
   }
 
 }
-
-module.exports = actions

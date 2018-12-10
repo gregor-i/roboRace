@@ -1,15 +1,15 @@
-const _ = require('lodash')
+import * as _ from 'lodash'
 
 const defaultHeader = {
   credentials: "same-origin"
 }
 
-function headers(additional){
+export function headers(additional){
   return _.merge({}, defaultHeader, additional)
 }
 
 
-function parseJson(resp) {
+export function parseJson(resp) {
   if(resp.status - resp.status % 100 === 200)
     return resp.json()
   else {
@@ -18,5 +18,3 @@ function parseJson(resp) {
     return Promise.reject(data)
   }
 }
-
-module.exports = {headers, parseJson}

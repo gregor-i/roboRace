@@ -1,36 +1,36 @@
-const _ = require('lodash')
-const gameService = require('./game-service')
-const constants = require('../common/constants')
-const lobbyService = require('../lobby/lobby-service')
+import * as _ from 'lodash'
+import {joinGame, quitGame, resetInstruction, setInstruction} from "./game-service";
+import {goToLobby} from "../index";
+import {createGame} from "../lobby/lobby-service";
+import {numberOfInstructionsPerCycle} from "../common/constants";
 
-function actions(state, action) {
+export function actions(state, action) {
   if (action.leaveGame) {
     if (state.game && state.game.you && !state.game.you.finished) {
-      return gameService.quitGame(state.game.id)
+      return quitGame(state.game.id)
           .then(newGameState => ({...state, game: newGameState}))
     } else {
-      console.log('goto Lobby')
-      require('../index').goToLobby()
+      goToLobby()
     }
   } else if (action.createGame !== undefined){
-    return lobbyService.createGame(state.scenario.scenario, action.createGame)
+    return createGame(state.scenario.scenario, action.createGame)
         .then(game => ({game, scenario: undefined}))
   } else if (action.joinGame)
-    return gameService.joinGame(state.game.id, action.joinGame)
+    return joinGame(state.game.id, action.joinGame)
         .then(newGameState => ({...state, game: newGameState}))
   else if (action.focusSlot !== undefined) {
     return Promise.resolve({...state, focusedSlot: action.focusSlot})
   } else if (action.resetSlot) {
-    return gameService.resetInstruction(state.game.id, state.game.cycle, action.slot)
+    return resetInstruction(state.game.id, state.game.cycle, action.slot)
         .then(newGameState => ({...state, game: newGameState}))
   } else if (action.setInstruction) {
-    return gameService.setInstruction(state.game.id, state.game.cycle, action.slot, action.instruction)
+    return setInstruction(state.game.id, state.game.cycle, action.slot, action.instruction)
         .then(newGameState => ({
           ...state,
           game: newGameState,
           focusedSlot: newGameState.cycle !== state.game.cycle ? 0 :
-              _.range(constants.numberOfInstructionsPerCycle)
-                  .map(i => (i + (state.focusedSlot || 0)) % constants.numberOfInstructionsPerCycle)
+              _.range(numberOfInstructionsPerCycle)
+                  .map(i => (i + (state.focusedSlot || 0)) % numberOfInstructionsPerCycle)
                   .find(i => newGameState.you.instructionSlots[i] === null)
         }))
   } else if (action.replayAnimations) {
@@ -43,5 +43,3 @@ function actions(state, action) {
     console.error("unknown action", action)
   }
 }
-
-module.exports = actions
