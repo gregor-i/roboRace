@@ -1,4 +1,4 @@
-import {postScenario} from './editor-service'
+import {postScenario} from '../robo-race-service'
 import * as _ from 'lodash'
 import {goToEditor, goToLobby} from '../index'
 

@@ -1,6 +1,5 @@
 import {goToEditor, goToGame} from "../index";
-import {deleteGame} from "./lobby-service";
-import {deleteScenario} from "../editor/editor-service";
+import {deleteGame, deleteScenario} from '../robo-race-service'
 
 export function actions(state, action) {
   if (action.previewScenario) {

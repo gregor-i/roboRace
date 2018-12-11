@@ -7,8 +7,8 @@ import {eventListenersModule} from 'snabbdom/modules/eventlisteners'
 
 import {render} from './lobby-ui'
 import {actions} from './lobby-actions'
-import {getAllGames, updates} from "./lobby-service";
-import {loadAllScenarios} from "../editor/editor-service";
+import {getAllGames, loadAllScenarios, lobbyUpdates} from '../robo-race-service'
+import {LobbyState} from "../state";
 
 const patch = init([
     classModule,
@@ -20,14 +20,14 @@ const patch = init([
 
 export function Lobby(element, player) {
   let node = element
-  const lobbyUpdates = updates()
+  const updates = lobbyUpdates()
 
-  function renderState(state) {
-    lobbyUpdates.onmessage = lobbyEventHandler(state)
+  function renderState(state: LobbyState) {
+    updates.onmessage = lobbyEventHandler(state)
     node = patch(node, render(state, actionHandler(state)))
   }
 
-  function actionHandler(state) {
+  function actionHandler(state: LobbyState) {
     return function (action) {
       const promise = actions(state, action)
       if (promise && promise.then)
@@ -35,7 +35,7 @@ export function Lobby(element, player) {
     }
   }
 
-  function lobbyEventHandler(state) {
+  function lobbyEventHandler(state: LobbyState) {
     return function (event) {
       state.games = JSON.parse(event.data)
       renderState(state)
@@ -44,7 +44,7 @@ export function Lobby(element, player) {
 
   getAllGames().then((games) =>
     loadAllScenarios().then((scenarios) =>
-      renderState({player, games, scenarios})
+      renderState({games, scenarios})
     )
   )
 

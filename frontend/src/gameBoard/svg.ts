@@ -1,7 +1,7 @@
 import {h} from 'snabbdom'
 import * as _ from 'lodash'
 
-import {images} from '../../common/images'
+import {images} from '../common/images'
 
 const deltaLeft = 0.75
 const deltaTop = Math.sqrt(3) / 2

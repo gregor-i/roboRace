@@ -1,10 +1,10 @@
 import * as _ from 'lodash'
-import {joinGame, quitGame, resetInstruction, setInstruction} from "./game-service";
+import {createGame, joinGame, quitGame, resetInstruction, setInstruction} from '../robo-race-service'
 import {goToLobby} from "../index";
-import {createGame} from "../lobby/lobby-service";
 import {numberOfInstructionsPerCycle} from "../common/constants";
+import {GameState} from "../state";
 
-export function actions(state, action) {
+export function actions(state: GameState, action): Promise<GameState> {
   if (action.leaveGame) {
     if (state.game && state.game.you && !state.game.you.finished) {
       return quitGame(state.game.id)
@@ -35,10 +35,6 @@ export function actions(state, action) {
         }))
   } else if (action.replayAnimations) {
     return Promise.resolve({...state, animationStart: new Date()})
-  } else if (action.setModal) {
-    return Promise.resolve({...state, modal: action.setModal})
-  } else if (action.closeModal) {
-    return Promise.resolve({...state, modal: undefined})
   } else {
     console.error("unknown action", action)
   }

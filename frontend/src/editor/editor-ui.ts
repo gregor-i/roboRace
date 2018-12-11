@@ -1,6 +1,6 @@
 import {h} from 'snabbdom'
 import {button} from '../common/button'
-import {renderScenario} from '../game/gameBoard/static'
+import {renderScenario} from '../gameBoard/static'
 import {images} from '../common/images'
 
 export function render(state, actionHandler) {

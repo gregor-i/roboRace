@@ -1,18 +1,12 @@
 import {h} from 'snabbdom'
 import {button, group} from '../common/button'
-import {renderScenario} from '../game/gameBoard/static'
 import {images} from '../common/images'
-import {modal} from '../common/modal'
 import * as _ from 'lodash'
+import {LobbyState} from "../state";
 
-export function render(state, actionHandler) {
-  let m = null
-  if (state.previewScenario) {
-    m = modal(renderScenario(state.previewScenario, undefined), [actionHandler, {closeModal: true}])
-  }
-
-  return h('div',
-    [h('section.hero.is-primary', [
+export function render(state: LobbyState, actionHandler) {
+  return h('div', [
+    h('section.hero.is-primary', [
         h('div.hero-head', h('nav.navbar', h('div.container', h('div.navbar-end', [
             h('a.navbar-item', {props: {href: 'https://github.com/gregor-i/roboRace'}}, 'Sources @ Github')
           ]
@@ -25,10 +19,9 @@ export function render(state, actionHandler) {
         )
       ]
     ),
-      renderGameList(state, state.games, actionHandler),
-      renderScenarioList(state, state.scenarios, actionHandler),
-      m
-    ])
+    renderGameList(state, actionHandler),
+    renderScenarioList(state, actionHandler)
+  ])
 
 }
 
@@ -78,7 +71,7 @@ function gameState(game) {
     return 'Game running'
 }
 
-function renderGameList(state, games, actionHandler) {
+function renderGameList(state: LobbyState, actionHandler) {
   function renderGame(gameRow) {
     return card(mediaObject(null, [
       h('div', [h('strong', 'state: '), gameState(gameRow)]),
@@ -90,11 +83,11 @@ function renderGameList(state, games, actionHandler) {
   return h('section.section',
     h('div.container', [
       h('h4.title', 'Game List: '),
-      ...games.map(renderGame)
+      ...state.games.map(renderGame)
     ]))
 }
 
-function renderScenarioList(state, scenarios, actionHandler) {
+function renderScenarioList(state: LobbyState, actionHandler) {
   function renderScenario(scenarioRow) {
     return card(mediaObject(null, [
       h('div', [h('strong', 'Scenario description: '), scenarioRow.description]),
@@ -111,6 +104,6 @@ function renderScenarioList(state, scenarios, actionHandler) {
   return h('section.section',
     h('div.container', [
       h('h4.title', 'Scenario List: '),
-      ...scenarios.map(renderScenario)
+      ...state.scenarios.map(renderScenario)
     ]))
 }

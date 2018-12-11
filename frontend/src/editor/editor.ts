@@ -9,7 +9,8 @@ import {eventListenersModule} from 'snabbdom/modules/eventlisteners'
 import {render} from './editor-ui'
 
 import {actions} from './editor-actions'
-import {loadSingleScenario} from './editor-service'
+import {loadSingleScenario} from '../robo-race-service'
+import {EditorState} from "../state";
 
 const patch = init([
   classModule,
@@ -22,11 +23,11 @@ const patch = init([
 export function Editor(element, scenarioId) {
   let node = element
 
-  function renderState(state) {
+  function renderState(state: EditorState) {
     node = patch(node, render(state, actionHandler(state)))
   }
 
-  function actionHandler(state) {
+  function actionHandler(state: EditorState) {
     return function (action) {
       const promise = actions(state, action)
       if (promise && promise.then)

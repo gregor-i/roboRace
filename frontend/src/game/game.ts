@@ -7,27 +7,29 @@ import {attributesModule} from 'snabbdom/modules/attributes'
 import {eventListenersModule} from 'snabbdom/modules/eventlisteners'
 
 const patch = init([
-    classModule,
-    propsModule,
-    styleModule,
-    eventListenersModule,
-    attributesModule
+  classModule,
+  propsModule,
+  styleModule,
+  eventListenersModule,
+  attributesModule
 ])
 
-import {updates} from "./game-service";
-import {actions} from "./game-actions";
-import {render} from "./game-ui";
+import {gameUpdates} from '../robo-race-service'
+import {actions} from './game-actions'
+import {render} from './game-ui'
+import {GameState} from "../state";
+import {Game, ScenarioRow} from "../models";
 
-export function Game(element, gameRow, scenarioRow) {
+export function Game(element, gameRow?: Game, scenarioRow?: ScenarioRow) {
   let node = element
-  let eventSource = gameRow ? updates(gameRow.id) : null
+  let eventSource = gameRow ? gameUpdates(gameRow.id) : null
 
-  function renderState(state) {
-    if(!eventSource && state.game){
-      eventSource = updates(state.game.id)
+  function renderState(state: GameState) {
+    if (!eventSource && state.game) {
+      eventSource = gameUpdates(state.game.id)
     }
 
-    if (eventSource){
+    if (eventSource) {
       eventSource.onmessage = function (event) {
         const serverState = JSON.parse(event.data)
         const newCycle = state.game.cycle !== serverState.cycle
@@ -43,7 +45,7 @@ export function Game(element, gameRow, scenarioRow) {
     node = patch(node, render(state, actionHandler(state)))
   }
 
-  function actionHandler(state) {
+  function actionHandler(state: GameState) {
     return function (action) {
       const promise = actions(state, action)
       if (promise && promise.then)
@@ -52,9 +54,8 @@ export function Game(element, gameRow, scenarioRow) {
   }
 
   renderState({
-    game:gameRow,
-    scenario: scenarioRow,
-    modal: 'none'
+    game: gameRow,
+    scenario: scenarioRow
   })
 
   return this
