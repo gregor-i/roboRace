@@ -6,15 +6,12 @@ import {GameState} from "../state";
 
 export function actions(state: GameState, action): Promise<GameState> {
   if (action.leaveGame) {
-    if (state.game && state.game.you && !state.game.you.finished) {
+    if (state.game.you && !state.game.you.finished) {
       return quitGame(state.game.id)
           .then(newGameState => ({...state, game: newGameState}))
     } else {
       goToLobby()
     }
-  } else if (action.createGame !== undefined){
-    return createGame(state.scenario.scenario, action.createGame)
-        .then(game => ({game, scenario: undefined}))
   } else if (action.joinGame)
     return joinGame(state.game.id, action.joinGame)
         .then(newGameState => ({...state, game: newGameState}))

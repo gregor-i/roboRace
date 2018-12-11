@@ -1,5 +1,4 @@
 import {h} from 'snabbdom'
-import * as _ from 'lodash'
 
 export function button(actionHandler, action, text) {
   return h('button.button.is-light', {on: {click: () => actionHandler(action)}}, text)

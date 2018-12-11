@@ -20,26 +20,19 @@ import {render} from './game-ui'
 import {GameState} from "../state";
 import {Game, ScenarioRow} from "../models";
 
-export function Game(element, gameRow?: Game, scenarioRow?: ScenarioRow) {
+export function Game(element, gameRow: Game) {
   let node = element
-  let eventSource = gameRow ? gameUpdates(gameRow.id) : null
+  let eventSource = gameUpdates(gameRow.id)
 
   function renderState(state: GameState) {
-    if (!eventSource && state.game) {
-      eventSource = gameUpdates(state.game.id)
-    }
+    eventSource.onmessage = function (event) {
+      const serverState = JSON.parse(event.data)
+      state.game = serverState
 
-    if (eventSource) {
-      eventSource.onmessage = function (event) {
-        const serverState = JSON.parse(event.data)
-        const newCycle = state.game.cycle !== serverState.cycle
-
-        state.game = serverState
-        if (newCycle) {
-          state.focusedSlot = 0
-        }
-        renderState(state)
+      if (state.game.cycle !== serverState.cycle) {
+        state.focusedSlot = 0
       }
+      renderState(state)
     }
 
     node = patch(node, render(state, actionHandler(state)))
@@ -54,8 +47,7 @@ export function Game(element, gameRow?: Game, scenarioRow?: ScenarioRow) {
   }
 
   renderState({
-    game: gameRow,
-    scenario: scenarioRow
+    game: gameRow
   })
 
   return this

@@ -6,26 +6,18 @@ import {numberOfInstructionsPerCycle} from '../common/constants'
 import {GameState} from "../state";
 
 export function render(state: GameState, actionHandler) {
-  if (state.game) {
-    return h('div.game', [
-      fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
-      fab('.fab-left-1', images.iconReplayAnimation, event => {
-        const svg = document.querySelector('.game-board svg')
-        if (svg)
-          (<HTMLMediaElement>svg).currentTime = eventSequenceDuration(
-            _.takeWhile(state.game.events, (event: any) => !event.StartCycleEvaluation || event.StartCycleEvaluation.cycle !== state.game.cycle - 1)
-          )
-      }),
-      renderGame(state.game),
-      renderActionButtons(state, actionHandler)
-    ])
-  } else {
-    return h('div.game', [
-      fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
-      renderGame({scenario: state.scenario.scenario, robots: []}),
-      renderActionButtons(state, actionHandler)
-    ])
-  }
+  return h('div.game', [
+    fab('.fab-right-1', images.iconClose, [actionHandler, {leaveGame: true}]),
+    fab('.fab-left-1', images.iconReplayAnimation, event => {
+      const svg = document.querySelector('.game-board svg')
+      if (svg)
+        (<HTMLMediaElement>svg).currentTime = eventSequenceDuration(
+          _.takeWhile(state.game.events, (event: any) => !event.StartCycleEvaluation || event.StartCycleEvaluation.cycle !== state.game.cycle - 1)
+        )
+    }),
+    renderGame(state.game),
+    renderActionButtons(state, actionHandler)
+  ])
 }
 
 function fab(classes, image, onclick) {
@@ -90,16 +82,13 @@ function renderActionButtons(state: GameState, actionHandler) {
     }
   }
 
-  if (!state.game) {
-    return h('div.text-panel', state.scenario.scenario.initialRobots
-      .map(robot => robotImage(robot.index, false, false, () => actionHandler({createGame: robot.index}))))
-  } else if (!player && _.get(state, 'game.cycle') === 0) {
+  if (!player && state.game.cycle === 0) {
     return h('div.text-panel', state.game.scenario.initialRobots
       .map(robot => robotImage(robot.index, false, false, () => actionHandler({joinGame: robot.index}))))
   } else if (!player) {
     return h('div.text-panel', 'observer mode')
   } else if (player.finished && player.finished.rageQuitted === false) {
-    return h('div.text-panel', 'target reached')
+    return h('div.text-panel', 'target reached as ' + player.finished.rank)
   } else if (player.finished && player.finished.rageQuitted === true) {
     return h('div.text-panel', 'game quitted')
   } else {
@@ -117,11 +106,4 @@ function renderActionButtons(state: GameState, actionHandler) {
       h('div.cards-panel', instructionTypes.map(instructionCard))
     ])
   }
-}
-
-function renderLog(events) {
-  return h('div', [
-    h('h4', 'Log: '),
-    h('div', events.map(log => h('div', log)))
-  ])
 }

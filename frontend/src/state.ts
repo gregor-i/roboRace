@@ -5,11 +5,13 @@ export class LobbyState {
   scenarios: ScenarioRow[]
 }
 
-// todo: this is shit
 export class GameState {
-  game?: Game
-  scenario?: ScenarioRow
+  game: Game
   focusedSlot?: number
+}
+
+export class PreviewState{
+  scenarioRow: ScenarioRow
 }
 
 export class EditorState {

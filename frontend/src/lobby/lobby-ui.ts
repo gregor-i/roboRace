@@ -95,7 +95,6 @@ function renderScenarioList(state: LobbyState, actionHandler) {
       group(
         h('button.button.is-light.is-primary', {on: {click: () => actionHandler({openScenario: scenarioRow})}}, 'Enter'),
         h('button.button.is-light', {on: {click: () => actionHandler({editScenario: scenarioRow.id})}}, 'Edit'),
-        h('button.button.is-light', {on: {click: () => actionHandler({previewScenario: scenarioRow.scenario})}}, 'Preview'),
         h('button.button.is-light.disabled', 'Delete')
       )]
     ))
