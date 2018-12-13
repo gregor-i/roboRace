@@ -2,6 +2,7 @@ import {h} from 'snabbdom'
 import * as _ from 'lodash'
 
 import {images} from '../common/images'
+import {Scenario} from "../models";
 
 const deltaLeft = 0.75
 const deltaTop = Math.sqrt(3) / 2
@@ -86,7 +87,7 @@ export function traps(scenario) {
   })
 }
 
-export function startingPoints(scenario) {
+export function startingPoints(scenario: Scenario) {
   return scenario.initialRobots.map((robot, index) =>
       h('image', {
         attrs: imageAttrs(images.playerStart(index), {

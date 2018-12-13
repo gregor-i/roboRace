@@ -113,14 +113,14 @@ function animate(events){
 
   return _.flatMap(events, (event, i) => {
     const f = functions[Object.keys(event)[0]]
-    if(f){
+    if (f) {
       const duration = eventDuration(event)
-        const r = f(Object.values(event)[0], i, duration)
-      if(r.length)
+      const r = f(Object.values(event)[0], i, duration)
+      if (r.length)
         return _.flatten(r)
       else
         return r
-    }else{
+    } else {
       return []
     }
   })

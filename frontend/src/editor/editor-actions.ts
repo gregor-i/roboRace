@@ -52,7 +52,7 @@ export function actions(state, action) {
       state.scenario.initialRobots = state.scenario.initialRobots.filter(r => r.position.x !== x || r.position.y !== y)
           .map((robot, index) => ({...robot, index}))
     else
-      state.scenario.initialRobots = [...state.scenario.initialRobots, {indexposition: {x, y}, direction: {Up: {}}}]
+      state.scenario.initialRobots = [...state.scenario.initialRobots, {position: {x, y}, direction: {Up: {}}}]
           .map((robot, index) => ({...robot, index}))
     return Promise.resolve(state)
   }else if(action.rotateRobot){

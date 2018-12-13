@@ -39,6 +39,10 @@ export interface Wall{
 
 }
 
+export interface Position{
+  x, y: number
+}
+
 export interface Direction{
 
 }
