@@ -1,20 +1,24 @@
 package helper
 
-import gameLogic.Game
-import gameLogic.command.{CommandAccepted, CommandRejected, CommandResponse, RejectionReason}
+import gameEntities._
+import gameLogic.command.Command
 import gameLogic.gameUpdate._
 import org.scalatest.Matchers
 
 trait DeconstructHelper {
   _: Matchers =>
 
+  implicit class EnrichCommand(val c: Command) {
+    def apply(playerName: String): Game => CommandResponse = Command.apply(c, playerName)(_)
+  }
+
 
   implicit class EnrichCommandReponseFunction(val f: Game => CommandResponse) {
     def accepted: Game => Game = state => {
-      val r = f(state)
-      r shouldBe a[CommandAccepted]
-      val newState = r.asInstanceOf[CommandAccepted].newState
-      Cycle(newState)
+      f(state) match {
+        case CommandRejected(reason) => fail(s"command was rejected with $reason")
+        case CommandAccepted(newState) => Cycle(newState)
+      }
     }
 
     def rejected(): Game => Game =

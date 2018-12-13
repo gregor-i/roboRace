@@ -2,7 +2,8 @@ package repo
 
 import java.time.ZonedDateTime
 
-import gameLogic._
+import gameLogic.DefaultScenario
+import gameEntities._
 import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
@@ -12,12 +13,12 @@ class GameRepositorySpec extends FunSuite with Matchers with GuiceOneAppPerSuite
   val g1 = GameRow(
     id = "initial",
     owner = "player",
-    game = Some(Game(2, Scenario.default, List.empty, Seq(RobotTurns(0, Position(0,0), UpRight, Up)))),
+    game = Some(Game(2, DefaultScenario.default, List.empty, Seq(RobotTurns(0, Position(0,0), UpRight, Up)))),
     creationTime = ZonedDateTime.now().withNano(0))
   val g2 = GameRow(
     id = "starting",
     owner = "player",
-    game = Some(Game(0, Scenario.default, List.empty, Seq())),
+    game = Some(Game(0, DefaultScenario.default, List.empty, Seq())),
     creationTime = ZonedDateTime.now().withNano(0))
 
   override def beforeEach = {

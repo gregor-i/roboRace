@@ -1,11 +1,11 @@
 package gameLogic.command
 
-import gameLogic._
-import gameLogic.gameUpdate.DealOptions
+import gameEntities._
+import gameLogic.ValidateScenario
 
 object CreateGame {
   def apply(scenario: Scenario, index: Int)(player: String): CommandResponse = {
-    if(!Scenario.validation(scenario))
+    if(!ValidateScenario.apply(scenario))
       CommandRejected(InvalidScenario)
     else if(!scenario.initialRobots.indices.contains(index))
       CommandRejected(InvalidIndex)
@@ -16,7 +16,7 @@ object CreateGame {
         players = List.empty,
         events = Seq.empty
       )
-      RegisterForGame(index)(player)(game)
+      Command.registerForGame(index)(player)(game)
     }
   }
 }

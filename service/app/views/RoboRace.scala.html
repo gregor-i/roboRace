@@ -1,12 +1,16 @@
 @(sessionId: String)
 <!DOCTYPE html>
 <html>
-    <head>
-        @components.head()
-        <title>Robo Race</title>
-        <script type="text/javascript" src="/assets/robo-race.js"></script>
-    </head>
-    <body data-session-id="@sessionId" id="robo-race">
-        <div></div>
-    </body>
+  <head>
+    @components.head()
+  <title>Robo Race</title>
+  <script type="text/javascript" src="/assets/robo-race.js"></script>
+  </head>
+  <body>
+    <div data-session-id="@sessionId" id="robo-race">
+    </div>
+    <div id="loading-overlay" class="modal is-active">
+      <div class="modal-background" style="background-color: rgba(0, 0, 0, 0.3);"></div>
+    </div>
+  </body>
 </html>

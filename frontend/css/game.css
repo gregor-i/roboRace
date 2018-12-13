@@ -11,7 +11,7 @@
   background: #4a4a4a;
 }
 
-.game-board{
+.game-board {
   width: 100%;
   height: calc(100% - 108px - 72px);
 }
@@ -19,6 +19,14 @@
 .game-board svg {
   width: 100%;
   height: 100%;
+}
+
+.game-board svg g {
+  pointer-events: none;
+}
+
+.game-board svg g[name="tiles"] {
+  pointer-events: all;
 }
 
 .footer-group {
@@ -93,7 +101,7 @@
   margin: 4px;
 
   font-size: 32px;
-  color: #9b9b9b;
+  color: white;
 
   display: inline-flex;
   justify-content: center;
@@ -128,12 +136,11 @@
   margin: 4px;
 }
 
-.cards-panel .action {
+.action {
   width: 80px;
   height: 96px;
   border-radius: 4px;
   background-color: #ffffff;
-  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.54);
   margin: 4px;
   position: relative;
 
@@ -162,4 +169,52 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.stacked-action-0 {
+  display: none;
+}
+
+.stacked-action-1 {
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,.50);
+}
+
+.stacked-action-2 {
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,.50),
+              5px 1px 0 0 #eee,
+              5px 1px 6px 0 rgba(0,0,0,.50);
+  margin-right:5px;
+}
+
+.stacked-action-3 {
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,.50),
+              5px 1px 0 0 #eee,
+              5px 1px 6px 0 rgba(0,0,0,.50),
+              10px 2px 0 0 #ddd,
+              10px 2px 6px 0 rgba(0,0,0,.50);
+  margin-right:10px;
+}
+
+.stacked-action-4 {
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,.50),
+              5px 1px 0 0 #eee,
+              5px 1px 6px 0 rgba(0,0,0,.50),
+              10px 2px 0 0 #ddd,
+              10px 2px 6px 0 rgba(0,0,0,.50),
+              15px 3px 0 0 #ccc,
+              15px 3px 6px 0 rgba(0,0,0,.50);
+  margin-right:15px;
+}
+
+.stacked-action-5 {
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,.50),
+              5px 1px 0 0 #eee,
+              5px 1px 6px 0 rgba(0,0,0,.50),
+              10px 2px 0 0 #ddd,
+              10px 2px 6px 0 rgba(0,0,0,.50),
+              15px 3px 0 0 #ccc,
+              15px 3px 6px 0 rgba(0,0,0,.50),
+              20px 4px 0 0 #bbb,
+              20px 4px 6px 0 rgba(0,0,0,.50);
+  margin-right:20px;
 }

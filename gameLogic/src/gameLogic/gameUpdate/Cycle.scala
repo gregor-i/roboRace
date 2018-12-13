@@ -1,6 +1,7 @@
 package gameLogic
 package gameUpdate
 
+import gameEntities.{AllPlayersFinished, Constants, FinishedCycleEvaluation, Game, MoveInstruction, Player, RobotAction, Sleep, StartCycleEvaluation, TurnLeft, TurnRight, UTurn}
 import monocle.function.Each.each
 
 object Cycle extends (Game => Game){
@@ -11,15 +12,15 @@ object Cycle extends (Game => Game){
     State.sequence(
       State.conditional(readyForCycle)(
         State.sequence(
-          g => g.log(StartCycleEvaluation(g.cycle)),
+          g => Lenses.log(StartCycleEvaluation(g.cycle))(g),
           ScenarioEffects.beforeCycle,
           execAllActions,
           ScenarioEffects.afterCycle,
-          g => g.log(FinishedCycleEvaluation(g.cycle)),
-          Game.players composeTraversal each composeLens Player.instructionOptions set DealOptions(),
-          Game.cycle modify (_ + 1),
+          g => Lenses.log(FinishedCycleEvaluation(g.cycle))(g),
+          Lenses.players composeTraversal each composeLens PlayerLenses.instructionOptions set DealOptions(),
+          Lenses.cycle modify (_ + 1),
           State.conditional(_.players.forall(_.finished.isDefined))(
-            _.log(AllPlayersFinished)
+            Lenses.log(AllPlayersFinished)
           )
         )
       )
@@ -52,16 +53,16 @@ object Cycle extends (Game => Game){
   private def applyAction(_game: Game, player: Player): Game = {
     val slot = player.instructionSlots.indexWhere(_.isDefined)
     val instruction = player.instructionOptions(player.instructionSlots(slot).get)
-    val game = _game.log(RobotAction(player.index, instruction))
+    val game = Lenses.log(RobotAction(player.index, instruction))(_game)
     val afterInstruction = instruction match {
-      case TurnRight => Events.turn(player, player.robot.direction.right)(game)
-      case TurnLeft => Events.turn(player, player.robot.direction.left)(game)
-      case UTurn => Events.turn(player, player.robot.direction.back)(game)
+      case TurnRight => Events.turn(player, Direction.turnRight(player.robot.direction))(game)
+      case TurnLeft => Events.turn(player, Direction.turnLeft(player.robot.direction))(game)
+      case UTurn => Events.turn(player, Direction.back(player.robot.direction))(game)
 
       case move: MoveInstruction => MoveRobots(player, move, game)
 
       case Sleep => game
     }
-    (Game.player(player.name) composeLens Player.instructionSlots).modify(_.updated(slot, None))(afterInstruction)
+    Lenses.instructionSlots(player.name).modify(_.updated(slot, None))(afterInstruction)
   }
 }

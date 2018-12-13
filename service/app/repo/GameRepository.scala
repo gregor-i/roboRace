@@ -3,7 +3,7 @@ package repo
 import java.time.ZonedDateTime
 
 import anorm._
-import gameLogic.Game
+import gameEntities.Game
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._

@@ -1,6 +1,6 @@
 package gameLogic.command
 
-import gameLogic.{FinishedStatistic, Scenario}
+import gameEntities.{FinishedStatistic, RegisterForGame, DeregisterForGame}
 import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
 

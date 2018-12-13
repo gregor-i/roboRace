@@ -1,6 +1,6 @@
 package gameLogic.gameUpdate
 
-import gameLogic.{Instruction, Constants, MoveBackward, MoveForward, MoveTwiceForward, Sleep, StepLeft, StepRight, TurnLeft, TurnRight, UTurn}
+import gameEntities._
 
 import scala.util.Random
 

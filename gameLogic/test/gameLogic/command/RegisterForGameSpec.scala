@@ -1,6 +1,7 @@
 package gameLogic.command
 
-import gameLogic.Scenario
+import gameEntities.{InvalidIndex, PlayerAlreadyRegistered, RegisterForGame}
+import gameLogic.DefaultScenario
 import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
 
@@ -20,7 +21,7 @@ class RegisterForGameSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("reject players if there are to many") {
-    val smallScenario = Scenario.default.copy(initialRobots = Scenario.default.initialRobots.take(1))
+    val smallScenario = DefaultScenario.default.copy(initialRobots = DefaultScenario.default.initialRobots.take(1))
     sequenceWithAutoCycle(createGame(smallScenario)(p0))(
       RegisterForGame(1)(p0).rejected(PlayerAlreadyRegistered),
       RegisterForGame(2)(p1).rejected(InvalidIndex),

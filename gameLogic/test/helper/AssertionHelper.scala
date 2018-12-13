@@ -1,6 +1,6 @@
 package helper
 
-import gameLogic.{EventLog, Game, Player, Position}
+import gameEntities.{EventLog, Game, Player}
 import org.scalatest.{Assertion, Matchers}
 
 trait AssertionHelper {

@@ -13,11 +13,9 @@
     "svgo": "^1.1.1"
   },
   "scripts": {
-    "watch": "nodemon --watch frontend -e css,js,svg,ts --exec \"npm run build\"",
-    "watch-js": "nodemon --watch frontend -e css,js,svg,ts --exec \"npm run build-js\"",
-    "build": "npm run build-js && npm run build-css && npm run build-img",
+    "watch": "nodemon --watch frontend -e css,svg --exec \"npm run build\"",
+    "build": "npm run build-css && npm run build-img",
     "build-img": "svgo -f frontend/img -o service/public",
-    "build-css": "cleancss node_modules/bulma/css/bulma.min.css frontend/css/*.css -o service/public/robo-race.css",
-    "build-js": "browserify -e -p [ tsify --target es2017 ] frontend/src/index.ts  > service/public/robo-race.js"
+    "build-css": "cleancss node_modules/bulma/css/bulma.min.css frontend/css/*.css -o service/public/robo-race.css"
   }
 }
