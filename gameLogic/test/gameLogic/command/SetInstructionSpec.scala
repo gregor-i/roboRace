@@ -41,7 +41,7 @@ class SetInstructionSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("reject command if the given instruction is outside of the accepted interval") {
     sequenceWithAutoCycle(initialGame)(
       SetInstruction(cycle = 0, slot = 0, instruction = -1)(p0).rejected(InvalidActionChoice),
-      SetInstruction(cycle = 0, slot = 0, instruction = Constants.instructionOptionsPerCycle)(p0).rejected(InvalidActionChoice)
+      SetInstruction(cycle = 0, slot = 0, instruction = initialGame.players.head.instructionOptions.size)(p0).rejected(InvalidActionChoice)
     )
   }
 

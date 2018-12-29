@@ -73,7 +73,7 @@ object Command {
       CommandRejected(PlayerAlreadyFinished)
     case game if 0 > slot || slot >= Constants.instructionsPerCycle =>
       CommandRejected(InvalidSlot)
-    case game if 0 > instruction || instruction >= Constants.instructionOptionsPerCycle =>
+    case game if !game.players.find(_.name == player).get.instructionOptions.indices.contains(instruction) =>
       CommandRejected(InvalidActionChoice)
     case game if game.players.find(_.name == player).get.instructionSlots.contains(Some(instruction)) =>
       CommandRejected(ActionAlreadyUsed)
