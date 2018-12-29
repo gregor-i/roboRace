@@ -1,0 +1,19 @@
+package frontend.util
+
+import com.raquo.snabbdom.Modifier
+import com.raquo.snabbdom.hooks.NodeHooks
+import com.raquo.snabbdom.simple.{VNode => N, VNodeData => D}
+
+import scala.scalajs.js.UndefOr
+
+object Hooks {
+  def apply(f: NodeHooks[N, D] => Unit) : Modifier[N, D] =
+    node => f(hooks(node))
+
+  def hooks(node: N): NodeHooks[N, D] = {
+    if (node.data.hooks.isEmpty) {
+      node.data.hooks = UndefOr.any2undefOrA(new NodeHooks())
+    }
+    node.data.hooks.get
+  }
+}

@@ -1,7 +1,7 @@
 package gameLogic
 package gameUpdate
 
-import gameLogic.command.RegisterForGame
+import gameEntities._
 import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
 

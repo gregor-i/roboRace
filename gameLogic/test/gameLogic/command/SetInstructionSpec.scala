@@ -1,11 +1,12 @@
 package gameLogic.command
 
+import gameEntities._
 import gameLogic._
 import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
 
 class SetInstructionSpec extends FunSuite with Matchers with GameUpdateHelper {
-  val initialGame = sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
+  val initialGame = sequenceWithAutoCycle(createGame(DefaultScenario.default)(p0))(
     RegisterForGame(1)(p1).accepted,
     clearHistory
   )
@@ -25,7 +26,7 @@ class SetInstructionSpec extends FunSuite with Matchers with GameUpdateHelper {
 
   test("reject command if the given player already finished the game") {
     sequenceWithAutoCycle(initialGame)(
-      (Game.player(p0) composeLens Player.finished).set(Some(FinishedStatistic(0, 0, false))),
+      Lenses.finished(p0).set(Some(FinishedStatistic(0, 0, false))),
       SetInstruction(cycle = 0, slot = 0, instruction = 0)(p0).rejected(PlayerAlreadyFinished)
     )
   }

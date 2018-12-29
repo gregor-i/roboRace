@@ -1,6 +1,6 @@
 package gameLogic.gameUpdate
 
-import gameLogic.Constants
+import gameEntities.Constants
 import org.scalatest.{FunSuite, Matchers}
 
 class DealOptionsSpec extends  FunSuite with Matchers {

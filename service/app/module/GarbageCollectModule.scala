@@ -13,6 +13,8 @@ import scala.concurrent.duration._
 
 class GarbageCollectModule extends AbstractModule{
   override def configure(): Unit = {
+    new JDBCInitModule().configure()
+
     bind(classOf[GarbageCollectorThread])
       .asEagerSingleton()
   }

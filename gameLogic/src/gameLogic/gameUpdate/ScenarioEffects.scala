@@ -1,6 +1,7 @@
 package gameLogic.gameUpdate
 
-import gameLogic._
+import gameEntities._
+import gameLogic.{Lenses, PlayerLenses, State}
 
 object ScenarioEffects {
   def beforeCycle(game: Game): Game = TrapEffects.applyAll(game)
@@ -21,8 +22,8 @@ object ScenarioEffects {
           rageQuitted = false)
 
         State.sequence(
-          (Game.player(player.name) composeLens Player.finished).set(Some(stats)),
-          _.log(PlayerFinished(player.index, player.robot))
+          Lenses.finished(player.name).set(Some(stats)),
+          Lenses.log(PlayerFinished(player.index, player.robot))
         )(game)
     }
   }

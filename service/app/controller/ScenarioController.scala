@@ -1,14 +1,13 @@
 package controller
 
-import gameLogic.Scenario
+import gameLogic.{DefaultScenario, ValidateScenario}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
 import repo.{ScenarioRepository, ScenarioRow}
-
-case class ScenarioPost(description: String, scenario: Scenario)
+import gameEntities.{ScenarioPost, ScenarioResponse}
 
 @Singleton
 class ScenarioController @Inject()(sessionAction: SessionAction,
@@ -17,7 +16,7 @@ class ScenarioController @Inject()(sessionAction: SessionAction,
   def get() = Action {
     val list = repo.list().filter(_.scenario.isDefined)
     if (list.isEmpty) {
-      val defaultRow = ScenarioRow(Utils.newId(), "system", "default", Some(Scenario.default))
+      val defaultRow = ScenarioRow(Utils.newId(), "system", "default", Some(DefaultScenario.default))
       repo.save(defaultRow)
       Ok(List(defaultRow).asJson)
     } else {
@@ -27,13 +26,13 @@ class ScenarioController @Inject()(sessionAction: SessionAction,
 
   def getSingle(id: String) = Action {
     repo.get(id) match {
-      case None      => NotFound
+      case None => NotFound
       case Some(row) => Ok(row.asJson)
     }
   }
 
   def post() = sessionAction(circe.tolerantJson[ScenarioPost]) { (session, request) =>
-    if (Scenario.validation(request.body.scenario)) {
+    if (ValidateScenario(request.body.scenario)) {
       val row = ScenarioRow(
         id = Utils.newId(),
         owner = session.playerId,
@@ -48,9 +47,9 @@ class ScenarioController @Inject()(sessionAction: SessionAction,
 
   def put(id: String) = sessionAction(circe.tolerantJson[ScenarioPost]) { (session, request) =>
     repo.get(id) match {
-      case _ if !Scenario.validation(request.body.scenario)           => BadRequest
+      case _ if !ValidateScenario(request.body.scenario) => BadRequest
       case Some(scenarioRow) if scenarioRow.owner != session.playerId => Forbidden
-      case _                                                          =>
+      case _ =>
         val row = ScenarioRow(
           id = id,
           owner = session.playerId,
@@ -63,9 +62,10 @@ class ScenarioController @Inject()(sessionAction: SessionAction,
 
   def delete(id: String) = sessionAction { (session, request) =>
     repo.get(id) match {
-      case None                                       => NotFound
+      case None => NotFound
       case Some(row) if row.owner != session.playerId => Unauthorized
-      case Some(row)                                  => repo.delete(id)
+      case Some(row) =>
+        repo.delete(id)
         NoContent
     }
   }

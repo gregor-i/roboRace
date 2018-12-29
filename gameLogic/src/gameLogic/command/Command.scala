@@ -1,14 +1,18 @@
 package gameLogic
 package command
 
+import gameEntities._
 import gameLogic.gameUpdate.DealOptions
 
-sealed trait Command {
-  def apply(player: String): Game => CommandResponse
-}
+object Command {
+  def apply(command: Command, player: String)(game: Game): CommandResponse = command match {
+    case RegisterForGame(index) => registerForGame(index)(player)(game)
+    case DeregisterForGame => deregisterForGame(player)(game)
+    case SetInstruction(cycle, slot, instruction) => setInstruction(cycle, slot, instruction)(player)(game)
+    case ResetInstruction(cycle, slot) => resetInstruction(cycle, slot)(player)(game)
+  }
 
-case class RegisterForGame(index: Int) extends Command {
-  def apply(player: String): Game => CommandResponse = {
+  def registerForGame(index: Int)(player: String): Game => CommandResponse = {
     case game if game.cycle != 0 =>
       CommandRejected(WrongCycle)
     case game if game.players.exists(_.name == player) =>
@@ -27,15 +31,15 @@ case class RegisterForGame(index: Int) extends Command {
         finished = None
       )
       CommandAccepted(
-        Game.players.modify(players => players :+ newPlayer)(game)
-          .log(PlayerJoinedGame(newPlayer.index, newPlayer.robot))
+        State.sequence(
+          Lenses.players.modify(players => players :+ newPlayer),
+          Lenses.log(PlayerJoinedGame(newPlayer.index, newPlayer.robot))
+        )(game)
       )
   }
-}
 
-case object DeregisterForGame extends Command {
-  def apply(playerName: String): Game => CommandResponse = {
-    case game if !game.players.exists(_.name == playerName)                           =>
+  def deregisterForGame(playerName: String): Game => CommandResponse = {
+    case game if !game.players.exists(_.name == playerName) =>
       CommandRejected(PlayerNotFound)
     case game if game.players.find(_.name == playerName).exists(_.finished.isDefined) =>
       CommandRejected(PlayerAlreadyFinished)
@@ -43,22 +47,24 @@ case object DeregisterForGame extends Command {
     case game if game.cycle == 0 =>
       val player = game.players.find(_.name == playerName).get
       CommandAccepted(
-        Game.players.modify(_.filter(_ != player))(game)
-          .log(PlayerQuitted(player.index, player.robot))
+        State.sequence(
+          Lenses.players.modify(_.filter(_ != player)),
+          Lenses.log(PlayerQuitted(player.index, player.robot))
+        )(game)
       )
-    case game                    =>
+    case game =>
       val player = game.players.find(_.name == playerName).get
       CommandAccepted(
-        (Game.player(playerName) composeLens Player.finished)
-          .set(Some(FinishedStatistic(game.players.count(_.finished.isEmpty), game.cycle, true)))(game)
-          .log(PlayerQuitted(player.index, player.robot))
+        State.sequence(
+          Lenses.finished(playerName)
+            .set(Some(FinishedStatistic(game.players.count(_.finished.isEmpty), game.cycle, true))),
+          Lenses.log(PlayerQuitted(player.index, player.robot))
+        )(game)
       )
 
   }
-}
 
-case class SetInstruction(cycle: Int, slot: Int, instruction: Int) extends Command {
-  def apply(player: String): Game => CommandResponse = {
+  def setInstruction(cycle: Int, slot: Int, instruction: Int)(player: String): Game => CommandResponse = {
     case game if game.cycle != cycle =>
       CommandRejected(WrongCycle)
     case game if !game.players.exists(_.name == player) =>
@@ -72,12 +78,10 @@ case class SetInstruction(cycle: Int, slot: Int, instruction: Int) extends Comma
     case game if game.players.find(_.name == player).get.instructionSlots.contains(Some(instruction)) =>
       CommandRejected(ActionAlreadyUsed)
     case game =>
-      CommandAccepted((Game.player(player) composeLens Player.instructionSlots).modify(_.updated(slot, Some(instruction)))(game))
+      CommandAccepted(Lenses.instructionSlots(player).modify(_.updated(slot, Some(instruction)))(game))
   }
-}
 
-case class ResetInstruction(cycle: Int, slot: Int) extends Command {
-  def apply(player: String): Game => CommandResponse = {
+  def resetInstruction(cycle: Int, slot: Int)(player: String): Game => CommandResponse = {
     case game if game.cycle != cycle =>
       CommandRejected(WrongCycle)
     case game if !game.players.exists(_.name == player) =>
@@ -87,7 +91,7 @@ case class ResetInstruction(cycle: Int, slot: Int) extends Command {
     case game if 0 > slot || slot >= Constants.instructionsPerCycle =>
       CommandRejected(InvalidSlot)
     case game =>
-      CommandAccepted((Game.player(player) composeLens Player.instructionSlots).modify(_.updated(slot, None))(game))
+      CommandAccepted(Lenses.instructionSlots(player).modify(_.updated(slot, None))(game))
   }
 }
 

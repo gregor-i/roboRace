@@ -1,11 +1,11 @@
 package gameLogic
 
+import gameEntities._
 
-
-sealed trait Direction {
-  def apply(pos: Position): Position = {
+object Direction {
+  def move(dir: Direction, pos: Position): Position = {
     import pos.{x, y}
-    this match {
+    dir match {
       case Up => Position(x, y - 1)
       case UpRight => if (x % 2 == 0) Position(x + 1, y - 1) else Position(x + 1, y)
       case DownRight => if (x % 2 == 0) Position(x + 1, y) else Position(x + 1, y + 1)
@@ -15,7 +15,7 @@ sealed trait Direction {
     }
   }
 
-  def left: Direction = this match {
+  def turnLeft(dir: Direction): Direction = dir match {
     case Up => UpLeft
     case UpRight => Up
     case DownRight => UpRight
@@ -24,7 +24,7 @@ sealed trait Direction {
     case UpLeft => DownLeft
   }
 
-  def right: Direction = this match {
+  def turnRight(dir: Direction): Direction = dir match {
     case Up => UpRight
     case UpRight => DownRight
     case DownRight => Down
@@ -33,14 +33,5 @@ sealed trait Direction {
     case UpLeft => Up
   }
 
-  def back = left.left.left
+  def back(dir: Direction): Direction = turnRight(turnRight(turnRight(dir)))
 }
-
-sealed trait WallDirection
-
-case object Up extends Direction
-case object UpRight extends Direction with WallDirection
-case object DownRight extends Direction with WallDirection
-case object Down extends Direction with WallDirection
-case object DownLeft extends Direction
-case object UpLeft extends Direction

@@ -5,17 +5,17 @@ import java.time.ZonedDateTime
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import gameLogic.Scenario
-import gameLogic.command.{CommandAccepted, CommandRejected, CreateGame}
+import gameEntities.{CommandAccepted, CommandRejected, Scenario}
+import gameLogic.command.CreateGame
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
-import model.GameResponse
+import model.GameResponseFactory
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
-import repo.{GameRepository, GameRow, Session}
+import repo.{GameRepository, GameRow}
 
 import scala.concurrent.ExecutionContext
 
@@ -27,15 +27,15 @@ class LobbyController @Inject()(sessionAction: SessionAction,
 
   private val (sink, source) = new SinkSourceCache[Seq[GameRow]].createPair()
 
-  def list() = sessionAction {(session, _) =>
-    Ok(gameList().flatMap(GameResponse(_)(session)).asJson)
+  def list() = sessionAction { (session, _) =>
+    Ok(gameList().flatMap(GameResponseFactory(_)(session)).asJson)
   }
 
   def create(index: Int) = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>
     CreateGame(request.body, index)(session.playerId) match {
       case CommandRejected(reason) =>
         BadRequest(reason.asJson)
-      case CommandAccepted(game)   =>
+      case CommandAccepted(game) =>
         val row = GameRow(
           id = Utils.newId(),
           owner = session.playerId,
@@ -44,7 +44,7 @@ class LobbyController @Inject()(sessionAction: SessionAction,
         )
         gameRepo.save(row)
         sendStateToClients()
-        Created(GameResponse(game, row.id)(session).asJson)
+        Created(GameResponseFactory(game, row.id)(session).asJson)
     }
   }
 
@@ -65,7 +65,7 @@ class LobbyController @Inject()(sessionAction: SessionAction,
   def sse() = sessionAction { (session, _) =>
     Ok.chunked(
       source
-        .map(games => games.flatMap(GameResponse(_)(session)))
+        .map(games => games.flatMap(GameResponseFactory(_)(session)))
         .map(_.asJson.noSpaces)
         .via(EventSource.flow)
     ).as(ContentTypes.EVENT_STREAM)

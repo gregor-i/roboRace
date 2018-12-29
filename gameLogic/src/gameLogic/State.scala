@@ -1,5 +1,7 @@
 package gameLogic
 
+import gameEntities.Game
+
 trait State {
   def all(fs: Seq[Game => Game]): Game => Game =
     game => fs.foldLeft(game)((s, f) => f(s))

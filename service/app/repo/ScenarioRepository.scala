@@ -1,7 +1,7 @@
 package repo
 
 import anorm._
-import gameLogic.{Scenario, Game}
+import gameEntities.Scenario
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._

@@ -1,7 +1,7 @@
 package gameLogic
 package gameUpdate
 
-import gameLogic.command.RegisterForGame
+import gameEntities._
 import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
 
@@ -133,7 +133,7 @@ class MoveRobotsSpec extends FunSuite with Matchers with GameUpdateHelper {
 
   test("robots which have reached the target will not be pushed") {
     sequenceWithAutoCycle(initialGame)(
-      (Game.player(p1) composeLens Player.finished).set(Some(FinishedStatistic(0, 0, false))),
+      Lenses.finished(p1).set(Some(FinishedStatistic(0, 0, false))),
       forcedInstructions(p0)(MoveForward),
       assertCycle(1),
       assertPlayer(p0)(_.robot.position shouldBe Position(0, 1)),

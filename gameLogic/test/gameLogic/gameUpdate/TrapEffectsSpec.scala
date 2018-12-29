@@ -1,12 +1,13 @@
 package gameLogic.gameUpdate
 
+import gameEntities._
 import gameLogic._
 import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
 
 class TrapEffectsSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("TurnRightTrap: should turn robots before the cycle starts") {
-    sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
+    sequenceWithAutoCycle(createGame(DefaultScenario.default)(p0))(
       addTrap(TurnRightTrap(Position(1, 8))),
       forcedInstructions(p0)(MoveForward),
       assertCycle(1),
@@ -17,7 +18,7 @@ class TrapEffectsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("TurnLeftTrap: should turn robots before the cycle starts") {
-    sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
+    sequenceWithAutoCycle(createGame(DefaultScenario.default)(p0))(
       addTrap(TurnLeftTrap(Position(1, 8))),
       forcedInstructions(p0)(MoveForward),
       assertCycle(1),
@@ -28,7 +29,7 @@ class TrapEffectsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("TurnLeftTrap: should turn a robot which moves onto it") {
-    sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
+    sequenceWithAutoCycle(createGame(DefaultScenario.default)(p0))(
       addTrap(TurnRightTrap(Position(1, 7))),
       forcedInstructions(p0)(MoveForward, MoveForward),
       assertCycle(1),
@@ -40,7 +41,7 @@ class TrapEffectsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("StunTrap: should remove the first instruction if a robot starts it's cycle on the StunTrap") {
-    sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
+    sequenceWithAutoCycle(createGame(DefaultScenario.default)(p0))(
       addTrap(StunTrap(Position(1, 8))),
       forcedInstructions(p0)(MoveForward, MoveForward),
       assertCycle(1),
@@ -51,7 +52,7 @@ class TrapEffectsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("StunTrap: should remove the next instruction if a robot moves onto the trap") {
-    sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
+    sequenceWithAutoCycle(createGame(DefaultScenario.default)(p0))(
       addTrap(StunTrap(Position(1, 7))),
       forcedInstructions(p0)(MoveForward, MoveForward),
       assertCycle(1),
@@ -62,7 +63,7 @@ class TrapEffectsSpec extends FunSuite with Matchers with GameUpdateHelper {
   }
 
   test("StunTrap: should have no effect if there are no instructions left") {
-    sequenceWithAutoCycle(createGame(Scenario.default)(p0))(
+    sequenceWithAutoCycle(createGame(DefaultScenario.default)(p0))(
       addTrap(StunTrap(Position(1, 7))),
       forcedInstructions(p0)(Sleep, Sleep, Sleep, Sleep, MoveForward),
       assertCycle(1),

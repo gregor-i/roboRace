@@ -1,12 +1,12 @@
 package controller
 
-import javax.inject.Inject
-
+import javax.inject.{Inject, Singleton}
 import akka.stream.Materializer
 import play.api.mvc.{Filter, RequestHeader, Result}
 
 import scala.concurrent.{ExecutionContext, Future}
 
+@Singleton
 class AccessFilter @Inject()(implicit val mat: Materializer, ex: ExecutionContext) extends Filter {
   val Logger = play.api.Logger("access")
 
