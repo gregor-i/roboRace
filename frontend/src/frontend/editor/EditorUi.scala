@@ -8,7 +8,7 @@ import com.raquo.snabbdom.simple.attrs.{`type`, id, placeholder, value}
 import com.raquo.snabbdom.simple.styles.height
 import com.raquo.snabbdom.simple.tags.{button, div, img, input}
 import frontend.{Main, Service}
-import frontend.common.{Fab, Images}
+import frontend.components.{Fab, Images}
 import frontend.gameBoard.RenderScenario
 import frontend.util.Dynamic
 import gameEntities._
@@ -18,7 +18,7 @@ object EditorUi {
   def apply(state: EditorState, rerender: EditorState => Unit): VNode = {
     div(id := "robo-race",
       className := "game",
-      Fab("fab-right-1", Images.iconClose, () => Main.gotoLobby()),
+      Fab("fab-right-1", Images.iconClose, onClick := (() => Main.gotoLobby())),
       RenderScenario(state.scenario, clickListener(state, rerender)),
       renderEditorActionbar(state, rerender)
     )

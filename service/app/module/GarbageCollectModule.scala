@@ -13,8 +13,6 @@ import scala.concurrent.duration._
 
 class GarbageCollectModule extends AbstractModule{
   override def configure(): Unit = {
-    new JDBCInitModule().configure()
-
     bind(classOf[GarbageCollectorThread])
       .asEagerSingleton()
   }
@@ -26,21 +24,18 @@ class GarbageCollectorThread @Inject()(gameRepository: GameRepository,
                                        sessionRepo: SessionRepo)
                                       (implicit mat: Materializer){
 
-  val tickInterval: FiniteDuration = 1.minute
-  val sessionInactivityTime: FiniteDuration = 60.minutes
-  val sessionLifetime: FiniteDuration = 1.day
+  val tickInterval: FiniteDuration = 10.minute
+  val sessionInactivityTime: FiniteDuration = 1.day
 
   def gameDeletePredicate(activePlayers: Seq[String])(gameRow: GameRow) : Boolean =
     gameRow.game.isEmpty ||
-    !gameRow.game.get.players.map(_.name).exists(activePlayers.contains) ||
-    gameRow.game.get.players.forall(_.finished.isDefined)
+    !gameRow.game.get.players.map(_.name).exists(activePlayers.contains)
 
   def scenarioDeletePredicate(scenarioRow: ScenarioRow): Boolean =
     scenarioRow.scenario.isEmpty
 
   def sessionDeletePredicate(session: Session): Boolean =
-    session.lastActivityAt.plusSeconds(sessionInactivityTime.toSeconds).isBefore(ZonedDateTime.now()) ||
-    session.startedAt.plusSeconds(sessionLifetime.toSeconds).isBefore(ZonedDateTime.now())
+    session.lastActivityAt.plusSeconds(sessionInactivityTime.toSeconds).isBefore(ZonedDateTime.now())
 
   Source.tick(0.seconds, tickInterval, ())
     .to(Sink.foreach{_ =>

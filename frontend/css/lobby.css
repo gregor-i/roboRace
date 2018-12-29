@@ -2,7 +2,3 @@ img.robot-tile{
   background: url(/assets/tile.svg);
   background-size: contain;
 }
-
-img.robot-tile-you{
-  background: radial-gradient(closest-side, #1d97e2, rgba(0,0,0,0)), url(/assets/tile.svg);
-}

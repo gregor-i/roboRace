@@ -1,7 +1,7 @@
 package controller
 
 import gameEntities.ScenarioPost
-import gameLogic.ValidateScenario
+import gameLogic.{DefaultScenario, ValidateScenario}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
@@ -16,7 +16,14 @@ class ScenarioController @Inject()(sessionAction: SessionAction,
 
   def get() = sessionAction { (session, request) =>
     val list = repo.list().flatMap(ScenarioResponseFactory.apply(_)(session))
-    Ok(list.asJson)
+
+    if (list.isEmpty) {
+      val defaultRow = ScenarioRow(Utils.newId(), "system", "default", Some(DefaultScenario.default))
+      repo.save(defaultRow)
+      Ok(List(defaultRow).flatMap(ScenarioResponseFactory.apply(_)(session)).asJson)
+    } else {
+      Ok(list.asJson)
+    }
   }
 
   def getSingle(id: String) = sessionAction { (session, request) =>

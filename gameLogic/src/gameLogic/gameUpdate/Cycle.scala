@@ -4,33 +4,42 @@ package gameUpdate
 import gameEntities.{AllPlayersFinished, Constants, FinishedCycleEvaluation, Game, MoveInstruction, Player, RobotAction, Sleep, StartCycleEvaluation, TurnLeft, TurnRight, UTurn}
 import monocle.function.Each.each
 
-object Cycle extends (Game => Game){
+object Cycle extends (Game => Game) {
   def apply(game: Game): Game = {
     def readyForCycle(g: Game): Boolean =
       g.players.forall(p => p.finished.isDefined || p.instructionSlots.nonEmpty) && !g.players.forall(_.finished.isDefined)
 
-    State.sequence(
-      State.conditional(readyForCycle)(
-        State.sequence(
-          g => Lenses.log(StartCycleEvaluation(g.cycle))(g),
-          ScenarioEffects.beforeCycle,
-          execAllActions,
-          ScenarioEffects.afterCycle,
-          g => Lenses.log(FinishedCycleEvaluation(g.cycle))(g),
-          Lenses.players composeTraversal each composeLens PlayerLenses.instructionOptions set DealOptions(),
-          Lenses.cycle modify (_ + 1),
-          State.conditional(_.players.forall(_.finished.isDefined))(
-            Lenses.log(AllPlayersFinished)
-          )
+    State.conditional(readyForCycle)(
+      State.sequence(
+        removeUsedOptions,
+        g => Lenses.log(StartCycleEvaluation(g.cycle))(g),
+        ScenarioEffects.beforeCycle,
+        execAllActions,
+        ScenarioEffects.afterCycle,
+        g => Lenses.log(FinishedCycleEvaluation(g.cycle))(g),
+        Lenses.players composeTraversal each composeLens PlayerLenses.instructionOptions modify DealOptions.apply,
+        Lenses.cycle modify (_ + 1),
+        State.conditional(_.players.forall(_.finished.isDefined))(
+          Lenses.log(AllPlayersFinished)
         )
       )
     )(game)
   }
 
-  private def execAllActions(gameRunning: Game): Game =
-    calcNextPlayer(gameRunning) match {
-      case Some(nextPlayer) => execAllActions(applyAction(gameRunning, nextPlayer))
-      case None => gameRunning
+  private def removeUsedOptions: Game => Game =
+    (Lenses.players composeTraversal each).modify { player =>
+      val usedOptions = player.instructionSlots
+      player.copy(
+        instructionOptions = player.instructionOptions
+          .map(option =>
+            option.copy(count = option.count - usedOptions.count(_ == option.instruction)))
+      )
+    }
+
+  private def execAllActions(game: Game): Game =
+    calcNextPlayer(game) match {
+      case Some(nextPlayer) => execAllActions(applyAction(game, nextPlayer))
+      case None => game
     }
 
   private def calcNextPlayer(gameState: Game): Option[Player] = {

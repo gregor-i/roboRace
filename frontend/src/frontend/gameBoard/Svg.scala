@@ -4,7 +4,7 @@ import com.raquo.snabbdom.simple.implicits._
 import com.raquo.snabbdom.simple.{VNode, attrs, tags}
 import com.raquo.snabbdom.simple.styles.visibility
 import com.raquo.snabbdom.simple.events.onClick
-import frontend.common.Images
+import frontend.components.Images
 import frontend.util.Ui
 import gameEntities._
 import com.raquo.snabbdom.simple.attrs.id

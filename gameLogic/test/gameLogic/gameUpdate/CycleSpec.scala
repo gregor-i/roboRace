@@ -9,8 +9,8 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("should execute actions if all players are entered their action") {
     sequenceWithAutoCycle(createGame()(p0))(
       RegisterForGame(1)(p1).accepted,
-      forcedInstructions(p0)(),
-      forcedInstructions(p1)(),
+      SetInstructions(validInstructionSequence)(p0).accepted,
+      SetInstructions(validInstructionSequence)(p1).accepted,
       assert{ game =>
         game.players.map(_.name) shouldBe List(p0, p1)
         game.cycle shouldBe 1
@@ -22,8 +22,8 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
         succeed
       },
       RegisterForGame(2)(p2).rejected(),
-      forcedInstructions(p0)(),
-      forcedInstructions(p1)(),
+      SetInstructions(validInstructionSequence)(p0).accepted,
+      SetInstructions(validInstructionSequence)(p1).accepted,
       assert{ game =>
         game.players.map(_.name) shouldBe List(p0, p1)
         game.cycle shouldBe 2

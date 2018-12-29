@@ -1,8 +1,9 @@
-package frontend.common
+package frontend.components
 
 import gameEntities._
 
 object Images {
+  val logo: String = "/assets/logo.svg"
 
   val iconClose: String = "/assets/ic-close.svg"
   val iconGamerlist: String = "/assets/ic-gamerlist.svg"

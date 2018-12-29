@@ -1,35 +1,39 @@
 package frontend.game
 
 import com.raquo.snabbdom.simple.VNode
+import com.raquo.snabbdom.simple.attrs.id
 import com.raquo.snabbdom.simple.events.{onClick, onDblClick}
 import com.raquo.snabbdom.simple.implicits._
 import com.raquo.snabbdom.simple.props.{className, src}
-import com.raquo.snabbdom.simple.attrs.id
 import com.raquo.snabbdom.simple.tags._
 import frontend.Main
-import frontend.common.{Fab, Images}
+import frontend.components.{Fab, Images}
 import frontend.gameBoard.{Animation, RenderGame}
 import frontend.util.{Dynamic, Ui}
 import gameEntities._
 import org.scalajs.dom
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 
 object GameUi extends Ui {
   def apply(gameState: GameState, rerender: GameState => Unit): VNode = {
-    val replayFab = Fab("fab-left-1", Images.iconReplayAnimation, () => {
-      Dynamic(dom.document.querySelector(".game-board svg")).setCurrentTime(
-        if (gameState.game.cycle == 0)
-          0
-        else
-          Animation.eventSequenceDuration(gameState.game.events.takeWhile {
-            case s: StartCycleEvaluation => s.cycle != gameState.game.cycle - 1
-            case _                       => true
-          })
-      )
-    })
-    val returnToLobbyFab = Fab("fab-right-1", Images.iconClose, () => Main.gotoLobby())
+    val replayFab = Fab("fab-left-1", Images.iconReplayAnimation,
+      onClick := (() =>
+        Dynamic(dom.document.querySelector(".game-board svg")).setCurrentTime(
+          if (gameState.game.cycle == 0)
+            0
+          else
+            Animation.eventSequenceDuration(gameState.game.events.takeWhile {
+              case s: StartCycleEvaluation => s.cycle != gameState.game.cycle - 1
+              case _                       => true
+            })
+        )
+        ),
+      onDblClick := (() =>
+        Dynamic(dom.document.querySelector(".game-board svg")).setCurrentTime(0)
+        )
+    )
+    val returnToLobbyFab = Fab("fab-right-1", Images.iconClose, onClick := (() => Main.gotoLobby()))
 
     gameState.game.you match {
       case None if gameState.game.cycle == 0 =>
@@ -75,7 +79,7 @@ object GameUi extends Ui {
       case Some(you) =>
         div(id := "robo-race",
           className := "game",
-          Fab("fab-right-1", Images.iconClose, () => SendCommand(gameState, DeregisterForGame).foreach(rerender)),
+          Fab("fab-right-1", Images.iconClose, onClick := (() => SendCommand(gameState, DeregisterForGame).foreach(rerender))),
           replayFab,
           RenderGame(gameState.game, None),
           renderInstructionBar(gameState, rerender, you)
