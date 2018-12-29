@@ -26,7 +26,8 @@ object ValidateScenario {
       isDistinct(gameScenario.initialRobots.map(_.position)),
       isDistinct(gameScenario.walls),
       isDistinct(gameScenario.traps.map(_.position)),
-      gameScenario.traps.forall(t => tiles.contains(t.position))
+      gameScenario.traps.forall(t => tiles.contains(t.position)),
+      gameScenario.initialRobots.size <= Constants.maximumNumberOfRobots
     ).forall(identity)
   }
 }

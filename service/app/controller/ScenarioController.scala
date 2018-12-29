@@ -1,31 +1,26 @@
 package controller
 
-import gameLogic.{DefaultScenario, ValidateScenario}
+import gameEntities.ScenarioPost
+import gameLogic.ValidateScenario
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
+import model.ScenarioResponseFactory
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
 import repo.{ScenarioRepository, ScenarioRow}
-import gameEntities.{ScenarioPost, ScenarioResponse}
 
 @Singleton
 class ScenarioController @Inject()(sessionAction: SessionAction,
                                    repo: ScenarioRepository) extends InjectedController with Circe {
 
-  def get() = Action {
-    val list = repo.list().filter(_.scenario.isDefined)
-    if (list.isEmpty) {
-      val defaultRow = ScenarioRow(Utils.newId(), "system", "default", Some(DefaultScenario.default))
-      repo.save(defaultRow)
-      Ok(List(defaultRow).asJson)
-    } else {
-      Ok(list.asJson)
-    }
+  def get() = sessionAction { (session, request) =>
+    val list = repo.list().flatMap(ScenarioResponseFactory.apply(_)(session))
+    Ok(list.asJson)
   }
 
-  def getSingle(id: String) = Action {
-    repo.get(id) match {
+  def getSingle(id: String) = sessionAction { (session, request) =>
+    repo.get(id).flatMap(ScenarioResponseFactory.apply(_)(session)) match {
       case None => NotFound
       case Some(row) => Ok(row.asJson)
     }
@@ -39,7 +34,7 @@ class ScenarioController @Inject()(sessionAction: SessionAction,
         description = request.body.description,
         scenario = Some(request.body.scenario))
       repo.save(row)
-      Created(row.asJson)
+      Created(ScenarioResponseFactory(row)(session).asJson)
     } else {
       BadRequest
     }
@@ -56,7 +51,7 @@ class ScenarioController @Inject()(sessionAction: SessionAction,
           description = request.body.description,
           scenario = Some(request.body.scenario))
         repo.save(row)
-        Ok(row.asJson)
+        Ok(ScenarioResponseFactory(row)(session).asJson)
     }
   }
 

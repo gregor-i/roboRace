@@ -1,13 +1,14 @@
 package frontend.lobby
 
-import com.raquo.snabbdom.simple.VNode
+import com.raquo.snabbdom.Modifier
+import com.raquo.snabbdom.simple.{VNode, VNodeData}
 import com.raquo.snabbdom.simple.events.onClick
 import com.raquo.snabbdom.simple.implicits._
-import com.raquo.snabbdom.simple.props.{className, disabled, href}
+import com.raquo.snabbdom.simple.props.{className, disabled, href, src}
 import com.raquo.snabbdom.simple.attrs.id
 import com.raquo.snabbdom.simple.tags._
 import frontend.Main
-import frontend.common.{BulmaComponents, RenderRobotImages}
+import frontend.common.{BulmaComponents, Images, RenderRobotImages}
 import frontend.util.Ui
 import gameEntities.{GameResponse, ScenarioResponse}
 
@@ -15,8 +16,10 @@ object LobbyUi extends Ui {
   def render(lobbyState: LobbyState): VNode =
     div(id := "robo-race",
       renderHeader(),
-      renderGameList(lobbyState),
-      renderScenarioList(lobbyState)
+      seq(lobbyState.games
+        .filter(_.robots.nonEmpty)
+        .map(gameCard)),
+      seq(lobbyState.scenarios.map(scenarioCard))
     )
 
   def renderHeader() =
@@ -39,59 +42,41 @@ object LobbyUi extends Ui {
       )
     )
 
-  def renderGameList(lobbyState: LobbyState) =
-    div(className := "section",
-      h4(className := "title", "Game List: "),
-      seq(lobbyState.games
-        .filter(_.robots.nonEmpty)
-        .map(gameCard))
-    )
+  def gameCard(gameResponse: GameResponse): VNode = {
+   val youTag: Modifier[VNode, VNodeData] = gameResponse.you match {
+     case Some(you) if you.finished.exists(_.rageQuitted) => BulmaComponents.tag("Quitted", "is-danger")
+     case Some(you) if you.finished.exists(!_.rageQuitted) => BulmaComponents.tag(s"Finished as ${you.finished.get.rank}", "is-primary")
+     case Some(you) if you.instructionSlots.isEmpty => BulmaComponents.tag("Awaits your instructions", "is-warning")
+     case _ => None
+   }
 
-  def gameState(gameResponse: GameResponse): String = {
-    if (gameResponse.cycle == 0)
-      "Game waiting for players"
-    else
-      "Game running"
+    BulmaComponents.card(BulmaComponents.mediaObject(Some(RenderRobotImages(gameResponse.id.hashCode().abs % 6, filled = true)),
+      div(className := "tags are-large",
+        BulmaComponents.tag(s"Size: ${gameResponse.robots.size} / ${gameResponse.scenario.initialRobots.size} players", "is-info"),
+        youTag,
+        cond(gameResponse.robots.size < gameResponse.scenario.initialRobots.size && gameResponse.cycle == 0,
+          BulmaComponents.tag("Open for new player", "is-primary"))
+      )),
+      Seq(
+        a("Enter", onClick := (_ => Main.gotoGame(gameResponse))),
+        a("Quit", onClick := (_ => println("todo")))
+      )
+    )
   }
 
-
-  def renderPlayerSlots(gameResponse: GameResponse) =
-    seq(gameResponse.scenario.initialRobots.map(robot =>
-      RenderRobotImages(
-        robot.index,
-        gameResponse.robots.exists(r => r.index == robot.index),
-        gameResponse.you.exists(_.index == robot.index),
-        None
-      )
-    ))
-
-  def gameCard(gameResponse: GameResponse): VNode =
-    BulmaComponents.card(BulmaComponents.mediaObject(None,
-      div(
-        div(strong("game state: "), gameState(gameResponse)),
-        div(renderPlayerSlots(gameResponse)),
-        button(className := "button is-light is-primary", "Enter", onClick := (_ => Main.gotoGame(gameResponse)))
-      )))
-
   def scenarioCard(scenarioResponse: ScenarioResponse): VNode =
-    BulmaComponents.card(BulmaComponents.mediaObject(None,
-      div(
-        div(strong("Scenario description: "), scenarioResponse.description),
-        div(strong("Scenario size: "), s"for ${scenarioResponse.scenario.initialRobots.size} players"),
-        div(
-          button(className := "button is-primary", "Preview", onClick := (_ => Main.gotoPreviewScenario(scenarioResponse))),
-          button(className := "button", "Edit", onClick := (_ => Main.gotoEditor(scenarioResponse))),
-          button(className := "button", disabled := true, "Delete"),
-        )
+    BulmaComponents.card(BulmaComponents.mediaObject(Some(RenderRobotImages(scenarioResponse.id.hashCode().abs % 6, filled = true)),
+      div(className := "tags are-large",
+        BulmaComponents.tag(s"Description: ${scenarioResponse.description}", "is-info"),
+        BulmaComponents.tag(s"Size: ${scenarioResponse.scenario.initialRobots.size} players", "is-info"),
+        cond(scenarioResponse.scenario.traps.nonEmpty, BulmaComponents.tag(s"Contains traps", "is-warning")),
+        cond(scenarioResponse.ownedByYou, BulmaComponents.tag(s"Created by you", "is-info"))
       )
+    ), Seq(
+      a("Start Game", onClick := (_ => Main.gotoPreviewScenario(scenarioResponse))),
+      a("Editor", onClick := (_ => Main.gotoEditor(scenarioResponse))),
+      a("Delete", onClick := (_ => println("todo"))),
     ))
-
-  def renderScenarioList(state: LobbyState) =
-    div(className := "section",
-      h4(className := "title", "Scenario List: "),
-      seq(state.scenarios.map(scenarioCard))
-    )
-
 
 }
 
