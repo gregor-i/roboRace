@@ -36,11 +36,12 @@ object GameUi extends Ui {
           className := "game",
           returnToLobbyFab,
           replayFab,
-          RenderGame(gameState.game, Some{ (p, _) =>
-              gameState.game.scenario.initialRobots.find(r => r.position == p && !gameState.game.robots.contains(r))
+          RenderGame(gameState.game, Some { (p, _) =>
+            gameState.game.scenario.initialRobots.find(r => r.position == p && !gameState.game.robots.contains(r))
               .foreach(r => SendCommand(gameState, RegisterForGame(r.index))
-                .foreach(rerender))}),
-            div(className := "text-panel", "tap a start position to join the game")
+                .foreach(rerender))
+          }),
+          div(className := "text-panel", "tap a start position to join the game")
         )
 
       case None =>
@@ -119,7 +120,8 @@ object GameUi extends Ui {
 
       div(className := s"action stacked-action-${ofThisTypeAndUnused.size.min(5)}",
         img(src := Images.action(instruction)),
-        div(className := "badge", ofThisTypeAndUnused.size.toString),
+        if (ofThisTypeAndUnused.nonEmpty) div(className := "badge", ofThisTypeAndUnused.size.toString)
+        else None,
         ofThisTypeAndUnused.headOption match {
           case Some(index) => onClick := (_ => SendCommand(state,
             SetInstruction(

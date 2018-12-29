@@ -42,7 +42,9 @@ object LobbyUi extends Ui {
   def renderGameList(lobbyState: LobbyState) =
     div(className := "section",
       h4(className := "title", "Game List: "),
-      seq(lobbyState.games.map(gameCard))
+      seq(lobbyState.games
+        .filter(_.robots.nonEmpty)
+        .map(gameCard))
     )
 
   def gameState(gameResponse: GameResponse): String = {
