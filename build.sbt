@@ -12,7 +12,6 @@ lazy val service = project.in(file("service"))
   .dependsOn(gameLogic)
   .settings(scalaTest)
   .enablePlugins(PlayScala)
-  .disablePlugins(PlayFilters)
   .settings(
     libraryDependencies += guice,
     libraryDependencies += "com.dripower" %% "play-circe" % "2610.0",
