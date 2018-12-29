@@ -9,5 +9,5 @@ import scala.concurrent.Future
 object SendCommand {
   def apply(gameState: GameState, command: Command): Future[GameState] =
     Service.sendCommand(gameState.game.id, command)
-      .map(g => gameState.copy(game = g))
+      .map(g => Game.newCycleEffects(gameState, gameState.copy(game = g)))
 }

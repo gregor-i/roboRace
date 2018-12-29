@@ -14,6 +14,7 @@ import gameEntities._
 import org.scalajs.dom
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object GameUi extends Ui {
   def apply(gameState: GameState, rerender: GameState => Unit): VNode = {
@@ -84,16 +85,11 @@ object GameUi extends Ui {
 
   def renderInstructionBar(state: GameState, rerender: GameState => Unit, player: Player): VNode = {
     def instructionSlot(index: Int): VNode = {
-      val instruction = player.instructionSlots(index)
-        .map(player.instructionOptions.apply)
+      val instruction = state.slots.get(index)
       val focused = state.focusedSlot == index
 
       val setFocus = onClick := (_ => rerender(state.copy(focusedSlot = index)))
-      val resetSlot = onDblClick := (_ => SendCommand(state,
-        ResetInstruction(
-          cycle = state.game.cycle,
-          slot = index))
-        .foreach(rerender))
+      val resetSlot = onDblClick := (_ => UnsetInstruction(index).apply(state).foreach(rerender))
 
       instruction match {
         case Some(instr) =>
@@ -111,50 +107,31 @@ object GameUi extends Ui {
       }
     }
 
-    def instructionCard(instruction: Instruction): VNode = {
-      val ofThisTypeAndUnused = for {
-        (instr, index) <- player.instructionOptions.zipWithIndex
-        if instr == instruction
-        if !player.instructionSlots.exists(_.contains(index))
-      } yield index
+    def instructionCard(instruction: Instruction): Option[VNode] = {
+      val allowed = player.instructionOptions.find(_.instruction == instruction).fold(0)(_.count)
+      val used = state.slots.values.count(_ == instruction)
+      val free = allowed - used
 
-      div(className := s"action stacked-action-${ofThisTypeAndUnused.size.min(5)}",
-        img(src := Images.action(instruction)),
-        if (ofThisTypeAndUnused.nonEmpty) div(className := "badge", ofThisTypeAndUnused.size.toString)
-        else None,
-        ofThisTypeAndUnused.headOption match {
-          case Some(index) => onClick := (_ => SendCommand(state,
-            SetInstruction(
-              cycle = state.game.cycle,
-              slot = state.focusedSlot,
-              instruction = index))
-            .map(selectNextFreeSlot(state))
-            .foreach(rerender))
-          case None        => None
-        }
-      )
+      if (free > 0) {
+        Some(
+          div(className := s"action stacked-action-${free.min(5)}",
+            img(src := Images.action(instruction)),
+            if (free != 1) div(className := "badge", free.toString)
+            else None,
+            onClick := (_ => PlaceInstruction(instruction, state.focusedSlot).apply(state).foreach(rerender))
+          )
+        )
+      } else {
+        None
+      }
     }
 
     div(className := "footer-group",
       div(className := "slots-panel",
         seq((0 until Constants.instructionsPerCycle).map(instructionSlot))),
       div(className := "cards-panel",
-        seq(player.instructionOptions.distinct.map(instructionCard)))
+        seq(Instruction.instructions.flatMap(instructionCard)))
     )
   }
 
-  def selectNextFreeSlot(oldState: GameState)(gameState: GameState): GameState =
-    if (gameState.game.you.isDefined) {
-      val slot = if (oldState.game.cycle != gameState.game.cycle)
-        0
-      else
-        (for {
-          i <- 0 until Constants.instructionsPerCycle
-          s = (i + gameState.focusedSlot) % Constants.instructionsPerCycle
-          if gameState.game.you.get.instructionSlots(s).isEmpty
-        } yield s).headOption.getOrElse(0)
-      gameState.copy(focusedSlot = slot)
-    } else {
-      gameState
-    }
 }

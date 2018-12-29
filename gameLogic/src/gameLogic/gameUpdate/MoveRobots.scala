@@ -21,7 +21,7 @@ object MoveRobots {
       case MoveTwiceForward =>
         val updatedGame = move(player.robot.direction)
         val updatedPlayer = updatedGame.players.find(_.index == player.index).get
-        if (updatedPlayer.instructionSlots == Instruction.emptySlots) {
+        if (updatedPlayer.instructionSlots.isEmpty) { // player has been resetted
           updatedGame
         } else {
           apply(updatedPlayer, MoveForward, updatedGame)

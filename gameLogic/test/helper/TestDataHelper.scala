@@ -11,6 +11,8 @@ trait TestDataHelper { _: UpdateChainHelper with Matchers =>
   val p1 = "p1"
   val p2 = "p2"
 
+  val validInstructionSequence = Seq(MoveForward, TurnRight, MoveForward, TurnLeft, MoveForward)
+
   def createGame(scenario: Scenario = DefaultScenario.default, index: Int = 0)(player: String): Game = {
     CreateGame(scenario, index)(player) match {
       case CommandRejected(reason) => fail(s"command was rejected with $reason")
@@ -27,10 +29,13 @@ trait TestDataHelper { _: UpdateChainHelper with Matchers =>
   def addTrap(trap: Trap): CE =
     Lenses.scenario.modify(s => s.copy(traps = s.traps :+ trap))
 
-  def forcedInstructions(player: String)(instructions: Instruction*): CE =
+  def forcedInstructions(player: String)(instructions: Instruction*): CE = {
+    val filledInstrs = (instructions ++ Seq.fill(Constants.instructionsPerCycle)(Sleep))
+        .take(Constants.instructionsPerCycle)
     Lenses.player(player).modify(_.copy(
-      instructionOptions = (instructions ++ Seq.fill(Constants.instructionsPerCycle)(Sleep)).take(Constants.instructionsPerCycle),
-      instructionSlots = (0 until Constants.instructionsPerCycle).map(Some.apply)))
+      instructionOptions = filledInstrs.groupBy(identity).map(t => InstructionOption(t._1, t._2.size)).toSeq,
+      instructionSlots = filledInstrs))
+  }
 
   def placeRobot(player: String, robot: Robot): CE =
     Lenses.robot(player).set(robot)

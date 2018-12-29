@@ -15,9 +15,9 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
         game.players.map(_.name) shouldBe List(p0, p1)
         game.cycle shouldBe 1
         for (player <- game.players) {
-          player.instructionSlots shouldBe Instruction.emptySlots
+          player.instructionSlots shouldBe Seq.empty
           player.finished shouldBe None
-          player.instructionOptions.size should be >= Constants.minimalOptionsPerCycle
+          player.instructionOptions.map(_.count).sum should be >= Constants.minimalOptionsPerCycle
         }
         succeed
       },
@@ -28,9 +28,9 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
         game.players.map(_.name) shouldBe List(p0, p1)
         game.cycle shouldBe 2
         for (player <- game.players) {
-          player.instructionSlots shouldBe Instruction.emptySlots
+          player.instructionSlots shouldBe Seq.empty
           player.finished shouldBe None
-          player.instructionOptions.size should be >= Constants.minimalOptionsPerCycle
+          player.instructionOptions.map(_.count).sum should be >= Constants.minimalOptionsPerCycle
         }
         succeed
       }

@@ -5,16 +5,16 @@ import gameEntities._
 import scala.util.Random
 
 object DealOptions {
-  val initial: List[Instruction] = List(
-    repeat(MoveForward, 4),
-    repeat(MoveBackward, 2),
-    repeat(TurnLeft, 3),
-    repeat(TurnRight, 3)
-  ).flatten.sorted
+  val initial: Seq[InstructionOption] = Seq(
+    InstructionOption(MoveForward, 4),
+    InstructionOption(MoveBackward, 2),
+    InstructionOption(TurnLeft, 3),
+    InstructionOption(TurnRight, 3)
+  )
 
-  def apply(): List[Instruction] =
-    weights.flatMap {
-      case InstructionWeights(min, max, instr) => repeat(instr, random.nextInt(max - min) + min)
+  def apply(): Seq[InstructionOption] =
+    weights.map {
+      case InstructionWeights(min, max, instr) => InstructionOption(instr, random.nextInt(max - min) + min)
     }
 
   private def repeat(instruction: Instruction, times: Int) = List.fill(times)(instruction)

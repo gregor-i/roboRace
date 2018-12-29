@@ -18,17 +18,16 @@ case object UTurn extends TurnInstruction
 case object Sleep extends Instruction
 
 object Instruction{
-  implicit val ordering: Ordering[Instruction] = Ordering.Int.on {
-    case MoveForward => 1
-    case MoveTwiceForward => 2
-    case StepRight => 3
-    case StepLeft => 4
-    case MoveBackward => 5
-    case TurnRight => 6
-    case TurnLeft => 7
-    case UTurn => 8
-    case Sleep => 9
-  }
+  val instructions = Seq[Instruction](
+    MoveForward,
+    MoveTwiceForward,
+    StepRight,
+    StepLeft,
+    MoveBackward,
+    TurnRight,
+    TurnLeft,
+    UTurn,
+    Sleep)
 
-  val emptySlots = List.fill(Constants.instructionsPerCycle)(Option.empty[Int])
+  implicit val ordering: Ordering[Instruction] = Ordering.Int.on[Instruction](instructions.indexOf)
 }

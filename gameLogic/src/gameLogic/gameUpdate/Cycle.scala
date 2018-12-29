@@ -7,7 +7,7 @@ import monocle.function.Each.each
 object Cycle extends (Game => Game){
   def apply(game: Game): Game = {
     def readyForCycle(g: Game): Boolean =
-      g.players.forall(p => p.finished.isDefined || p.instructionSlots.flatten.size == Constants.instructionsPerCycle) && !g.players.forall(_.finished.isDefined)
+      g.players.forall(p => p.finished.isDefined || p.instructionSlots.nonEmpty) && !g.players.forall(_.finished.isDefined)
 
     State.sequence(
       State.conditional(readyForCycle)(
@@ -40,10 +40,10 @@ object Cycle extends (Game => Game){
       val dy = position.y - gameState.scenario.targetPosition.y
       val distance = Math.sqrt(dx * dx + dy * dy)
       val angle = Math.atan2(dx, dy)
-      (player.instructionSlots.flatten.size, distance, angle)
+      (player.instructionSlots.size, distance, angle)
     }
 
-    if (gameState.players.forall(_.instructionSlots.flatten.isEmpty)) {
+    if (gameState.players.forall(_.instructionSlots.isEmpty)) {
        None
     } else {
       Some(gameState.players.maxBy(nextPlayerWeight))
@@ -51,8 +51,7 @@ object Cycle extends (Game => Game){
   }
 
   private def applyAction(_game: Game, player: Player): Game = {
-    val slot = player.instructionSlots.indexWhere(_.isDefined)
-    val instruction = player.instructionOptions(player.instructionSlots(slot).get)
+    val instruction = player.instructionSlots.head
     val game = Lenses.log(RobotAction(player.index, instruction))(_game)
     val afterInstruction = instruction match {
       case TurnRight => Events.turn(player, Direction.turnRight(player.robot.direction))(game)
@@ -63,6 +62,6 @@ object Cycle extends (Game => Game){
 
       case Sleep => game
     }
-    Lenses.instructionSlots(player.name).modify(_.updated(slot, None))(afterInstruction)
+    Lenses.instructionSlots(player.name).modify(_.drop(1))(afterInstruction)
   }
 }

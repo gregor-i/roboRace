@@ -35,15 +35,11 @@ object Events {
   def reset(player: Player, initialRobot: Robot): Game => Game =
     State.sequence(
       Lenses.robot(player.name).set(initialRobot),
-      Lenses.instructionSlots(player.name).set(Instruction.emptySlots),
+      Lenses.instructionSlots(player.name).set(Seq.empty),
       Lenses.log(RobotReset(player.index, player.robot, initialRobot))
     )
 
   def stun(player: Player): Game => Game = game => {
-    val index = player.instructionSlots.indexWhere(_.isDefined) + 1
-    if(index >= Constants.instructionsPerCycle)
-      game
-    else
-      Lenses.instructionSlots(player.name).modify(_.updated(index, None))(game)
+    Lenses.instructionSlots(player.name).modify(_.drop(1))(game)
   }
 }
