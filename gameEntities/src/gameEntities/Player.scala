@@ -1,10 +1,24 @@
 package gameEntities
 
-case class Player(index: Int,
-                  name: String,
-                  robot: Robot,
-                  instructionSlots: Seq[Instruction],
-                  instructionOptions: Seq[InstructionOption],
-                  finished: Option[FinishedStatistic])
+sealed trait Player {
+  val index: Int
+  val id: String
+}
 
-case class FinishedStatistic(rank: Int, cycle: Int, rageQuitted: Boolean)
+case class RunningPlayer(index: Int,
+                         id: String,
+                         robot: Robot,
+                         currentTarget: Int,
+                         instructionSlots: Seq[Instruction],
+                         instructionOptions: Seq[InstructionOption]
+                        ) extends Player
+
+case class QuittedPlayer(index: Int,
+                         id: String
+                        ) extends Player
+
+case class FinishedPlayer(index: Int,
+                          id: String,
+                          rank: Int,
+                          cycle: Int
+                         ) extends Player

@@ -32,13 +32,13 @@ trait TestDataHelper { _: UpdateChainHelper with Matchers =>
   def forcedInstructions(player: String)(instructions: Instruction*): CE = {
     val filledInstrs = (instructions ++ Seq.fill(Constants.instructionsPerCycle)(Sleep))
         .take(Constants.instructionsPerCycle)
-    Lenses.player(player).modify(_.copy(
+    Lenses.runningPlayer(player).modify(_.copy(
       instructionOptions = filledInstrs.groupBy(identity).map(t => InstructionOption(t._1, t._2.size)).toSeq,
       instructionSlots = filledInstrs))
   }
 
-  def placeRobot(player: String, robot: Robot): CE =
-    Lenses.robot(player).set(robot)
+  def forceRobot(id: String, robot: Robot): CE =
+    Lenses.robot(id).set(robot)
 
   def clearHistory: CE = Lenses.events.set(Seq.empty)
 }

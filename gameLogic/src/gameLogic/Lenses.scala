@@ -1,6 +1,7 @@
 package gameLogic
 
-import gameEntities.{EventLog, Game, Player, Robot}
+import gameEntities._
+import monocle.Optional
 import monocle.function.Each.each
 import monocle.macros.GenLens
 import monocle.unsafe.UnsafeSelect
@@ -9,17 +10,24 @@ object Lenses {
   val cycle = GenLens[Game](_.cycle)
 
   val players = GenLens[Game](_.players)
+  val eachPlayer = players.composeTraversal(each)
+
+  val runningPlayers = eachPlayer.composeOptional(PlayerLenses.running)
+  val finishedPlayers = eachPlayer.composeOptional(PlayerLenses.running)
 
   val scenario = GenLens[Game](_.scenario)
 
   val events = GenLens[Game](_.events)
 
-  def player(name: String) = players.composeTraversal(each).composePrism(UnsafeSelect.unsafeSelect[Player](_.name == name))
+  def player(id: String) = eachPlayer
+    .composePrism(UnsafeSelect.unsafeSelect(_.id == id))
 
-  def instructionSlots(playerName: String) = player(playerName) composeLens PlayerLenses.instructionSlots
-  def finished(playerName: String) = player(playerName) composeLens PlayerLenses.finished
+  def runningPlayer(id: String) = runningPlayers
+    .composePrism(UnsafeSelect.unsafeSelect(_.id == id))
 
-  def robot(playerName: String) = player(playerName) composeLens PlayerLenses.robot
+  def instructionSlots(playerName: String) = runningPlayer(playerName) composeLens PlayerLenses.instructionSlots
+
+  def robot(playerName: String) = runningPlayer(playerName) composeLens PlayerLenses.robot
 
   def direction(playerName: String) = robot(playerName) composeLens RobotLenses.direction
   def position(playerName: String) = robot(playerName) composeLens RobotLenses.position
@@ -28,13 +36,21 @@ object Lenses {
 }
 
 object PlayerLenses {
-  val robot = GenLens[Player](_.robot)
+  val running = Optional[Player, RunningPlayer] {
+    case r: RunningPlayer => Some(r)
+    case _                => None
+  }(s => _ => s)
 
-  val instructionSlots = GenLens[Player](_.instructionSlots)
+  val finished = Optional[Player, FinishedPlayer] {
+    case r: FinishedPlayer => Some(r)
+    case _                 => None
+  }(s => _ => s)
 
-  val instructionOptions = GenLens[Player](_.instructionOptions)
+  val robot = GenLens[RunningPlayer](_.robot)
 
-  val finished = GenLens[Player](_.finished)
+  val instructionSlots = GenLens[RunningPlayer](_.instructionSlots)
+
+  val instructionOptions = GenLens[RunningPlayer](_.instructionOptions)
 }
 
 object RobotLenses {

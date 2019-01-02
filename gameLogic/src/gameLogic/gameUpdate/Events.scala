@@ -3,7 +3,7 @@ package gameUpdate
 
 import gameEntities._
 
-case class RobotPushed(player: Player, to: Position, push: Option[RobotPushed])
+case class RobotPushed(player: RunningPlayer, to: Position, push: Option[RobotPushed])
 
 object Events {
   private def asEvent(pushed: RobotPushed): RobotMoves = {
@@ -17,7 +17,7 @@ object Events {
 
   def move(event: RobotPushed)(game: Game): Game = {
     def loop(event: RobotPushed, game: Game) : Game = {
-      val pushed = Lenses.position(event.player.name).set(event.to)(game)
+      val pushed = Lenses.position(event.player.id).set(event.to)(game)
       event.push match {
         case Some(rec) => loop(rec, pushed)
         case None => pushed
@@ -26,20 +26,20 @@ object Events {
     TrapEffects.afterMove(event)(loop(event, game).log(asEvent(event)))
   }
 
-  def turn(player: Player, nextDirection: Direction): Game => Game =
+  def turn(player: RunningPlayer, nextDirection: Direction): Game => Game =
     State.sequence(
-      Lenses.direction(player.name).set(nextDirection),
+      Lenses.direction(player.id).set(nextDirection),
       Lenses.log(RobotTurns(player.index, player.robot.position, player.robot.direction, nextDirection))
     )
 
-  def reset(player: Player, initialRobot: Robot): Game => Game =
+  def reset(player: RunningPlayer, initialRobot: Robot): Game => Game =
     State.sequence(
-      Lenses.robot(player.name).set(initialRobot),
-      Lenses.instructionSlots(player.name).set(Seq.empty),
+      Lenses.robot(player.id).set(initialRobot),
+      Lenses.instructionSlots(player.id).set(Seq.empty),
       Lenses.log(RobotReset(player.index, player.robot, initialRobot))
     )
 
-  def stun(player: Player): Game => Game = game => {
-    Lenses.instructionSlots(player.name).modify(_.drop(1))(game)
+  def stun(player: RunningPlayer): Game => Game = game => {
+    Lenses.instructionSlots(player.id).modify(_.drop(1))(game)
   }
 }

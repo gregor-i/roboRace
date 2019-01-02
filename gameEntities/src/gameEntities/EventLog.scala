@@ -17,6 +17,7 @@ case class MovementBlocked(playerIndex: Int, robot: Robot) extends EventLog
 
 case class TrapEffect(playerIndex: Int, trap: Trap) extends EventLog
 
+case class PlayerReachedTarget(playerIndex: Int) extends EventLog
 case class PlayerFinished(playerIndex: Int, robot: Robot) extends EventLog
 case class PlayerQuitted(playerIndex: Int, robot: Robot) extends EventLog
 

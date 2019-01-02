@@ -58,7 +58,7 @@ object GameUi extends Ui {
           div(className := "text-panel", "observer mode")
         )
 
-      case Some(you) if you.finished.exists(_.rageQuitted == true) =>
+      case Some(you : QuittedPlayer)=>
         div(id := "robo-race",
           className := "game",
           returnToLobbyFab,
@@ -67,16 +67,17 @@ object GameUi extends Ui {
           div(className := "text-panel", "game quitted")
         )
 
-      case Some(you) if you.finished.exists(_.rageQuitted == false) =>
+      case Some(you : FinishedPlayer)=>
         div(id := "robo-race",
           className := "game",
           returnToLobbyFab,
           replayFab,
           RenderGame(gameState.game, None),
-          div(className := "text-panel", "target reached as " + you.finished.get.rank)
+          div(className := "text-panel", "target reached as " + you.rank)
         )
 
-      case Some(you) =>
+
+      case Some(you : RunningPlayer) =>
         div(id := "robo-race",
           className := "game",
           Fab("fab-right-1", Images.iconClose, onClick := (() => SendCommand(gameState, DeregisterForGame).foreach(rerender))),
@@ -87,7 +88,7 @@ object GameUi extends Ui {
     }
   }
 
-  def renderInstructionBar(state: GameState, rerender: GameState => Unit, player: Player): VNode = {
+  def renderInstructionBar(state: GameState, rerender: GameState => Unit, player: RunningPlayer): VNode = {
     def instructionSlot(index: Int): VNode = {
       val instruction = state.slots.get(index)
       val focused = state.focusedSlot == index

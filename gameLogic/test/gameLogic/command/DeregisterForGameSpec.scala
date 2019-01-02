@@ -1,6 +1,6 @@
 package gameLogic.command
 
-import gameEntities.{FinishedStatistic, RegisterForGame, DeregisterForGame}
+import gameEntities._
 import helper.GameUpdateHelper
 import org.scalatest.{FunSuite, Matchers}
 
@@ -9,7 +9,7 @@ class DeregisterForGameSpec extends FunSuite with Matchers with GameUpdateHelper
     sequenceWithAutoCycle(createGame()(p0))(
       RegisterForGame(1)(p1).accepted,
       DeregisterForGame(p0).accepted,
-      assert(_.players.map(_.name) shouldBe List(p1))
+      assert(_.players.map(_.id) shouldBe List(p1))
     )
   }
 
@@ -22,12 +22,11 @@ class DeregisterForGameSpec extends FunSuite with Matchers with GameUpdateHelper
       forcedInstructions(p1)(),
       assertCycle(1),
       DeregisterForGame(p1).accepted,
-      assertPlayer(p1)(_.finished shouldBe Some(FinishedStatistic(rank = 2, cycle = 1, rageQuitted = true))),
+      assertQuittedPlayer(p1)(_ => succeed),
       forcedInstructions(p0)(),
       assertCycle(2),
       DeregisterForGame(p0).accepted,
-      assertPlayer(p0)(_.finished shouldBe Some(FinishedStatistic(rank = 1, cycle = 2, rageQuitted = true)))
+      assertQuittedPlayer(p0)(_ => succeed)
     )
   }
-
 }

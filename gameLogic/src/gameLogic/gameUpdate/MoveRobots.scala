@@ -4,7 +4,7 @@ package gameUpdate
 import gameEntities._
 
 object MoveRobots {
-  def apply(player: Player, instruction: MoveInstruction, game: Game): Game = {
+  def apply(player: RunningPlayer, instruction: MoveInstruction, game: Game): Game = {
     def move(direction: Direction): Game =
       pushRobots(player.robot.position, direction, game) match {
         case Some(robotPushed) =>
@@ -20,7 +20,7 @@ object MoveRobots {
       case StepLeft => move(Direction.turnLeft(player.robot.direction))
       case MoveTwiceForward =>
         val updatedGame = move(player.robot.direction)
-        val updatedPlayer = updatedGame.players.find(_.index == player.index).get
+        val updatedPlayer = Lenses.runningPlayer(player.id).getAll(updatedGame).head
         if (updatedPlayer.instructionSlots.isEmpty) { // player has been resetted
           updatedGame
         } else {
@@ -30,13 +30,13 @@ object MoveRobots {
   }
 
 
-  def pushRobots(position: Position, direction: Direction, gameRunning: Game): Option[RobotPushed] =
-    gameRunning.players.find(player => player.robot.position == position && player.finished.isEmpty) match {
-      case Some(player) if movementIsAllowed(gameRunning, position, direction) =>
+  def pushRobots(position: Position, direction: Direction, game: Game): Option[RobotPushed] =
+    Lenses.runningPlayers.getAll(game).find(_.robot.position == position) match {
+      case Some(player) if movementIsAllowed(game, position, direction) =>
         val nextPos = Direction.move(direction, position)
-        val rec = pushRobots(nextPos, direction, gameRunning)
+        val rec = pushRobots(nextPos, direction, game)
         Some(RobotPushed(player, nextPos, rec))
-      case _ => None
+      case _                                                            => None
     }
 
 
@@ -50,7 +50,7 @@ object MoveRobots {
     }
     if (blockedByWall)
       false
-    else if (game.players.exists(player => player.robot.position == Direction.move(direction, position) && player.finished.isEmpty))
+    else if (Lenses.runningPlayers.getAll(game).exists(_.robot.position == Direction.move(direction, position)))
       movementIsAllowed(game, Direction.move(direction, position), direction)
     else
       true

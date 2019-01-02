@@ -1,6 +1,7 @@
 package model
 
 import gameEntities.{Game, GameResponse}
+import gameLogic.{Lenses, PlayerLenses}
 import repo.{GameRow, Session}
 
 
@@ -10,9 +11,9 @@ object GameResponseFactory {
     id = gameId,
     cycle = game.cycle,
     scenario = game.scenario,
-    robots = game.players.map(_.robot),
+    robots = Lenses.runningPlayers.composeLens(PlayerLenses.robot).getAll(game),
     events = game.events,
-    you = game.players.find(_.name == session.playerId)
+    you = game.players.find(_.id == session.playerId)
   )
 
   def apply(gameRow: GameRow)(implicit session: Session): Option[GameResponse] =

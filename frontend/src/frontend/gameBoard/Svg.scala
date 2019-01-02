@@ -35,14 +35,24 @@ object Svg extends Ui {
   def translate(pos: Position) =
     s"translate(${left(pos)} ${top(pos)})"
 
-  def target(scenario: Scenario): VNode =
-    tags.build("image")(
-      attrs.build[String]("href") := Images.target,
-      attrs.build[String]("width") := "1",
-      attrs.build[String]("height") := "1",
-      attrs.build[String]("x") := left(scenario.targetPosition).toString,
-      attrs.build[String]("y") := top(scenario.targetPosition).toString,
-    )
+  def targets(scenario: Scenario, active: Option[Int]): Seq[VNode] =
+    for ((t, index) <- scenario.targets.zipWithIndex)
+      yield tags.build("g")(
+        tags.build("image")(
+          attrs.build[String]("href") := (if(active.fold(true)(_ == index)) Images.target else Images.targetInactive),
+          attrs.build[String]("width") := "1",
+          attrs.build[String]("height") := "1",
+          attrs.build[String]("x") := left(t).toString,
+          attrs.build[String]("y") := top(t).toString,
+        ),
+        tags.build("text")(
+          attrs.build[String]("x") := (left(t) + 0.6).toString,
+          attrs.build[String]("y") := (top(t) + 0.75).toString,
+          attrs.build[String]("style") := "font-size:0.2px;stroke:none;",
+          attrs.build[String]("fill") := (if(active.fold(true)(_ == index)) "#000" else "#999"),
+          (index+1).toString
+        )
+      )
 
   def tiles(scenario: Scenario, click: Option[(Position, Direction) => Unit]): Seq[VNode] =
     for {
@@ -122,7 +132,7 @@ object Svg extends Ui {
             attrs.build[String]("transform") := s"rotate(${directionToRotation(robot.direction)})",
             tags.build("g")(
               id := s"robot-scale-${robot.index}",
-              attrs.build[String]("transform") := s"scale(1)",
+              attrs.build[String]("transform") := s"scale(0)",
               tags.build("g")(
                 attrs.build[String]("transform") := "translate(-0.5 -0.5)",
                 tags.build("image")(

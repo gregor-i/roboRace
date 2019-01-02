@@ -9,14 +9,14 @@ class RegisterForGameSpec extends FunSuite with Matchers with GameUpdateHelper {
   test("add players") {
     sequenceWithAutoCycle(createGame()(p0))(
       RegisterForGame(1)(p1).accepted,
-      assert(_.players.map(_.name) shouldBe List(p0, p1))
+      assert(_.players.map(_.id) shouldBe List(p0, p1))
     )
   }
 
   test("reject players with the same name") {
     sequenceWithAutoCycle(createGame()(p0))(
       RegisterForGame(1)(p0).rejected(PlayerAlreadyRegistered),
-      assert(_.players.map(_.name) shouldBe List(p0))
+      assert(_.players.map(_.id) shouldBe List(p0))
     )
   }
 
@@ -26,7 +26,7 @@ class RegisterForGameSpec extends FunSuite with Matchers with GameUpdateHelper {
       RegisterForGame(1)(p0).rejected(PlayerAlreadyRegistered),
       RegisterForGame(2)(p1).rejected(InvalidIndex),
       assert(_.players.size shouldBe 1),
-      assert(_.players.head.name shouldBe p0)
+      assert(_.players.head.id shouldBe p0)
     )
   }
 }

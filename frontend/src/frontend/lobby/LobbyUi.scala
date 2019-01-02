@@ -13,7 +13,7 @@ import frontend.{LobbyState, Main}
 import frontend.components.BulmaComponents._
 import frontend.components.{Images, RobotImage}
 import frontend.util.Ui
-import gameEntities.{GameResponse, ScenarioResponse}
+import gameEntities._
 
 object LobbyUi extends Ui {
   def render(lobbyState: LobbyState): VNode =
@@ -43,10 +43,11 @@ object LobbyUi extends Ui {
 
   def gameCard(gameResponse: GameResponse): VNode = {
     val youTag: Modifier[VNode, VNodeData] = gameResponse.you match {
-      case Some(you) if you.finished.exists(_.rageQuitted)  => tag("Quitted", "is-danger")
-      case Some(you) if you.finished.exists(!_.rageQuitted) => tag(s"Finished as ${you.finished.get.rank}", "is-primary")
-      case Some(you) if you.instructionSlots.isEmpty        => tag("Awaits your instructions", "is-warning")
-      case _                                                => None
+      case Some(you: QuittedPlayer)                                 => tag("Quitted", "is-danger")
+      case Some(you: FinishedPlayer)                                => tag(s"Finished as ${you.rank}", "is-primary")
+      case Some(you: RunningPlayer) if you.instructionSlots.isEmpty => tag("Awaits your instructions", "is-warning")
+      case Some(you: RunningPlayer)                                 => tag("Awaiting other players instructions")
+      case _                                                        => None
     }
 
     card(

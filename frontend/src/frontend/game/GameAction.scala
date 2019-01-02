@@ -1,7 +1,7 @@
 package frontend.game
 
 import frontend.GameState
-import gameEntities.{Constants, Instruction, SetInstructions}
+import gameEntities.{Constants, Instruction, RunningPlayer, SetInstructions}
 
 import scala.concurrent.Future
 
@@ -30,9 +30,11 @@ case class UnsetInstruction(slot: Int) extends GameAction {
   def apply(state: GameState): Future[GameState] = {
     val newSlots = state.slots - slot
     val newState = state.copy(slots = newSlots)
-    if (state.game.you.exists(_.instructionSlots.nonEmpty))
-      SendCommand(newState, gameEntities.ResetInstruction)
-    else
-      Future.successful(newState)
+    state.game.you match {
+      case Some(you: RunningPlayer) if you.instructionSlots.nonEmpty =>
+        SendCommand(newState, gameEntities.ResetInstruction)
+      case _                                                         =>
+        Future.successful(newState)
+    }
   }
 }

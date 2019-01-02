@@ -6,7 +6,7 @@ import com.raquo.snabbdom.simple.implicits._
 import com.raquo.snabbdom.simple.props.className
 import com.raquo.snabbdom.simple.tags.div
 import frontend.util.{Dynamic, Hooks, Ui}
-import gameEntities.{Direction, GameResponse, Position}
+import gameEntities.{Direction, GameResponse, Position, RunningPlayer}
 import org.scalajs.dom
 
 object RenderGame extends Ui {
@@ -40,10 +40,10 @@ object RenderGame extends Ui {
           seq(Svg.tiles(game.scenario, click))
         ),
         tags.build("g")(seq(Svg.walls(game.scenario))),
-        tags.build("g")(Svg.target(game.scenario)),
+        tags.build("g")(seq(Svg.targets(game.scenario, game.you.collect{case p:RunningPlayer => p.currentTarget}))),
         tags.build("g")(seq(Svg.traps(game.scenario))),
         tags.build("g")(seq(Svg.startPoints(game.scenario))),
-        tags.build("g")(seq(Svg.robots(game.robots))),
+        tags.build("g")(seq(Svg.robots(game.scenario.initialRobots))),
         tags.build("g")(seq(Animation.animations(game))),
         NameSpace("http://www.w3.org/2000/svg"),
       )

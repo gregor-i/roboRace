@@ -12,6 +12,7 @@ object Images {
   val tile: String = "/assets/tile.svg"
 
   val target: String = "/assets/target.svg"
+  val targetInactive: String = "/assets/target-inactive.svg"
 
   def wall(wallDirection: WallDirection): String = wallDirection match {
     case Down => "/assets/wall-down.svg"

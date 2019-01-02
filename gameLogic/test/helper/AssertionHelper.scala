@@ -1,6 +1,6 @@
 package helper
 
-import gameEntities.{EventLog, Game, Player}
+import gameEntities._
 import org.scalatest.{Assertion, Matchers}
 
 trait AssertionHelper {
@@ -15,7 +15,16 @@ trait AssertionHelper {
   def assertCycle(n: Int): CE = assert(_.cycle shouldBe n)
 
   def assertPlayer(name: String)(f: Player => Assertion): CE =
-    assert(game => f(game.players.find(_.name == name).get))
+    assert(game => f(game.players.find(_.id == name).get))
+
+  def assertRunningPlayer(id: String)(f: RunningPlayer => Assertion): CE =
+    assert(game => f(game.players.find(_.id == id).get.asInstanceOf[RunningPlayer]))
+
+  def assertFinishedPlayer(id: String)(f: FinishedPlayer => Assertion): CE =
+    assert(game => f(game.players.find(_.id == id).get.asInstanceOf[FinishedPlayer]))
+
+  def assertQuittedPlayer(id: String)(f: QuittedPlayer => Assertion): CE =
+    assert(game => f(game.players.find(_.id == id).get.asInstanceOf[QuittedPlayer]))
 
   def assertLog(f: Seq[EventLog] => Assertion): CE =
     assert(game => f(game.events))

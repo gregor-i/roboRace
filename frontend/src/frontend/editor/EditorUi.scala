@@ -73,7 +73,12 @@ object EditorUi {
                 scenario.traps :+ StunTrap(position)
             ))
           case SetTarget           =>
-            state.copy(scenario = scenario.copy(targetPosition = position))
+            state.copy(scenario = scenario.copy(targets =
+              if (scenario.targets.contains(position))
+                scenario.targets.filter(_ != position)
+              else
+                scenario.targets :+ position
+            ))
           case ToggleInitialRobot  =>
             state.copy(scenario = scenario.copy(initialRobots =
               (if (scenario.initialRobots.exists(_.position == position))

@@ -19,7 +19,7 @@ object RenderScenario extends Ui {
           seq(Svg.tiles(scenario, click))
         ),
         tags.build("g")(seq(Svg.walls(scenario))),
-        tags.build("g")(Svg.target(scenario)),
+        tags.build("g")(seq(Svg.targets(scenario, None))),
         tags.build("g")(seq(Svg.traps(scenario))),
         tags.build("g")(seq(Svg.startPoints(scenario))),
         NameSpace("http://www.w3.org/2000/svg"),

@@ -12,12 +12,13 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
       SetInstructions(validInstructionSequence)(p0).accepted,
       SetInstructions(validInstructionSequence)(p1).accepted,
       assert{ game =>
-        game.players.map(_.name) shouldBe List(p0, p1)
+        game.players.map(_.id) shouldBe List(p0, p1)
         game.cycle shouldBe 1
         for (player <- game.players) {
-          player.instructionSlots shouldBe Seq.empty
-          player.finished shouldBe None
-          player.instructionOptions.map(_.count).sum should be >= Constants.minimalOptionsPerCycle
+          player shouldBe a[RunningPlayer]
+          val rp = player.asInstanceOf[RunningPlayer]
+          rp.instructionSlots shouldBe Seq.empty
+          rp.instructionOptions.map(_.count).sum should be >= Constants.minimalOptionsPerCycle
         }
         succeed
       },
@@ -25,12 +26,13 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
       SetInstructions(validInstructionSequence)(p0).accepted,
       SetInstructions(validInstructionSequence)(p1).accepted,
       assert{ game =>
-        game.players.map(_.name) shouldBe List(p0, p1)
+        game.players.map(_.id) shouldBe List(p0, p1)
         game.cycle shouldBe 2
         for (player <- game.players) {
-          player.instructionSlots shouldBe Seq.empty
-          player.finished shouldBe None
-          player.instructionOptions.map(_.count).sum should be >= Constants.minimalOptionsPerCycle
+          player shouldBe a[RunningPlayer]
+          val rp = player.asInstanceOf[RunningPlayer]
+          rp.instructionSlots shouldBe Seq.empty
+          rp.instructionOptions.map(_.count).sum should be >= Constants.minimalOptionsPerCycle
         }
         succeed
       }
@@ -39,14 +41,14 @@ class CycleSpec extends FunSuite with Matchers with GameUpdateHelper {
 
   test("should create logs for all actions in the right order") {
     val scenario = Scenario(10, 10,
-      Position(0, 9),
+      Seq(Position(0, 9)),
       List(Robot(0, Position(0, 0), Down)),
       List.empty, List.empty)
 
     val initialGame = sequenceWithAutoCycle(createGame(scenario)(p0))(
       clearHistory,
       forcedInstructions(p0)(MoveForward, MoveForward, MoveForward, MoveForward, MoveForward),
-      assertPlayer(p0)(_.robot shouldBe Robot(0, Position(0, 5), Down)),
+      assertRunningPlayer(p0)(_.robot shouldBe Robot(0, Position(0, 5), Down)),
       assertLog(_ shouldBe Seq(
         StartCycleEvaluation(0),
         RobotAction(0, MoveForward),

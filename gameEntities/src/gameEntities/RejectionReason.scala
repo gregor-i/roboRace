@@ -7,6 +7,7 @@ case object RobotAlreadyTaken extends RejectionReason
 case object PlayerNotRegistered extends RejectionReason
 case object NoPlayersRegistered extends RejectionReason
 case object PlayerAlreadyFinished extends RejectionReason
+case object PlayerAlreadyQuitted extends RejectionReason
 case object WrongCycle extends RejectionReason
 case object PlayerNotFound extends RejectionReason
 case object WrongState extends RejectionReason

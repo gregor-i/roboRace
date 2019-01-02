@@ -9,7 +9,7 @@ object DefaultScenario {
   val default = Scenario(
     width = 7,
     height = 9,
-    targetPosition = Position(3, 1),
+    targets = Seq(Position(3, 1)),
     initialRobots = Seq(
       robot(0, 1, 8, Up),
       robot(1, 5, 8, Up),

@@ -1,13 +1,12 @@
 package gameLogic
 package gameUpdate
 
-import gameEntities.{AllPlayersFinished, Constants, FinishedCycleEvaluation, Game, MoveInstruction, Player, RobotAction, Sleep, StartCycleEvaluation, TurnLeft, TurnRight, UTurn}
-import monocle.function.Each.each
+import gameEntities._
 
 object Cycle extends (Game => Game) {
   def apply(game: Game): Game = {
     def readyForCycle(g: Game): Boolean =
-      g.players.forall(p => p.finished.isDefined || p.instructionSlots.nonEmpty) && !g.players.forall(_.finished.isDefined)
+      Lenses.runningPlayers.getAll(g).forall(_.instructionSlots.nonEmpty)
 
     State.conditional(readyForCycle)(
       State.sequence(
@@ -17,9 +16,9 @@ object Cycle extends (Game => Game) {
         execAllActions,
         ScenarioEffects.afterCycle,
         g => Lenses.log(FinishedCycleEvaluation(g.cycle))(g),
-        Lenses.players composeTraversal each composeLens PlayerLenses.instructionOptions modify DealOptions.apply,
+        Lenses.runningPlayers composeLens PlayerLenses.instructionOptions modify DealOptions.apply,
         Lenses.cycle modify (_ + 1),
-        State.conditional(_.players.forall(_.finished.isDefined))(
+        State.conditional(Lenses.runningPlayers.isEmpty)(
           Lenses.log(AllPlayersFinished)
         )
       )
@@ -27,7 +26,7 @@ object Cycle extends (Game => Game) {
   }
 
   private def removeUsedOptions: Game => Game =
-    (Lenses.players composeTraversal each).modify { player =>
+    Lenses.runningPlayers.modify { player =>
       val usedOptions = player.instructionSlots
       player.copy(
         instructionOptions = player.instructionOptions
@@ -42,24 +41,26 @@ object Cycle extends (Game => Game) {
       case None => game
     }
 
-  private def calcNextPlayer(gameState: Game): Option[Player] = {
-    def nextPlayerWeight(player: Player): (Int, Double, Double) = {
+  private def calcNextPlayer(gameState: Game): Option[RunningPlayer] = {
+    def nextPlayerWeight(player: RunningPlayer): (Int, Double, Double) = {
       val position = player.robot.position
-      val dx = position.x - gameState.scenario.targetPosition.x
-      val dy = position.y - gameState.scenario.targetPosition.y
+      val target = gameState.scenario.targets(player.currentTarget)
+
+      val dx = position.x - target.x
+      val dy = position.y - target.y
       val distance = Math.sqrt(dx * dx + dy * dy)
       val angle = Math.atan2(dx, dy)
       (player.instructionSlots.size, distance, angle)
     }
 
-    if (gameState.players.forall(_.instructionSlots.isEmpty)) {
+    if (Lenses.runningPlayers.getAll(gameState).forall(_.instructionSlots.isEmpty)) {
        None
     } else {
-      Some(gameState.players.maxBy(nextPlayerWeight))
+      Some(Lenses.runningPlayers.getAll(gameState).maxBy(nextPlayerWeight))
     }
   }
 
-  private def applyAction(_game: Game, player: Player): Game = {
+  private def applyAction(_game: Game, player: RunningPlayer): Game = {
     val instruction = player.instructionSlots.head
     val game = Lenses.log(RobotAction(player.index, instruction))(_game)
     val afterInstruction = instruction match {
@@ -71,6 +72,6 @@ object Cycle extends (Game => Game) {
 
       case Sleep => game
     }
-    Lenses.instructionSlots(player.name).modify(_.drop(1))(afterInstruction)
+    Lenses.instructionSlots(player.id).modify(_.drop(1))(afterInstruction)
   }
 }

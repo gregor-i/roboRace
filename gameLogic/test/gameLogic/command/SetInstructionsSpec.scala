@@ -19,7 +19,7 @@ class SetInstructionsSpec extends FunSuite with Matchers with GameUpdateHelper {
 
   test("reject command if the given player already finished the game") {
     sequenceWithAutoCycle(initialGame)(
-      Lenses.finished(p0).set(Some(FinishedStatistic(0, 0, false))),
+      Lenses.player(p0).modify(p => FinishedPlayer(p.index, p.id, 0, 0)),
       SetInstructions(validInstructionSequence)(p0).rejected(PlayerAlreadyFinished)
     )
   }
