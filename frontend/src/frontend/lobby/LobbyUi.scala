@@ -20,9 +20,7 @@ object LobbyUi extends Ui {
     div(id := "robo-race",
       renderHeader(),
       singleColumn(
-        seq(lobbyState.games
-          .filter(_.robots.nonEmpty)
-          .map(gameCard)),
+        seq(lobbyState.games.map(gameCard)),
         seq(lobbyState.scenarios.map(scenarioCard))
       )
     )

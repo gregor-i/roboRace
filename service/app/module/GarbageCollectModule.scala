@@ -59,8 +59,9 @@ class GarbageCollectorThread @Inject()(gameRepository: GameRepository,
         .map(scenarioRepository.delete)
         .size
 
-      Logger.info("GarbageCollectorThread ticked." +
-        s"Deleted $deletedSessions sessions, $deletedGames games, $deletedScenarios scenarios")
+      if(deletedGames + deletedScenarios + deletedSessions != 0)
+        Logger.info("GarbageCollectorThread ticked." +
+          s"Deleted $deletedSessions sessions, $deletedGames games, $deletedScenarios scenarios")
     })
     .run()
 }
