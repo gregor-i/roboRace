@@ -1,7 +1,7 @@
 package frontend.lobby
 
 import com.raquo.snabbdom.simple.VNode
-import frontend.Service
+import frontend.{LobbyState, Service}
 import frontend.util.SnabbdomApp
 import gameEntities.GameResponse
 import io.circe.generic.auto._

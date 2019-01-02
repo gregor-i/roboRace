@@ -1,5 +1,6 @@
 package frontend.preview
 
+import frontend.PreviewState
 import frontend.util.SnabbdomApp
 import gameEntities.ScenarioResponse
 import org.scalajs.dom.raw.Element

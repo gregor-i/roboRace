@@ -9,7 +9,7 @@ import com.raquo.snabbdom.simple.tags._
 import frontend.components.{Fab, Images}
 import frontend.gameBoard.RenderScenario
 import frontend.util.Ui
-import frontend.{Main, Service}
+import frontend.{Main, PreviewState, Service}
 import gameEntities.{Direction, Position, Scenario}
 
 import scala.concurrent.ExecutionContext.Implicits.global

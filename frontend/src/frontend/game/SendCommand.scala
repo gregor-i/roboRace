@@ -1,6 +1,6 @@
 package frontend.game
 
-import frontend.Service
+import frontend.{GameState, Service}
 import gameEntities.Command
 
 import scala.concurrent.ExecutionContext.Implicits.global

@@ -6,7 +6,7 @@ import com.raquo.snabbdom.simple.events.{onClick, onDblClick}
 import com.raquo.snabbdom.simple.implicits._
 import com.raquo.snabbdom.simple.props.{className, src}
 import com.raquo.snabbdom.simple.tags._
-import frontend.Main
+import frontend.{GameState, Main}
 import frontend.components.{Fab, Images}
 import frontend.gameBoard.{Animation, RenderGame}
 import frontend.util.{Dynamic, Ui}

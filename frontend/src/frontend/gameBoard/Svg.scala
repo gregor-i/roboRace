@@ -77,10 +77,10 @@ object Svg extends Ui {
     scenario.walls.map(wall =>
       tags.build("image")(
         attrs.build[String]("href") := Images.wall(wall.direction),
-        attrs.build[String]("width") := "1",
-        attrs.build[String]("height") := "1",
-        attrs.build[String]("x") := left(wall.position).toString,
-        attrs.build[String]("y") := top(wall.position).toString,
+        attrs.build[String]("width") := "2",
+        attrs.build[String]("height") := "2",
+        attrs.build[String]("x") := (left(wall.position)-0.5).toString,
+        attrs.build[String]("y") := (top(wall.position)-0.5).toString,
       )
     )
 

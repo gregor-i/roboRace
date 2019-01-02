@@ -7,7 +7,7 @@ import com.raquo.snabbdom.simple.props.{className, src}
 import com.raquo.snabbdom.simple.attrs.{`type`, id, placeholder, value}
 import com.raquo.snabbdom.simple.styles.height
 import com.raquo.snabbdom.simple.tags.{button, div, img, input}
-import frontend.{Main, Service}
+import frontend.{EditorState, Main, Service}
 import frontend.components.{Fab, Images}
 import frontend.gameBoard.RenderScenario
 import frontend.util.Dynamic

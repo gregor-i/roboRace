@@ -1,5 +1,6 @@
 package frontend.game
 
+import frontend.GameState
 import gameEntities.{Constants, Instruction, SetInstructions}
 
 import scala.concurrent.Future

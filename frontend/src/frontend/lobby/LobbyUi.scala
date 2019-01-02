@@ -9,7 +9,7 @@ import com.raquo.snabbdom.simple.props.{className, href, src}
 import com.raquo.snabbdom.simple.styles.cursor
 import com.raquo.snabbdom.simple.tags.{a, _}
 import com.raquo.snabbdom.simple.{VNode, VNodeData}
-import frontend.Main
+import frontend.{LobbyState, Main}
 import frontend.components.BulmaComponents._
 import frontend.components.{Images, RobotImage}
 import frontend.util.Ui

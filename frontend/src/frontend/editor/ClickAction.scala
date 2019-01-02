@@ -1,11 +1,5 @@
 package frontend.editor
 
-import gameEntities.Scenario
-
-case class EditorState(scenario: Scenario,
-                       clickAction: Option[ClickAction],
-                       description: String)
-
 sealed trait ClickAction
 case object ToggleWall extends ClickAction
 case object TogglePit extends ClickAction

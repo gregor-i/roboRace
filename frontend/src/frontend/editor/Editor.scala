@@ -2,7 +2,7 @@ package frontend.editor
 
 
 import com.raquo.snabbdom.simple.VNode
-import frontend.Service
+import frontend.{EditorState, Service}
 import frontend.util.SnabbdomApp
 import gameEntities._
 import io.circe.generic.auto._
