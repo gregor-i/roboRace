@@ -8,6 +8,16 @@ lazy val gameEntities = project.in(file("gameEntities"))
 lazy val gameLogic = project.in(file("gameLogic"))
   .settings(folderSettings, monocle, scalaTest)
 
+lazy val cli = project.in(file("cli"))
+  .settings(folderSettings)
+  .dependsOn(gameLogic)
+  .settings(
+    libraryDependencies ++= Seq(
+      "io.circe" %%% "circe-core" % "0.11.0",
+      "io.circe" %%% "circe-generic" % "0.11.0",
+      "io.circe" %%% "circe-parser" % "0.11.0")
+  )
+
 lazy val service = project.in(file("service"))
   .dependsOn(gameLogic)
   .settings(scalaTest)
