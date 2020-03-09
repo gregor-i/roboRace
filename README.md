@@ -8,6 +8,15 @@ The current development state is playable at [Heroku](https://roborace.herokuapp
   - None
 
 ### todo list:
-  - multiple targets for a scenario
-  - rework how the svg is integrated into the html (zooming + panning like google maps)
+  - rework how the svg is integrated into the html (zooming + panning like google maps, maybe copy&paste from nutria)
   - display the state of other players in the game board. ie. a green shadow for ready players, red shadow for not ready player
+  - rework the lobby ...
+
+### technical updates:
+  - remove `"com.raquo" %%% "snabbdom"` and replace it with the facade from nutria (maybe extract the facade into its own project)
+  - dependency updates
+  - update the frontend integration task
+  - build an router
+  - use an icon font lib
+  - re-organize the project (ie: what is `gameLogic`?)
+  - do some research about rendering engines ...
