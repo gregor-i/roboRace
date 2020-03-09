@@ -15,10 +15,10 @@ lazy val service = project.in(file("service"))
   .settings(
     libraryDependencies += guice,
     libraryDependencies += "com.dripower" %% "play-circe" % "2610.0",
-    libraryDependencies += "org.postgresql" % "postgresql" % "42.2.5",
+    libraryDependencies += "org.postgresql" % "postgresql" % "42.2.10",
     libraryDependencies += evolutions,
     libraryDependencies += jdbc,
-    libraryDependencies += "org.playframework.anorm" %% "anorm" % "2.6.2",
+    libraryDependencies += "org.playframework.anorm" %% "anorm" % "2.6.5",
     libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
   )
   .enablePlugins(EmbeddedPostgresPlugin)
@@ -34,9 +34,9 @@ lazy val frontend = project.in(file("frontend"))
   .settings(snabbdom)
   .settings(
     libraryDependencies ++= Seq(
-      "io.circe" %%% "circe-core" % "0.11.0",
-      "io.circe" %%% "circe-generic" % "0.11.0",
-      "io.circe" %%% "circe-parser" % "0.11.0")
+      "io.circe" %%% "circe-core" % "0.13.0",
+      "io.circe" %%% "circe-generic" % "0.13.0",
+      "io.circe" %%% "circe-parser" % "0.13.0")
   )
 
 
@@ -67,9 +67,9 @@ def scalaTest = libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" 
 
 def monocle =
   libraryDependencies ++= Seq(
-    "com.github.julien-truffaut" %% "monocle-core" % "1.5.0",
-    "com.github.julien-truffaut" %% "monocle-macro" % "1.5.0",
-    "com.github.julien-truffaut" %% "monocle-unsafe" % "1.5.0"
+    "com.github.julien-truffaut" %% "monocle-core" % "1.6.0",
+    "com.github.julien-truffaut" %% "monocle-macro" % "1.6.0",
+    "com.github.julien-truffaut" %% "monocle-unsafe" % "1.6.0"
   )
 
 def snabbdom = Seq(
