@@ -1,12 +1,17 @@
+import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+import scala.sys.process._
+
 name := "roboRace"
 
-ThisBuild / scalaVersion := "2.12.8"
+scalaVersion in ThisBuild := "2.13.1"
 
-lazy val gameEntities = project.in(file("gameEntities"))
-  .settings(folderSettings)
+lazy val gameEntities = crossProject(JSPlatform, JVMPlatform)
+    .crossType(CrossType.Pure)
+  .in(file("gameEntities"))
 
 lazy val gameLogic = project.in(file("gameLogic"))
-  .settings(folderSettings, monocle, scalaTest)
+  .dependsOn(gameEntities.jvm)
+  .settings( monocle, scalaTest)
 
 lazy val service = project.in(file("service"))
   .dependsOn(gameLogic)
@@ -24,55 +29,55 @@ lazy val service = project.in(file("service"))
   .enablePlugins(EmbeddedPostgresPlugin)
   .settings(javaOptions += s"-DDATABASE_URL=${postgresConnectionString.value}")
 
-lazy val frontend = project.in(file("frontend"))
-  .settings(folderSettings)
+val frontend = project
+  .in(file("frontend"))
+  .dependsOn(gameEntities.js)
   .enablePlugins(ScalaJSPlugin)
+  .settings(scalacOptions += "-P:scalajs:sjsDefinedByDefault")
   .settings(scalaJSUseMainModuleInitializer := true)
-  .enablePlugins(ScalaJSBundlerPlugin)
-  .settings(skip in packageJSDependencies := false)
-  .settings(emitSourceMaps := false)
-  .settings(snabbdom)
-  .settings(
-    libraryDependencies ++= Seq(
-      "io.circe" %%% "circe-core" % "0.13.0",
-      "io.circe" %%% "circe-generic" % "0.13.0",
-      "io.circe" %%% "circe-parser" % "0.13.0")
-  )
+//  .settings(snabbdom)
+  .settings(circe, monocle)
+  .settings(    libraryDependencies +=        "org.scala-js" %%% "scalajs-dom" % "1.0.0")
 
 
 val frontendIntegration = taskKey[Seq[java.io.File]]("build the frontend and copy the results into service")
-frontendIntegration in ThisBuild := {
-  val frontendJs: Seq[Attributed[sbt.File]] = (frontend / Compile / fastOptJS / webpack).value
-  if (frontendJs.size != 1) {
-      throw new IllegalArgumentException("expected only a single js file")
-    } else {
-      val src = frontendJs.head.data
-      val dest = (baseDirectory in service).value / "public" / "robo-race.js"
-      IO.copy(Seq((src, dest)))
-      Seq(dest)
-    }
-}
+//frontendIntegration in ThisBuild := {
+//  val frontendJs: Seq[Attributed[sbt.File]] = (frontend / Compile / fastOptJS / webpack).value
+//  if (frontendJs.size != 1) {
+//      throw new IllegalArgumentException("expected only a single js file")
+//    } else {
+//      val src = frontendJs.head.data
+//      val dest = (baseDirectory in service).value / "public" / "robo-race.js"
+//      IO.copy(Seq((src, dest)))
+//      Seq(dest)
+//    }
+//}
 
 compile in Compile := {
-  frontendIntegration.value
+//  frontendIntegration.value
   (compile in Compile).value
 }
 
-def folderSettings = Seq(
-  scalaSource in Compile := baseDirectory.value / "src",
-  scalaSource in Test := baseDirectory.value / "test"
-)
-
 def scalaTest = libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
 
-def monocle =
+def circe = {
+  val version = "0.13.0"
   libraryDependencies ++= Seq(
-    "com.github.julien-truffaut" %% "monocle-core" % "1.6.0",
-    "com.github.julien-truffaut" %% "monocle-macro" % "1.6.0",
-    "com.github.julien-truffaut" %% "monocle-unsafe" % "1.6.0"
+    "io.circe" %%% "circe-core"           % version,
+    "io.circe" %%% "circe-generic"        % version,
+    "io.circe" %%% "circe-generic-extras" % version,
+    "io.circe" %%% "circe-parser"         % version,
+    "io.circe" %%% "circe-refined"        % version
   )
+}
 
-def snabbdom = Seq(
-  libraryDependencies += "com.raquo" %%% "snabbdom" % "0.1.1",
-  npmDependencies in Compile += "snabbdom" -> "0.7.0"
-)
+def monocle = {
+  val version = "2.0.4"
+  libraryDependencies ++= Seq(
+    "com.github.julien-truffaut" %%% "monocle-core"    % version,
+    "com.github.julien-truffaut" %%% "monocle-macro"   % version,
+    "com.github.julien-truffaut" %%% "monocle-unsafe"  % version,
+    "com.github.julien-truffaut" %%% "monocle-refined" % version
+  )
+}
+
