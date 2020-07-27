@@ -4,6 +4,7 @@ import scala.sys.process._
 name := "roboRace"
 
 scalaVersion in ThisBuild := "2.13.1"
+scalafmtOnCompile in ThisBuild := true
 
 lazy val gameEntities = crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)

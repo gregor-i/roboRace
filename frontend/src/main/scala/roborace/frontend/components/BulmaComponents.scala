@@ -1,23 +1,15 @@
-//package roborace.frontend.components
-//
-//import com.raquo.snabbdom.Modifier
-//import com.raquo.snabbdom.simple.events.onClick
-//import com.raquo.snabbdom.simple.implicits._
-//import com.raquo.snabbdom.simple.props.className
-//import com.raquo.snabbdom.simple.styles.{height, margin, width}
-//import com.raquo.snabbdom.simple.tags._
-//import com.raquo.snabbdom.simple.{VNode, VNodeData}
-//import roborace.frontend.util.Ui
-//import org.scalajs.dom.MouseEvent
-//
-//
-//object BulmaComponents extends Ui{
-//  def singleColumn(mods: Modifier[VNode, VNodeData]*): VNode =
-//    div(className := "columns is-centered is-mobile",
-//      div(className := "column single-column")
-//        .apply(mods)
-//    )
-//
+package roborace.frontend.components
+
+import org.scalajs.dom.MouseEvent
+import snabbdom.Node
+
+object BulmaComponents {
+  def singleColumn(mods: Node): Node =
+    Node("div.columns.is-centered.is-mobile")
+      .child(
+        Node("div.column.single-column").child(mods)
+      )
+
 //  def card(content: VNode, actions: (String, Option[MouseEvent => Unit])*): VNode =
 //    div(className := "card",
 //      margin := "8px",
@@ -45,5 +37,5 @@
 //
 //  def tag(text: String, classes : String = ""): VNode =
 //    span(className := s"tag $classes", text)
-//
-//}
+
+}

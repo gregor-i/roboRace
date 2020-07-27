@@ -1,44 +1,38 @@
-//package roborace.frontend.lobby
-//
-//import com.raquo.snabbdom
-//import com.raquo.snabbdom.Modifier
-//import com.raquo.snabbdom.simple.attrs.id
-//import com.raquo.snabbdom.simple.events.onClick
-//import com.raquo.snabbdom.simple.implicits._
-//import com.raquo.snabbdom.simple.props.{className, href, src}
-//import com.raquo.snabbdom.simple.styles.cursor
-//import com.raquo.snabbdom.simple.tags.{a, _}
-//import com.raquo.snabbdom.simple.{VNode, VNodeData}
-//import roborace.frontend.{LobbyState, Main}
-//import roborace.frontend.components.BulmaComponents._
-//import roborace.frontend.components.{Images, RobotImage}
-//import roborace.frontend.util.Ui
-//import gameEntities._
-//
-//object LobbyUi extends Ui {
-//  def render(lobbyState: LobbyState): VNode =
-//    div(id := "robo-race",
-//      renderHeader(),
+package roborace.frontend.lobby
+
+import gameEntities._
+import roborace.frontend.components.Images
+import roborace.frontend.{LobbyFrontendState, Main}
+import snabbdom.{Node, VNode}
+
+object LobbyUi {
+  def render(lobbyState: LobbyFrontendState): Node =
+    Node("div.robo-race")
+      .child(renderHeader())
+//        .child(
 //      singleColumn(
 //        seq(lobbyState.games.map(gameCard)),
 //        seq(lobbyState.scenarios.map(scenarioCard))
 //      )
-//    )
-//
-//  def renderHeader(): VNode =
-//    snabbdom.simple.tags.build("nav")(className := "navbar is-light",
-//      div(className := "navbar-brand",
-//        a(className := "navbar-item",
-//          href := "/",
-//          img(src := Images.logo)
-//        ),
-//        a(className := "navbar-item",
-//          href := "#",
-//          "Tutorial"
-//        )
-//      )
-//    )
-//
+
+  def renderHeader(): Node =
+    Node("nav.navbar.is-light")
+      .child(
+        Node("div")
+          .classes("navbar-brand")
+          .child(
+            Node("a")
+              .classes("navbar-item")
+              .attr("href", "/")
+              .child(Node("img").attr("src", Images.logo))
+          )
+      )
+      .child(
+        Node("a.navbar-item")
+          .attr("href", "#")
+          .text("Tutorial")
+      )
+
 //  def gameCard(gameResponse: GameResponse): VNode = {
 //    val youTag: Modifier[VNode, VNodeData] = gameResponse.you match {
 //      case Some(you: QuittedPlayer)                                 => tag("Quitted", "is-danger")
@@ -80,6 +74,5 @@
 //      "Editor" -> Some(_ => Main.gotoEditor(scenarioResponse)),
 //      "Delete" -> None
 //    )
-//
-//}
-//
+
+}

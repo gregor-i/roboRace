@@ -12,7 +12,7 @@ class RoboRaceApp(container: Element) extends SnabbdomApp {
 
   var node: Element | VNode = container
 
-  def renderState(state: State): Unit = {
+  def renderState(state: FrontendState): Unit = {
 //    Router.stateToUrl(state) match {
 //      case Some((currentPath, currentSearch)) =>
 //        val stringSearch = Router.searchToUrl(currentSearch)
@@ -37,10 +37,12 @@ class RoboRaceApp(container: Element) extends SnabbdomApp {
 //      case _ => ()
 //    }
 
-    node = patch(node, Ui(state, renderState).toVNode)
+    println(1)
+    println(state)
+    node = patch(node, Pages.ui(state, renderState).toVNode)
   }
 
 //  dom.window.onpopstate = _ => renderState(Router.stateFromUrl(dom.window.location))
 
-  renderState(Router.stateFromUrl(dom.window.location))
+  renderState(Router.stateFromUrl(dom.window.location, None))
 }

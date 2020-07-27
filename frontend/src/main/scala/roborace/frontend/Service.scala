@@ -30,13 +30,15 @@ object Service {
 
   def getAllGames(): Future[Seq[GameResponse]] =
     withLoadingOverlay {
-      Ajax.get("/api/games", withCredentials = true)
+      Ajax
+        .get("/api/games", withCredentials = true)
         .map(checkAndParse[Seq[GameResponse]](200))
     }
 
   def getAllScenarios(): Future[Seq[ScenarioResponse]] =
     withLoadingOverlay {
-      Ajax.get("/api/scenarios", withCredentials = true)
+      Ajax
+        .get("/api/scenarios", withCredentials = true)
         .map(checkAndParse[Seq[ScenarioResponse]](200))
     }
 
@@ -46,29 +48,27 @@ object Service {
 
   def createGame(scenario: Scenario, index: Int): Future[GameResponse] =
     withLoadingOverlay {
-      Ajax.post(s"/api/games?index=$index",
-        withCredentials = true,
-        data = scenario,
-        headers = Map("Content-Type" -> "application/json; charset=UTF-8"))
+      Ajax
+        .post(s"/api/games?index=$index", withCredentials = true, data = scenario, headers = Map("Content-Type" -> "application/json; charset=UTF-8"))
         .map(checkAndParse[GameResponse](200))
     }
 
   def sendCommand(gameId: String, command: Command): Future[GameResponse] =
     withLoadingOverlay {
-      Ajax.post(s"/api/games/$gameId/commands",
-        withCredentials = true,
-        data = command,
-        headers = Map("Content-Type" -> "application/json; charset=UTF-8"))
+      Ajax
+        .post(
+          s"/api/games/$gameId/commands",
+          withCredentials = true,
+          data = command,
+          headers = Map("Content-Type" -> "application/json; charset=UTF-8")
+        )
         .map(checkAndParse[GameResponse](200))
     }
 
   def saveScenario(scenario: ScenarioPost): Future[ScenarioResponse] =
     withLoadingOverlay {
-      Ajax.post("/api/scenarios",
-        withCredentials = true,
-        data = scenario,
-        headers = Map("Content-Type" -> "application/json; charset=UTF-8"))
+      Ajax
+        .post("/api/scenarios", withCredentials = true, data = scenario, headers = Map("Content-Type" -> "application/json; charset=UTF-8"))
         .map(checkAndParse[ScenarioResponse](201))
     }
 }
-

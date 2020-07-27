@@ -1,7 +1,7 @@
 package roborace.frontend.game
 
 //import com.raquo.snabbdom.simple.VNode
-import roborace.frontend.{GameState, Service}
+import roborace.frontend.{GameFrontendState, Service}
 import roborace.frontend.util.SnabbdomApp
 import gameEntities._
 import io.circe.generic.auto._
@@ -35,11 +35,9 @@ import scala.scalajs.js.|
 //}
 
 object Game {
-  def newCycleEffects(oldState: GameState, newState: GameState): GameState =
+  def newCycleEffects(oldState: GameFrontendState, newState: GameFrontendState): GameFrontendState =
     if (oldState.game.cycle != newState.game.cycle) {
-      oldState.copy(focusedSlot = 0,
-        slots = Map.empty,
-        game = newState.game)
+      oldState.copy(focusedSlot = 0, slots = Map.empty, game = newState.game)
     } else {
       oldState.copy(game = newState.game)
     }
