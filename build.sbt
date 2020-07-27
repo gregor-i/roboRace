@@ -34,29 +34,22 @@ val frontend = project
   .in(file("frontend"))
   .dependsOn(gameEntities.js)
   .enablePlugins(ScalaJSPlugin)
-  .settings(scalacOptions += "-P:scalajs:sjsDefinedByDefault")
-  .settings(scalaJSUseMainModuleInitializer := true)
-  .settings(snabbdom)
-  .settings(monocle)
+  .settings(
+    scalacOptions += "-P:scalajs:sjsDefinedByDefault",
+    scalaJSUseMainModuleInitializer := true,
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) }
+  )
+  .settings(snabbdom, monocle)
   .settings(    libraryDependencies +=        "org.scala-js" %%% "scalajs-dom" % "1.0.0")
 
-
-val frontendIntegration = taskKey[Seq[java.io.File]]("build the frontend and copy the results into service")
-//frontendIntegration in ThisBuild := {
-//  val frontendJs: Seq[Attributed[sbt.File]] = (frontend / Compile / fastOptJS / webpack).value
-//  if (frontendJs.size != 1) {
-//      throw new IllegalArgumentException("expected only a single js file")
-//    } else {
-//      val src = frontendJs.head.data
-//      val dest = (baseDirectory in service).value / "public" / "robo-race.js"
-//      IO.copy(Seq((src, dest)))
-//      Seq(dest)
-//    }
-//}
-
-compile in Compile := {
-//  frontendIntegration.value
-  (compile in Compile).value
+compile in frontend := {
+  val ret           = (frontend / Compile / compile).value
+  val buildFrontend = (frontend / Compile / fastOptJS).value.data
+  val outputFile    = (service / baseDirectory).value / "public" / "robo-race.js"
+  streams.value.log.info("integrating frontend (fastOptJS)")
+  val npmLog = Seq("./node_modules/.bin/browserify", buildFrontend.toString, "-o", outputFile.toString).!!
+  streams.value.log.info(npmLog)
+  ret
 }
 
 def snabbdom = Seq(
