@@ -8,23 +8,24 @@ scalaVersion in ThisBuild := "2.13.1"
 lazy val gameEntities = crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
   .in(file("gameEntities"))
+  .settings(circe)
 
 lazy val gameLogic = project.in(file("gameLogic"))
   .dependsOn(gameEntities.jvm)
-  .settings( monocle, scalaTest)
+  .settings( monocle /*, scalaTest */)
 
 lazy val service = project.in(file("service"))
   .dependsOn(gameLogic)
-  .settings(scalaTest)
+//  .settings(scalaTest)
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies += guice,
-    libraryDependencies += "com.dripower" %% "play-circe" % "2610.0",
+    libraryDependencies += "com.dripower" %% "play-circe" % "2812.0",
     libraryDependencies += "org.postgresql" % "postgresql" % "42.2.10",
     libraryDependencies += evolutions,
     libraryDependencies += jdbc,
     libraryDependencies += "org.playframework.anorm" %% "anorm" % "2.6.5",
-    libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test,
+    libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
   )
   .enablePlugins(EmbeddedPostgresPlugin)
   .settings(javaOptions += s"-DDATABASE_URL=${postgresConnectionString.value}")
@@ -35,8 +36,8 @@ val frontend = project
   .enablePlugins(ScalaJSPlugin)
   .settings(scalacOptions += "-P:scalajs:sjsDefinedByDefault")
   .settings(scalaJSUseMainModuleInitializer := true)
-//  .settings(snabbdom)
-  .settings(circe, monocle)
+  .settings(snabbdom)
+  .settings(monocle)
   .settings(    libraryDependencies +=        "org.scala-js" %%% "scalajs-dom" % "1.0.0")
 
 
@@ -58,7 +59,12 @@ compile in Compile := {
   (compile in Compile).value
 }
 
-def scalaTest = libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % Test
+def snabbdom = Seq(
+  resolvers += Resolver.bintrayRepo("gregor-i", "maven"),
+  libraryDependencies += "com.github.gregor-i" %%% "scalajs-snabbdom" % "1.0"
+)
+
+def scalaTest = libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.5" % Test
 
 def circe = {
   val version = "0.13.0"

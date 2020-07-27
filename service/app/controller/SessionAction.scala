@@ -7,7 +7,7 @@ import javax.inject.Inject
 import play.api.mvc._
 import repo.{Session, SessionRepo}
 
-class SessionAction @Inject()(sessionRepo: SessionRepo) {
+class SessionAction @Inject()(sessionRepo: SessionRepo, controllerComponents: ControllerComponents)  {
 
   val sessionCookieName = "sessionId"
 
@@ -37,14 +37,14 @@ class SessionAction @Inject()(sessionRepo: SessionRepo) {
   }
 
   def apply(f: (Session, Request[AnyContent]) => Result): Action[AnyContent] =
-    Action { request =>
+    controllerComponents.actionBuilder { request =>
       val session = getSession(request)
       updateRepo(session)
       updateResponse(f(session, request), session)
     }
 
   def apply[A](parser: BodyParser[A])(f: (Session, Request[A]) => Result): Action[A] =
-    Action[A](parser) { request =>
+    controllerComponents.actionBuilder[A](parser) { request =>
       val session = getSession(request)
       updateRepo(session)
       updateResponse(f(session, request), session)

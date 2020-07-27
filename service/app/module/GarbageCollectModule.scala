@@ -24,6 +24,8 @@ class GarbageCollectorThread @Inject()(gameRepository: GameRepository,
                                        sessionRepo: SessionRepo)
                                       (implicit mat: Materializer){
 
+  private val logger = Logger(this.getClass)
+
   val tickInterval: FiniteDuration = 10.minute
   val sessionInactivityTime: FiniteDuration = 1.day
 
@@ -60,7 +62,7 @@ class GarbageCollectorThread @Inject()(gameRepository: GameRepository,
         .size
 
       if(deletedGames + deletedScenarios + deletedSessions != 0)
-        Logger.info("GarbageCollectorThread ticked." +
+        logger.info("GarbageCollectorThread ticked. " +
           s"Deleted $deletedSessions sessions, $deletedGames games, $deletedScenarios scenarios")
     })
     .run()
