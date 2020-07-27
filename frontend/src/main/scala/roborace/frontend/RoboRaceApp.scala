@@ -37,8 +37,6 @@ class RoboRaceApp(container: Element) extends SnabbdomApp {
 //      case _ => ()
 //    }
 
-    println(1)
-    println(state)
     node = patch(node, Pages.ui(state, renderState).toVNode)
   }
 
