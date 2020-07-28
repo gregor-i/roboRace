@@ -1,33 +1,28 @@
-//package roborace.frontend.preview
-//
-//import com.raquo.snabbdom.simple.VNode
-//import com.raquo.snabbdom.simple.attrs.id
-//import com.raquo.snabbdom.simple.events.onClick
-//import com.raquo.snabbdom.simple.implicits._
-//import com.raquo.snabbdom.simple.props.className
-//import com.raquo.snabbdom.simple.tags._
-//import roborace.frontend.components.{Fab, Images}
-//import roborace.frontend.gameBoard.RenderScenario
-//import roborace.frontend.util.Ui
-//import roborace.frontend.{Main, PreviewState, Service}
-//import gameEntities.{Direction, Position, Scenario}
-//
-//import scala.concurrent.ExecutionContext.Implicits.global
-//
-//object PreviewUi extends Ui {
-//  def render(previewState: PreviewState): VNode =
-//    div(id := "robo-race",
-//      className := "game",
-//      Fab("fab-right-1", Images.iconClose, onClick := (() => Main.gotoLobby())),
-//      RenderScenario(previewState.scenario.scenario, Some(createGame(previewState.scenario.scenario))),
-//      bottomLine
-//    )
-//
+package roborace.frontend.preview
+
+import roborace.frontend.components.{Fab, Images}
+import roborace.frontend.gameBoard.RenderScenario
+import roborace.frontend.{FrontendState, PreviewFrontendState}
+import snabbdom.Node
+
+object PreviewUi {
+  def render(previewState: PreviewFrontendState, update: FrontendState => Unit): Node =
+    Node("div.game")
+      .prop("id", "robo-race")
+      .child(Fab(Images.iconClose).classes("fab-right-1")) //.event("click", Snabbdom.event(_ => gotoLobby))
+      .child(RenderScenario(previewState.scenario.scenario, None /*Some(createGame(previewState.scenario.scenario)*/ ))
+      .child(bottomLine)
+
 //  private def createGame(scenario: Scenario)(pos: Position, dir: Direction): Unit =
-//    scenario.initialRobots.find(_.position == pos)
-//      .foreach(robot => Service.createGame(scenario, robot.index)
-//        .foreach(Main.gotoGame))
-//
-//  def bottomLine: VNode =
-//    div(className := "text-panel", "To start this scenario, select a start position.")
-//}
+//    scenario.initialRobots
+//      .find(_.position == pos)
+//      .foreach(
+//        robot =>
+//          Service
+//            .createGame(scenario, robot.index)
+//            .foreach(Main.gotoGame)
+//      )
+
+  def bottomLine: Node =
+    Node("div.text-panel").text("To start this scenario, select a start position.")
+}

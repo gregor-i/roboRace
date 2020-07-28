@@ -21,5 +21,5 @@ object LobbyPage extends Page[LobbyFrontendState] {
 
   override def stateToUrl(state: State): Option[(Path, QueryParameter)] = Some("/" -> Map.empty)
 
-  override def render(implicit state: State, update: FrontendState => Unit): Node = LobbyUi.render(state)
+  override def render(implicit state: State, update: FrontendState => Unit): Node = LobbyUi.render(state, update)
 }

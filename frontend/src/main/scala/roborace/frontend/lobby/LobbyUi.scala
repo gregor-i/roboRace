@@ -1,17 +1,17 @@
 package roborace.frontend.lobby
 
 import gameEntities._
-import roborace.frontend.LobbyFrontendState
+import roborace.frontend.{FrontendState, GameFrontendState, LobbyFrontendState, PreviewFrontendState}
 import roborace.frontend.components.{BulmaComponents, Images, RobotImage}
 import snabbdom.Node
 
 object LobbyUi {
-  def render(lobbyState: LobbyFrontendState): Node =
+  def render(lobbyState: LobbyFrontendState, update: FrontendState => Unit): Node =
     Node("div.robo-race")
       .child(renderHeader())
       .child(
         BulmaComponents.singleColumn(
-          lobbyState.games.map(gameCard) ++ lobbyState.scenarios.map(scenarioCard)
+          lobbyState.games.map(gameCard(_, update)) ++ lobbyState.scenarios.map(scenarioCard(_, update))
         )
       )
 
@@ -33,7 +33,7 @@ object LobbyUi {
           .text("Tutorial")
       )
 
-  def gameCard(gameResponse: GameResponse): Node = {
+  def gameCard(gameResponse: GameResponse, update: FrontendState => Unit): Node = {
     val youTag: Option[Node] = gameResponse.you match {
       case Some(_: QuittedPlayer)                                   => Some(BulmaComponents.tag("Quitted", "is-danger"))
       case Some(you: FinishedPlayer)                                => Some(BulmaComponents.tag(s"Finished as ${you.rank}", "is-primary"))
@@ -55,12 +55,12 @@ object LobbyUi {
           .childOptional(youTag)
           .childOptional(joinTag)
       ),
-      "Enter" -> None, //Some(_ => Main.gotoGame(gameResponse)),
+      "Enter" -> Some(_ => update(GameFrontendState(gameResponse, 0, Map.empty))),
       "Quit"  -> None
     )
   }
 
-  def scenarioCard(scenarioResponse: ScenarioResponse): Node =
+  def scenarioCard(scenarioResponse: ScenarioResponse, update: FrontendState => Unit): Node =
     BulmaComponents.card(
       BulmaComponents
         .mediaObject(
@@ -71,7 +71,7 @@ object LobbyUi {
             .childOptional(if (scenarioResponse.scenario.traps.nonEmpty) Some(BulmaComponents.tag(s"Contains traps", "is-warning")) else None)
             .childOptional(if (scenarioResponse.ownedByYou) Some(BulmaComponents.tag(s"Created by you", "is-info")) else None)
         ),
-      "Start Game" -> None, //Some(_ => Main.gotoPreviewScenario(scenarioResponse)),
+      "Start Game" -> Some(_ => update(PreviewFrontendState(scenarioResponse))),
       "Editor"     -> None, //Some(_ => Main.gotoEditor(scenarioResponse)),
       "Delete"     -> None
     )

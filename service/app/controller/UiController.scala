@@ -8,7 +8,7 @@ import repo.{GameRepository, ScenarioRepository}
 class UiController @Inject() (sessionAction: SessionAction, gameRepo: GameRepository, scenarioRepo: ScenarioRepository, assets: Assets)
     extends InjectedController {
 
-  def lobby() = sessionAction { (session, _) =>
+  def lobby(path: String) = sessionAction { (session, _) =>
     Ok(views.html.RoboRace(session.id))
   }
 
