@@ -11,11 +11,11 @@ import play.api.db.Database
 case class ScenarioRow(id: String, owner: String, description: String, scenario: Option[Scenario])
 
 @Singleton
-class ScenarioRepository @Inject()(db: Database){
+class ScenarioRepository @Inject() (db: Database) {
   private val rowParser: RowParser[ScenarioRow] = for {
-    id <- SqlParser.str("id")
-    owner <- SqlParser.str("owner")
-    description <- SqlParser.str("description")
+    id            <- SqlParser.str("id")
+    owner         <- SqlParser.str("owner")
+    description   <- SqlParser.str("description")
     maybeScenario <- SqlParser.str("scenario").map(data => decode[Scenario](data).toOption)
   } yield ScenarioRow(id, owner, description, maybeScenario)
 

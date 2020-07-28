@@ -11,7 +11,7 @@ import repo._
 
 import scala.concurrent.duration._
 
-class GarbageCollectModule extends AbstractModule{
+class GarbageCollectModule extends AbstractModule {
   override def configure(): Unit = {
     bind(classOf[GarbageCollectorThread])
       .asEagerSingleton()
@@ -19,19 +19,18 @@ class GarbageCollectModule extends AbstractModule{
 }
 
 @Singleton
-class GarbageCollectorThread @Inject()(gameRepository: GameRepository,
-                                       scenarioRepository: ScenarioRepository,
-                                       sessionRepo: SessionRepo)
-                                      (implicit mat: Materializer){
+class GarbageCollectorThread @Inject() (gameRepository: GameRepository, scenarioRepository: ScenarioRepository, sessionRepo: SessionRepo)(
+    implicit mat: Materializer
+) {
 
   private val logger = Logger(this.getClass)
 
-  val tickInterval: FiniteDuration = 10.minute
+  val tickInterval: FiniteDuration          = 10.minute
   val sessionInactivityTime: FiniteDuration = 1.day
 
-  def gameDeletePredicate(activePlayers: Seq[String])(gameRow: GameRow) : Boolean =
+  def gameDeletePredicate(activePlayers: Seq[String])(gameRow: GameRow): Boolean =
     gameRow.game.isEmpty ||
-    !gameRow.game.get.players.map(_.id).exists(activePlayers.contains)
+      !gameRow.game.get.players.map(_.id).exists(activePlayers.contains)
 
   def scenarioDeletePredicate(scenarioRow: ScenarioRow): Boolean =
     scenarioRow.scenario.isEmpty
@@ -39,31 +38,36 @@ class GarbageCollectorThread @Inject()(gameRepository: GameRepository,
   def sessionDeletePredicate(session: Session): Boolean =
     session.lastActivityAt.plusSeconds(sessionInactivityTime.toSeconds).isBefore(ZonedDateTime.now())
 
-  Source.tick(0.seconds, tickInterval, ())
-    .to(Sink.foreach{_ =>
-
-      val deletedSessions = sessionRepo.list()
-          .filter(sessionDeletePredicate)
-          .map(_.id)
-          .map(sessionRepo.delete)
-          .size
+  Source
+    .tick(0.seconds, tickInterval, ())
+    .to(Sink.foreach { _ =>
+      val deletedSessions = sessionRepo
+        .list()
+        .filter(sessionDeletePredicate)
+        .map(_.id)
+        .map(sessionRepo.delete)
+        .size
 
       val activePlayers = sessionRepo.list().map(_.playerId)
-      val deletedGames = gameRepository.list()
+      val deletedGames = gameRepository
+        .list()
         .filter(gameDeletePredicate(activePlayers))
         .map(_.id)
         .map(gameRepository.delete)
         .size
 
-      val deletedScenarios = scenarioRepository.list()
+      val deletedScenarios = scenarioRepository
+        .list()
         .filter(scenarioDeletePredicate)
         .map(_.id)
         .map(scenarioRepository.delete)
         .size
 
-      if(deletedGames + deletedScenarios + deletedSessions != 0)
-        logger.info("GarbageCollectorThread ticked. " +
-          s"Deleted $deletedSessions sessions, $deletedGames games, $deletedScenarios scenarios")
+      if (deletedGames + deletedScenarios + deletedSessions != 0)
+        logger.info(
+          "GarbageCollectorThread ticked. " +
+            s"Deleted $deletedSessions sessions, $deletedGames games, $deletedScenarios scenarios"
+        )
     })
     .run()
 }

@@ -13,11 +13,11 @@ import play.api.db.Database
 case class GameRow(id: String, owner: String, game: Option[Game], creationTime: ZonedDateTime)
 
 @Singleton
-class GameRepository @Inject()(db: Database) {
+class GameRepository @Inject() (db: Database) {
   private val rowParser: RowParser[GameRow] = for {
-    id <- SqlParser.str("id")
-    owner <- SqlParser.str("owner")
-    maybeGame <- SqlParser.str("game").map(data => decode[Game](data).toOption)
+    id           <- SqlParser.str("id")
+    owner        <- SqlParser.str("owner")
+    maybeGame    <- SqlParser.str("game").map(data => decode[Game](data).toOption)
     creationTime <- SqlParser.get[ZonedDateTime]("creationTime")
   } yield GameRow(id, owner, maybeGame, creationTime)
 

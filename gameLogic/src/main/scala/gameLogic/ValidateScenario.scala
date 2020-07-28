@@ -8,7 +8,7 @@ object ValidateScenario {
     val tiles = for {
       x <- 0 until gameScenario.width
       y <- 0 until gameScenario.height
-      p = Position(x,y)
+      p = Position(x, y)
       if !gameScenario.pits.contains(p)
     } yield p
 

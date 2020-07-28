@@ -10,7 +10,7 @@ trait State {
     all(fs)
 
   def conditional(cond: Game => Boolean)(f: Game => Game): Game => Game =
-    game => if(cond(game)) f(game) else game
+    game => if (cond(game)) f(game) else game
 }
 
 object State extends State

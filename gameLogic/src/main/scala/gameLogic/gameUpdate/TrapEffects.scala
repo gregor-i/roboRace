@@ -8,7 +8,7 @@ object TrapEffects {
   def applyAll(game: Game): Game =
     State.all(
       for {
-        trap <- game.scenario.traps
+        trap   <- game.scenario.traps
         player <- Lenses.runningPlayers.getAll(game)
         if trap.position == player.robot.position
       } yield apply(trap, player)
@@ -17,11 +17,11 @@ object TrapEffects {
   def afterMove(pushed: RobotPushed)(game: Game): Game = {
     val after1 = game.scenario.traps.find(_.position == pushed.to) match {
       case Some(trap) => apply(trap, Lenses.runningPlayer(pushed.player.id).getAll(game).head).apply(game)
-      case None => game
+      case None       => game
     }
     pushed.push match {
       case Some(push) => afterMove(push)(after1)
-      case None => after1
+      case None       => after1
     }
   }
 

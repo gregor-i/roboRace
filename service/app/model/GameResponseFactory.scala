@@ -4,8 +4,6 @@ import gameEntities.{Game, GameResponse}
 import gameLogic.{Lenses, PlayerLenses}
 import repo.{GameRow, Session}
 
-
-
 object GameResponseFactory {
   def apply(game: Game, gameId: String)(implicit session: Session): GameResponse = GameResponse(
     id = gameId,

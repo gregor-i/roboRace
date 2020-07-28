@@ -7,7 +7,7 @@ import javax.inject.Inject
 import play.api.mvc._
 import repo.{Session, SessionRepo}
 
-class SessionAction @Inject()(sessionRepo: SessionRepo, controllerComponents: ControllerComponents)  {
+class SessionAction @Inject() (sessionRepo: SessionRepo, controllerComponents: ControllerComponents) {
 
   val sessionCookieName = "sessionId"
 

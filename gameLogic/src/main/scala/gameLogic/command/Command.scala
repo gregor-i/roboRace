@@ -13,15 +13,15 @@ object Command {
   }
 
   def registerForGame(index: Int)(playerId: String): Game => CommandResponse = {
-    case game if game.cycle != 0                                      =>
+    case game if game.cycle != 0 =>
       CommandRejected(WrongCycle)
-    case game if game.players.exists(_.id == playerId)                =>
+    case game if game.players.exists(_.id == playerId) =>
       CommandRejected(PlayerAlreadyRegistered)
     case game if !game.scenario.initialRobots.indices.contains(index) =>
       CommandRejected(InvalidIndex)
-    case game if game.players.exists(_.index == index)                =>
+    case game if game.players.exists(_.index == index) =>
       CommandRejected(RobotAlreadyTaken)
-    case game                                                         =>
+    case game =>
       val newPlayer = RunningPlayer(
         index = index,
         id = playerId,
@@ -40,9 +40,9 @@ object Command {
 
   def deregisterForGame(playerId: String)(game: Game): CommandResponse =
     Lenses.player(playerId).headOption(game) match {
-      case None                    =>
+      case None =>
         CommandRejected(PlayerNotFound)
-      case Some(_: QuittedPlayer)  =>
+      case Some(_: QuittedPlayer) =>
         CommandRejected(PlayerAlreadyQuitted)
       case Some(_: FinishedPlayer) =>
         CommandRejected(PlayerAlreadyFinished)
@@ -66,30 +66,30 @@ object Command {
 
   def setInstructions(instructions: Seq[Instruction])(playerId: String)(game: Game): CommandResponse =
     Lenses.player(playerId).headOption(game) match {
-      case None                                                     =>
+      case None =>
         CommandRejected(PlayerNotFound)
-      case Some(_: FinishedPlayer)                                  =>
+      case Some(_: FinishedPlayer) =>
         CommandRejected(PlayerAlreadyFinished)
       case _ if instructions.size != Constants.instructionsPerCycle =>
         CommandRejected(InvalidActionChoice)
-      case Some(player: RunningPlayer) if !Instruction.instructions.forall(instr =>
-        instructions.count(_ == instr) <= player.instructionOptions.find(_.instruction == instr).fold(0)(_.count)
-      )                                                             =>
+      case Some(player: RunningPlayer)
+          if !Instruction.instructions.forall(
+            instr => instructions.count(_ == instr) <= player.instructionOptions.find(_.instruction == instr).fold(0)(_.count)
+          ) =>
         CommandRejected(InvalidActionChoice)
-      case _                                                        =>
+      case _ =>
         CommandAccepted(Lenses.instructionSlots(playerId).set(instructions)(game))
     }
 
   def resetInstruction(playerId: String)(game: Game): CommandResponse =
     Lenses.player(playerId).headOption(game) match {
-      case None                    =>
+      case None =>
         CommandRejected(PlayerNotFound)
-      case Some(_: QuittedPlayer)  =>
+      case Some(_: QuittedPlayer) =>
         CommandRejected(PlayerAlreadyFinished)
       case Some(_: FinishedPlayer) =>
         CommandRejected(PlayerAlreadyFinished)
-      case Some(_: RunningPlayer)  =>
+      case Some(_: RunningPlayer) =>
         CommandAccepted(Lenses.instructionSlots(playerId).set(Seq.empty)(game))
     }
 }
-

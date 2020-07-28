@@ -13,7 +13,7 @@ object ScenarioEffects {
   private def finishPlayers(game: Game): Game = {
     val updates = for (player <- Lenses.runningPlayers.getAll(game)) yield {
       val targetIndex = player.currentTarget
-      val target = game.scenario.targets(targetIndex)
+      val target      = game.scenario.targets(targetIndex)
       if (player.robot.position == target) {
         if (targetIndex == game.scenario.targets.length - 1) {
           val p = FinishedPlayer(
@@ -44,11 +44,11 @@ object ScenarioEffects {
       case player: RunningPlayer =>
         val robot = player.robot
         robot.position.x >= game.scenario.width ||
-          robot.position.x < 0 ||
-          robot.position.y >= game.scenario.height ||
-          robot.position.y < 0 ||
-          game.scenario.pits.contains(robot.position)
-      case _                     => false
+        robot.position.x < 0 ||
+        robot.position.y >= game.scenario.height ||
+        robot.position.y < 0 ||
+        game.scenario.pits.contains(robot.position)
+      case _ => false
     } match {
       case Some(player: RunningPlayer) =>
         val initial = game.scenario.initialRobots(player.index)
@@ -57,7 +57,7 @@ object ScenarioEffects {
           case None              => game
         }
         fallenRobots(Events.reset(player, initial)(clearedInitial))
-      case _                           => game
+      case _ => game
     }
   }
 }

@@ -16,11 +16,11 @@ object Events {
   }
 
   def move(event: RobotPushed)(game: Game): Game = {
-    def loop(event: RobotPushed, game: Game) : Game = {
+    def loop(event: RobotPushed, game: Game): Game = {
       val pushed = Lenses.position(event.player.id).set(event.to)(game)
       event.push match {
         case Some(rec) => loop(rec, pushed)
-        case None => pushed
+        case None      => pushed
       }
     }
     TrapEffects.afterMove(event)(loop(event, game).log(asEvent(event)))

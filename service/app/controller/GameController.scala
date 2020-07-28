@@ -19,18 +19,20 @@ import repo.{GameRepository, GameRow}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class GameController @Inject()(sessionAction: SessionAction,
-                               lobbyController: LobbyController,
-                               repo: GameRepository)
-                              (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
-  extends InjectedController with Circe with JsonUtil {
+class GameController @Inject() (sessionAction: SessionAction, lobbyController: LobbyController, repo: GameRepository)(
+    implicit system: ActorSystem,
+    mat: Materializer,
+    ex: ExecutionContext
+) extends InjectedController
+    with Circe
+    with JsonUtil {
 
   val sseCache = new SinkSourceCache[Game]
 
   def state(id: String) = sessionAction { (session, _) =>
     repo.get(id) match {
       case Some(GameRow(_, _, Some(game), _)) => Ok(GameResponseFactory(game, id)(session).asJson)
-      case _ => NotFound
+      case _                                  => NotFound
     }
   }
 
@@ -49,17 +51,19 @@ class GameController @Inject()(sessionAction: SessionAction,
           case CommandRejected(reason) =>
             BadRequest(reason.asJson)
         }
-      case None => NotFound
+      case None                          => NotFound
       case Some(row) if row.game.isEmpty => NotFound
     }
   }
 
   def sse(id: String) = sessionAction { (session, _) =>
     Ok.chunked(
-      sseCache.source(id)
-        .map(game => GameResponseFactory(game, id)(session))
-        .map(_.asJson.noSpaces)
-        .via(EventSource.flow)
-    ).as(ContentTypes.EVENT_STREAM)
+        sseCache
+          .source(id)
+          .map(game => GameResponseFactory(game, id)(session))
+          .map(_.asJson.noSpaces)
+          .via(EventSource.flow)
+      )
+      .as(ContentTypes.EVENT_STREAM)
   }
 }

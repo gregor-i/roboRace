@@ -8,12 +8,14 @@ class SinkSourceCache[A] {
 
   private var memory = Map[String, Pair]()
 
-  def createPair()(implicit mat: Materializer): Pair = MergeHub.source[A](perProducerBufferSize = 16)
-    .toMat(BroadcastHub.sink(bufferSize = 256))(Keep.both)
-    .run()
+  def createPair()(implicit mat: Materializer): Pair =
+    MergeHub
+      .source[A](perProducerBufferSize = 16)
+      .toMat(BroadcastHub.sink(bufferSize = 256))(Keep.both)
+      .run()
 
   def pair(id: String)(implicit mat: Materializer): Pair = {
-    if(!memory.isDefinedAt(id))
+    if (!memory.isDefinedAt(id))
       memory += id -> createPair()
     memory(id)
   }

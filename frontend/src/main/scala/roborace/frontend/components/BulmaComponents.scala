@@ -15,22 +15,23 @@ object BulmaComponents {
       .style("margin", "8px")
       .child(
         Node("div.card-content").child(content)
-//        cond(
-//          actions.nonEmpty,
-//          footer(
-//            className := "card-footer",
-//            seq(actions.map {
-//              case (node, Some(click)) => a(className := "card-footer-item", onClick := click, node)
-//              case (node, None)        => span(className := "card-footer-item", node)
-//            })
-//          )
-//        )
       )
+      .childOptional {
+        val actionNodes = actions.map {
+          case (name, Some(action)) => Node("a.card-footer-item").text(name).event("click", action)
+          case (name, None)         => Node("a.card-footer-item").text(name)
+        }
 
-  def mediaObject(left: Option[Node], content: Node, mods: Node*): Node =
+        if (actionNodes.isEmpty)
+          None
+        else
+          Some(Node("footer.card-footer").child(actionNodes))
+      }
+
+  def mediaObject(image: Option[Node], content: Node): Node =
     Node("div.media")
       .childOptional(
-        left.map(
+        image.map(
           l =>
             Node("figure.media-left")
               .child(
@@ -41,12 +42,11 @@ object BulmaComponents {
               )
         )
       )
-//        .child(
-//      div(className := "media-content", content),
-//    )
-//  .apply(mods)
+      .child(
+        Node("div.media-content").child(content)
+      )
 
-//  def tag(text: String, classes : String = ""): VNode =
-//    span(className := s"tag $classes", text)
+  def tag(text: String, classes: String*): Node =
+    Node("span.tag").classes(classes: _*).text(text)
 
 }

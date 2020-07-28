@@ -4,7 +4,7 @@ import gameEntities._
 
 object DefaultScenario {
   private def robot(index: Int, x: Int, y: Int, direction: Direction): Robot = Robot(index, Position(x, y), direction)
-  private def wall(x: Int, y: Int, direction: WallDirection): Wall = Wall(Position(x, y), direction)
+  private def wall(x: Int, y: Int, direction: WallDirection): Wall           = Wall(Position(x, y), direction)
 
   val default = Scenario(
     width = 7,
@@ -24,17 +24,14 @@ object DefaultScenario {
       wall(2, 2, UpRight),
       wall(4, 1, Down),
       wall(2, 1, Down),
-
       wall(4, 3, DownRight),
       wall(4, 3, Down),
-
       wall(1, 3, UpRight),
       wall(2, 3, Down),
-
       wall(0, 6, Down),
       wall(2, 6, Down),
       wall(4, 6, Down),
-      wall(6, 6, Down),
+      wall(6, 6, Down)
     ),
     pits = Seq(
       Position(3, 0),

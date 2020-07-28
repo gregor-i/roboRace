@@ -20,10 +20,13 @@ import repo.{GameRepository, GameRow}
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class LobbyController @Inject()(sessionAction: SessionAction,
-                                gameRepo: GameRepository)
-                               (implicit system: ActorSystem, mat: Materializer, ex: ExecutionContext)
-  extends InjectedController with Circe with JsonUtil {
+class LobbyController @Inject() (sessionAction: SessionAction, gameRepo: GameRepository)(
+    implicit system: ActorSystem,
+    mat: Materializer,
+    ex: ExecutionContext
+) extends InjectedController
+    with Circe
+    with JsonUtil {
 
   private val (sink, source) = new SinkSourceCache[Seq[GameRow]].createPair()
 
@@ -50,7 +53,7 @@ class LobbyController @Inject()(sessionAction: SessionAction,
 
   def delete(id: String) = sessionAction { (session, request) =>
     gameRepo.get(id) match {
-      case None => NotFound
+      case None                                       => NotFound
       case Some(row) if row.owner != session.playerId => Unauthorized
       case Some(_) =>
         gameRepo.delete(id)
@@ -64,11 +67,12 @@ class LobbyController @Inject()(sessionAction: SessionAction,
 
   def sse() = sessionAction { (session, _) =>
     Ok.chunked(
-      source
-        .map(games => games.flatMap(GameResponseFactory(_)(session)))
-        .map(_.asJson.noSpaces)
-        .via(EventSource.flow)
-    ).as(ContentTypes.EVENT_STREAM)
+        source
+          .map(games => games.flatMap(GameResponseFactory(_)(session)))
+          .map(_.asJson.noSpaces)
+          .via(EventSource.flow)
+      )
+      .as(ContentTypes.EVENT_STREAM)
   }
 
   private def gameList(): Seq[GameRow] = gameRepo.list()

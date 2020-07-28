@@ -1,9 +1,9 @@
 package roborace.frontend.lobby
 
 import gameEntities._
+import roborace.frontend.LobbyFrontendState
 import roborace.frontend.components.{BulmaComponents, Images, RobotImage}
-import roborace.frontend.{LobbyFrontendState, Main}
-import snabbdom.{Node, VNode}
+import snabbdom.Node
 
 object LobbyUi {
   def render(lobbyState: LobbyFrontendState): Node =
@@ -12,7 +12,6 @@ object LobbyUi {
       .child(
         BulmaComponents.singleColumn(
           lobbyState.games.map(gameCard) ++ lobbyState.scenarios.map(scenarioCard)
-//        lobbyState.scenarios.map(scenarioCard)
         )
       )
 
@@ -35,29 +34,29 @@ object LobbyUi {
       )
 
   def gameCard(gameResponse: GameResponse): Node = {
-//    val youTag: Modifier[VNode, VNodeData] = gameResponse.you match {
-//      case Some(you: QuittedPlayer)                                 => tag("Quitted", "is-danger")
-//      case Some(you: FinishedPlayer)                                => tag(s"Finished as ${you.rank}", "is-primary")
-//      case Some(you: RunningPlayer) if you.instructionSlots.isEmpty => tag("Awaits your instructions", "is-warning")
-//      case Some(you: RunningPlayer)                                 => tag("Awaiting other players instructions")
-//      case _                                                        => None
-//    }
+    val youTag: Option[Node] = gameResponse.you match {
+      case Some(_: QuittedPlayer)                                   => Some(BulmaComponents.tag("Quitted", "is-danger"))
+      case Some(you: FinishedPlayer)                                => Some(BulmaComponents.tag(s"Finished as ${you.rank}", "is-primary"))
+      case Some(you: RunningPlayer) if you.instructionSlots.isEmpty => Some(BulmaComponents.tag("Awaits your instructions", "is-warning"))
+      case Some(_: RunningPlayer)                                   => Some(BulmaComponents.tag("Awaiting other players instructions"))
+      case _                                                        => None
+    }
+
+    val sizeTag = BulmaComponents.tag(s"Size: ${gameResponse.robots.size} / ${gameResponse.scenario.initialRobots.size} players", "is-info")
+
+    val joinTag = Some(BulmaComponents.tag("Open for new player", "is-primary"))
+      .filter(_ => gameResponse.robots.size < gameResponse.scenario.initialRobots.size && gameResponse.cycle == 0)
 
     BulmaComponents.card(
       BulmaComponents.mediaObject(
         Some(RobotImage(gameResponse.id.hashCode().abs % 6, filled = true)),
         Node("div.tags.are-large")
-//            .child(          tag(s"Size: ${gameResponse.robots.size} / ${gameResponse.scenario.initialRobots.size} players", "is-info"))
-//          .child(youTag)
-//          .childOptional(
-//            gameResponse.robots.size < gameResponse.scenario.initialRobots.size && gameResponse.cycle == 0,
-//            tag("Open for new player", "is-primary")
-//          )
-      )
-//        onClick := (_ => Main.gotoGame(gameResponse)),
-//        cursor := "pointer"
-//      "Enter" -> Some(_ => Main.gotoGame(gameResponse)),
-//      "Quit"  -> None
+          .child(sizeTag)
+          .childOptional(youTag)
+          .childOptional(joinTag)
+      ),
+      "Enter" -> None, //Some(_ => Main.gotoGame(gameResponse)),
+      "Quit"  -> None
     )
   }
 
@@ -67,16 +66,14 @@ object LobbyUi {
         .mediaObject(
           Some(RobotImage(scenarioResponse.id.hashCode().abs % 6, filled = true)),
           Node("div.tags.are-large")
-//          .child(tag(s"Description: ${scenarioResponse.description}", "is-info"))
-//          .child(tag(s"Size: ${scenarioResponse.scenario.initialRobots.size} players", "is-info"))
-//          cond(scenarioResponse.scenario.traps.nonEmpty, tag(s"Contains traps", "is-warning")),
-//          cond(scenarioResponse.ownedByYou, tag(s"Created by you", "is-info"))
-        )
-        .style("cursor", "pointer")
-//        onClick := (_ => Main.gotoPreviewScenario(scenarioResponse))
-//      "Start Game" -> Some(_ => Main.gotoPreviewScenario(scenarioResponse)),
-//      "Editor" -> Some(_ => Main.gotoEditor(scenarioResponse)),
-//      "Delete" -> None
+            .child(BulmaComponents.tag(s"Description: ${scenarioResponse.description}", "is-info"))
+            .child(BulmaComponents.tag(s"Size: ${scenarioResponse.scenario.initialRobots.size} players", "is-info"))
+            .childOptional(if (scenarioResponse.scenario.traps.nonEmpty) Some(BulmaComponents.tag(s"Contains traps", "is-warning")) else None)
+            .childOptional(if (scenarioResponse.ownedByYou) Some(BulmaComponents.tag(s"Created by you", "is-info")) else None)
+        ),
+      "Start Game" -> None, //Some(_ => Main.gotoPreviewScenario(scenarioResponse)),
+      "Editor"     -> None, //Some(_ => Main.gotoEditor(scenarioResponse)),
+      "Delete"     -> None
     )
 
 }

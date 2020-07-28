@@ -5,9 +5,9 @@ import gameLogic.ValidateScenario
 
 object CreateGame {
   def apply(scenario: Scenario, index: Int)(player: String): CommandResponse = {
-    if(!ValidateScenario.apply(scenario))
+    if (!ValidateScenario.apply(scenario))
       CommandRejected(InvalidScenario)
-    else if(!scenario.initialRobots.indices.contains(index))
+    else if (!scenario.initialRobots.indices.contains(index))
       CommandRejected(InvalidIndex)
     else {
       val game = Game(

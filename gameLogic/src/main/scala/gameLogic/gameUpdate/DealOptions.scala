@@ -11,12 +11,14 @@ object DealOptions {
       .filter(_.count > 0)
 
   def apply(unusedInstructions: Seq[InstructionOption]): Seq[InstructionOption] =
-    Instruction.instructions.map { instr =>
-      val w = weight(instr)
-      val unused = unusedInstructions.find(_.instruction == instr).fold(0)(_.count)
-      val increase = random.nextInt(w.increaseMax - w.increaseMin + 1) + w.increaseMin
-      InstructionOption(instr, Math.min(w.cap, increase + unused))
-    }.filter(_.count > 0)
+    Instruction.instructions
+      .map { instr =>
+        val w        = weight(instr)
+        val unused   = unusedInstructions.find(_.instruction == instr).fold(0)(_.count)
+        val increase = random.nextInt(w.increaseMax - w.increaseMin + 1) + w.increaseMin
+        InstructionOption(instr, Math.min(w.cap, increase + unused))
+      }
+      .filter(_.count > 0)
 
   private val random = new Random()
 
@@ -33,7 +35,4 @@ object DealOptions {
   }
 }
 
-case class InstructionWeight(initial: Int,
-                             increaseMin: Int,
-                             increaseMax: Int,
-                             cap: Int)
+case class InstructionWeight(initial: Int, increaseMin: Int, increaseMax: Int, cap: Int)
