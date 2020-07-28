@@ -11,7 +11,7 @@ import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
 //@Lenses
-case class LoadingFrontendState(user: Option[User], loading: Future[FrontendState], navbarExpanded: Boolean = false) extends FrontendState
+case class LoadingFrontendState(loading: Future[FrontendState], navbarExpanded: Boolean = false) extends FrontendState
 
 object LoadingPage extends Page[LoadingFrontendState] {
   def stateFromUrl = PartialFunction.empty
@@ -39,7 +39,7 @@ object LoadingPage extends Page[LoadingFrontendState] {
             case Success(newState) => update(newState)
             case Failure(exception) =>
               update(
-                ErrorState(state.user, s"unexpected problem while initializing app: ${exception.getMessage}")
+                ErrorState(s"unexpected problem while initializing app: ${exception.getMessage}")
               )
           }
         }

@@ -2,15 +2,16 @@ package roborace.frontend.preview
 
 import roborace.frontend.components.{Fab, Images}
 import roborace.frontend.gameBoard.RenderScenario
+import roborace.frontend.lobby.LobbyPage
 import roborace.frontend.{FrontendState, PreviewFrontendState}
-import snabbdom.Node
+import snabbdom.{Node, Snabbdom}
 
 object PreviewUi {
-  def render(previewState: PreviewFrontendState, update: FrontendState => Unit): Node =
+  def render(state: PreviewFrontendState, update: FrontendState => Unit): Node =
     Node("div.game")
       .prop("id", "robo-race")
-      .child(Fab(Images.iconClose).classes("fab-right-1")) //.event("click", Snabbdom.event(_ => gotoLobby))
-      .child(RenderScenario(previewState.scenario.scenario, None /*Some(createGame(previewState.scenario.scenario)*/ ))
+      .child(Fab(Images.iconClose).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
+      .child(RenderScenario(state.scenario.scenario, None /*Some(createGame(previewState.scenario.scenario)*/ ))
       .child(bottomLine)
 
 //  private def createGame(scenario: Scenario)(pos: Position, dir: Direction): Unit =

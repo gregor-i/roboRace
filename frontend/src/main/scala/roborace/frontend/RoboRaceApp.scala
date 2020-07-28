@@ -30,12 +30,12 @@ class RoboRaceApp(container: Element) extends SnabbdomApp {
     }
 
     state match {
-      case LoadingFrontendState(user, future, _) =>
+      case LoadingFrontendState(future, _) =>
         future.onComplete {
           case Success(newState) => renderState(newState)
           case Failure(exception) =>
             renderState(
-              ErrorState(user, s"unexpected problem while initializing app: ${exception.getMessage}")
+              ErrorState(s"unexpected problem while initializing app: ${exception.getMessage}")
             )
         }
       case _ => ()

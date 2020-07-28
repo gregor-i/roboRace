@@ -7,7 +7,7 @@ import roborace.frontend.components.Body
 import snabbdom._
 
 //@Lenses
-case class ErrorState(user: Option[User], message: String, navbarExpanded: Boolean = false) extends FrontendState
+case class ErrorState(message: String, navbarExpanded: Boolean = false) extends FrontendState
 
 object ErrorPage extends Page[ErrorState] {
   def stateFromUrl = PartialFunction.empty
