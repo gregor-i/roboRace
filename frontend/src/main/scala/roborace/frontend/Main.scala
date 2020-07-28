@@ -9,8 +9,7 @@ object Main {
     dom.document.addEventListener[dom.Event](
       "DOMContentLoaded",
       (_: js.Any) => {
-        val container = dom.document.createElement("robo-race-app")
-        dom.document.body.appendChild(container)
+        val container = dom.document.getElementById("robo-race")
         new RoboRaceApp(container)
       }
     )

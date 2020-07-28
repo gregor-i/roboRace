@@ -16,6 +16,6 @@
     "watch": "nodemon --watch frontend -e css,svg --exec \"npm run build\"",
     "build": "npm run build-css && npm run build-img",
     "build-img": "svgo -f frontend/src/main/img -o service/public",
-    "build-css": "cleancss node_modules/bulma/css/bulma.min.css frontend/css/*.css -o service/public/robo-race.css"
+    "build-css": "cleancss node_modules/bulma/css/bulma.min.css frontend/src/main/css/*.css -o service/public/robo-race.css"
   }
 }
