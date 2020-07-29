@@ -1,4 +1,4 @@
-package roborace.frontend
+package roborace.frontend.service
 
 import gameEntities._
 import io.circe.generic.auto._
@@ -13,7 +13,7 @@ import org.scalajs.dom.{EventSource, XMLHttpRequest}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-object Service {
+object Service extends ServiceTrait {
   private def withLoadingOverlay[A](f: => Future[A]): Future[A] = {
     dom.document.getElementById("loading-overlay").classList.add("is-active")
     val fut = f

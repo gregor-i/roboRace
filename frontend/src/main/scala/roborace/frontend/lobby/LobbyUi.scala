@@ -55,7 +55,7 @@ object LobbyUi {
           .childOptional(youTag)
           .childOptional(joinTag)
       ),
-      "Enter" -> Some(_ => update(GameFrontendState(gameResponse, 0, Map.empty))),
+      "Enter" -> Some(_ => update(GameFrontendState(gameResponse))),
       "Quit"  -> None
     )
   }

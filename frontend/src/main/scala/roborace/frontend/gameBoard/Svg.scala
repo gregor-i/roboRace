@@ -3,7 +3,9 @@ package roborace.frontend.gameBoard
 import gameEntities._
 import org.scalajs.dom.raw.{HTMLElement, MouseEvent}
 import roborace.frontend.components.Images
-import snabbdom.Node
+import snabbdom.{Node, Snabbdom}
+
+import scala.util.chaining._
 
 object Svg {
   val deltaLeft = 0.75
@@ -73,7 +75,15 @@ object Svg {
         )
       )
       .style("visibility", if (scenario.pits.contains(p)) "hidden" else "")
-  //.event("click", click.map(f => onClick := (event => f(p, event2direction(event))))
+      .pipe { node =>
+        click match {
+          case Some(f) =>
+            node.event("click", Snabbdom.specificEvent[MouseEvent] { clickEvent =>
+              f(p, event2direction(clickEvent))
+            })
+          case None => node
+        }
+      }
 
   private def event2direction(event: MouseEvent): Direction = {
     val bb = event.target.asInstanceOf[HTMLElement].getBoundingClientRect()

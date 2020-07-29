@@ -4,7 +4,8 @@ import gameEntities.{Direction, Position, Scenario}
 import roborace.frontend.components.{Fab, Images}
 import roborace.frontend.gameBoard.RenderScenario
 import roborace.frontend.lobby.LobbyPage
-import roborace.frontend.{FrontendState, GameFrontendState, PreviewFrontendState, Service}
+import roborace.frontend.service.Service
+import roborace.frontend.{FrontendState, GameFrontendState, PreviewFrontendState}
 import snabbdom.{Node, Snabbdom}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,13 +21,12 @@ object PreviewUi {
   private def createGame(scenario: Scenario, update: FrontendState => Unit)(pos: Position, dir: Direction): Unit =
     scenario.initialRobots
       .find(_.position == pos)
-      .foreach(
-        robot =>
-          (for {
-            game <- Service.createGame(scenario, robot.index)
-          } yield GameFrontendState(game, focusedSlot = 0, slots = Map.empty))
-            .foreach(update)
-      )
+      .foreach { robot =>
+        (for {
+          game <- Service.createGame(scenario, robot.index)
+        } yield GameFrontendState(game))
+          .foreach(update)
+      }
 
   def bottomLine: Node =
     Node("div.text-panel").text("To start this scenario, select a start position.")

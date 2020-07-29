@@ -2,7 +2,8 @@ package roborace.frontend.lobby
 
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.loading.LoadingFrontendState
-import roborace.frontend.{FrontendState, LobbyFrontendState, Page, User}
+import roborace.frontend.service.Service
+import roborace.frontend.{FrontendState, LobbyFrontendState, Page, User, service}
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -10,8 +11,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object LobbyPage extends Page[LobbyFrontendState] {
   def load(): FrontendState = LoadingFrontendState(
     for {
-      games     <- roborace.frontend.Service.getAllGames()
-      scenarios <- roborace.frontend.Service.getAllScenarios()
+      games     <- Service.getAllGames()
+      scenarios <- service.Service.getAllScenarios()
     } yield LobbyFrontendState(games, scenarios)
   )
 

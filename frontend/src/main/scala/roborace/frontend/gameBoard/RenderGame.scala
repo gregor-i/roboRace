@@ -21,7 +21,7 @@ object RenderGame {
         "prepatch",
         Snabbdom.hook { (oldNode, newNode) =>
           val oldSvg = oldNode.elm.get.firstChild.asInstanceOf[HTMLElement]
-          oldDuration = oldSvg.dataset.get("duration").get.toDouble
+          oldDuration = oldSvg.dataset.get("duration").fold(0.0)(_.toDouble)
           oldTime = Untyped(oldSvg).getCurrentTime().asInstanceOf[Double]
         }
       )
@@ -40,7 +40,7 @@ object RenderGame {
         Node("svg")
           .attr("viewBox", s"0 0 ${Svg.width(game.scenario)} ${Svg.height(game.scenario)}")
           .children(
-            group("names", Svg.tiles(game.scenario, click)),
+            group("tiles", Svg.tiles(game.scenario, click)),
             group("walls", Svg.walls(game.scenario)),
             group("targets", Svg.targets(game.scenario, game.you.collect { case p: RunningPlayer => p.currentTarget })),
             group("traps", Svg.traps(game.scenario)),

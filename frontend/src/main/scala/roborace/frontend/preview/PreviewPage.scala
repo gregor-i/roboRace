@@ -3,6 +3,7 @@ package roborace.frontend.preview
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.error.ErrorState
 import roborace.frontend.loading.LoadingFrontendState
+import roborace.frontend.service.Service
 import roborace.frontend.{FrontendState, Page, PreviewFrontendState, User}
 import snabbdom.Node
 
@@ -13,7 +14,7 @@ object PreviewPage extends Page[PreviewFrontendState] {
     case (_, s"/scenario/${scenarioId}/preview", _) =>
       LoadingFrontendState(
         for {
-          scenarios <- roborace.frontend.Service.getAllScenarios()
+          scenarios <- Service.getAllScenarios()
           thisScenario = scenarios.find(_.id == scenarioId)
           state = thisScenario match {
             case None           => ErrorState("unknown Scenario")

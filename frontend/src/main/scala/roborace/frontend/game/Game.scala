@@ -1,7 +1,7 @@
 package roborace.frontend.game
 
 //import com.raquo.snabbdom.simple.VNode
-import roborace.frontend.{GameFrontendState, Service}
+import roborace.frontend.GameFrontendState
 import roborace.frontend.util.SnabbdomApp
 import gameEntities._
 import io.circe.generic.auto._

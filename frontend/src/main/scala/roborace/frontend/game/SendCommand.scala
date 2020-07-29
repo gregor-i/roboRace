@@ -1,7 +1,8 @@
 package roborace.frontend.game
 
-import roborace.frontend.{GameFrontendState, Service}
+import roborace.frontend.GameFrontendState
 import gameEntities.{Command, Game}
+import roborace.frontend.service.Service
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

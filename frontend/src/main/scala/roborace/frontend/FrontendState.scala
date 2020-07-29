@@ -7,7 +7,7 @@ trait FrontendState
 
 case class EditorFrontendState(scenario: Scenario, clickAction: Option[ClickAction], description: String) extends FrontendState
 
-case class GameFrontendState(game: GameResponse, focusedSlot: Int, slots: Map[Int, Instruction]) extends FrontendState
+case class GameFrontendState(game: GameResponse, focusedSlot: Int = 0, slots: Map[Int, Instruction] = Map.empty) extends FrontendState
 
 case class LobbyFrontendState(games: Seq[GameResponse], scenarios: Seq[ScenarioResponse]) extends FrontendState
 

@@ -19,7 +19,7 @@ case class PlaceInstruction(instruction: Instruction, slot: Int) extends GameAct
       val slot = (for {
         i <- 0 until Constants.instructionsPerCycle
         s = (i + newState.focusedSlot) % Constants.instructionsPerCycle
-        if newState.slots.get(s).isEmpty
+        if newState.slots.get(s).isEmpty // intellij lies here!!!
       } yield s).headOption.getOrElse(0)
       Future.successful(newState.copy(focusedSlot = slot))
     }

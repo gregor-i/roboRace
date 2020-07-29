@@ -1,6 +1,7 @@
 package roborace.frontend
 
 import roborace.frontend.error.ErrorPage
+import roborace.frontend.game.GamePage
 import roborace.frontend.loading.LoadingPage
 import roborace.frontend.lobby.LobbyPage
 import roborace.frontend.preview.PreviewPage
@@ -11,7 +12,8 @@ object Pages {
     PreviewPage,
     LobbyPage,
     ErrorPage,
-    LoadingPage
+    LoadingPage,
+    GamePage
   )
 
   def selectPage[S <: FrontendState](nutriaState: S): Page[S] =

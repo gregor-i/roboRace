@@ -10,7 +10,7 @@ object RenderScenario {
         Node("svg")
           .attr("viewBox", s"0 0 ${Svg.width(scenario)} ${Svg.height(scenario)}")
           .children(
-            group("names", Svg.tiles(scenario, click)),
+            group("tiles", Svg.tiles(scenario, click)),
             group("walls", Svg.walls(scenario)),
             group("targets", Svg.targets(scenario, None)),
             group("traps", Svg.traps(scenario)),
