@@ -1,6 +1,7 @@
 package roborace.frontend
 
 import org.scalajs.dom
+import org.scalajs.dom.raw.HTMLElement
 
 import scala.scalajs.js
 
@@ -10,7 +11,7 @@ object Main {
       "DOMContentLoaded",
       (_: js.Any) => {
         val container = dom.document.getElementById("robo-race")
-        new RoboRaceApp(container)
+        new RoboRaceApp(container.asInstanceOf[HTMLElement])
       }
     )
   }

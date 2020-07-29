@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 object PreviewPage extends Page[PreviewFrontendState] {
   override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
     case (_, s"/scenario/${scenarioId}/preview", _) =>
-      LoadingFrontendState.apply(
+      LoadingFrontendState(
         for {
           scenarios <- roborace.frontend.Service.getAllScenarios()
           thisScenario = scenarios.find(_.id == scenarioId)

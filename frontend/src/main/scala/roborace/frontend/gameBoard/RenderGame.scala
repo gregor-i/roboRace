@@ -1,53 +1,55 @@
-//package roborace.frontend.gameBoard
-//
-//import com.raquo.snabbdom.simple._
-//import com.raquo.snabbdom.simple.attrs.name
-//import com.raquo.snabbdom.simple.implicits._
-//import com.raquo.snabbdom.simple.props.className
-//import com.raquo.snabbdom.simple.tags.div
-//import roborace.frontend.util.{Dynamic, Hooks, Ui}
-//import gameEntities.{Direction, GameResponse, Position, RunningPlayer}
-//import org.scalajs.dom
-//
-//object RenderGame extends Ui {
-//  def apply(game: GameResponse, click: Option[(Position, Direction) => Unit]): VNode = {
-//    var oldDuration, oldTime = 0d
-//
-//    div(className := "game-board",
-//      Hooks { hooks =>
-//        hooks.addInsertHook { node =>
-//          val svg = dom.document.getElementsByTagName("svg").item(0)
-//          Dynamic(svg).dataset.duration = Animation.eventSequenceDuration(game.events)
-//        }
-//        hooks.addPrePatchHook { (oldNode, newNode) =>
-//          val oldSvg = Dynamic(oldNode.elm.get.firstChild)
-//          oldDuration = oldSvg.dataset.duration.asInstanceOf[String].toDouble
-//          oldTime = oldSvg.getCurrentTime().asInstanceOf[Double]
-//        }
-//        hooks.addPostPatchHook { (oldNode, newNode) =>
-//          val newSvg = Dynamic(newNode.elm.get.firstChild)
-//          val newDuration = Animation.eventSequenceDuration(game.events)
-//          if (oldDuration != newDuration) {
-//            newSvg.dataset.duration = newDuration
-//            newSvg.setCurrentTime(Math.min(oldTime, oldDuration))
-//          }
-//        }
-//      },
-//      tags.build("svg")(
-//        attrs.build[String]("viewBox") := s"0 0 ${Svg.width(game.scenario)} ${Svg.height(game.scenario)}",
-//        tags.build("g")(
-//          name := "tiles",
-//          seq(Svg.tiles(game.scenario, click))
-//        ),
-//        tags.build("g")(seq(Svg.walls(game.scenario))),
-//        tags.build("g")(seq(Svg.targets(game.scenario, game.you.collect{case p:RunningPlayer => p.currentTarget}))),
-//        tags.build("g")(seq(Svg.traps(game.scenario))),
-//        tags.build("g")(seq(Svg.startPoints(game.scenario))),
-//        tags.build("g")(seq(Svg.robots(game.scenario.initialRobots))),
-//        tags.build("g")(seq(Animation.animations(game))),
-//        NameSpace("http://www.w3.org/2000/svg"),
-//      )
-//    )
-//  }
-//
-//}
+package roborace.frontend.gameBoard
+
+import gameEntities.{Direction, GameResponse, Position, RunningPlayer}
+import org.scalajs.dom.raw.HTMLElement
+import roborace.frontend.util.Untyped
+import snabbdom.{Node, Snabbdom}
+
+object RenderGame {
+  def apply(game: GameResponse, click: Option[(Position, Direction) => Unit]): Node = {
+    var oldDuration, oldTime = 0d
+
+    Node("div.game-board")
+      .hook(
+        "insert",
+        Snabbdom.hook { node =>
+          val svg = node.elm.get.getElementsByTagName("svg").item(0).asInstanceOf[HTMLElement]
+          svg.dataset.update("duration", Animation.eventSequenceDuration(game.events).toString)
+        }
+      )
+      .hook(
+        "prepatch",
+        Snabbdom.hook { (oldNode, newNode) =>
+          val oldSvg = oldNode.elm.get.firstChild.asInstanceOf[HTMLElement]
+          oldDuration = oldSvg.dataset.get("duration").get.toDouble
+          oldTime = Untyped(oldSvg).getCurrentTime().asInstanceOf[Double]
+        }
+      )
+      .hook(
+        "postpatch",
+        Snabbdom.hook { (oldNode, newNode) =>
+          val newSvg      = newNode.elm.get.firstChild.asInstanceOf[HTMLElement]
+          val newDuration = Animation.eventSequenceDuration(game.events)
+          if (oldDuration != newDuration) {
+            newSvg.dataset.update("duration", newDuration.toString)
+            Untyped(newSvg).setCurrentTime(Math.min(oldTime, oldDuration))
+          }
+        }
+      )
+      .child(
+        Node("svg")
+          .attr("viewBox", s"0 0 ${Svg.width(game.scenario)} ${Svg.height(game.scenario)}")
+          .children(
+            group("names", Svg.tiles(game.scenario, click)),
+            group("walls", Svg.walls(game.scenario)),
+            group("targets", Svg.targets(game.scenario, game.you.collect { case p: RunningPlayer => p.currentTarget })),
+            group("traps", Svg.traps(game.scenario)),
+            group("startPoints", Svg.startPoints(game.scenario)),
+            group("robots", Svg.robots(game.scenario.initialRobots)),
+            group("animations", Animation.animations(game))
+          )
+      )
+  }
+  private def group(name: String, nodes: Seq[Node]): Node =
+    Node("g").attr("name", name).child(nodes)
+}

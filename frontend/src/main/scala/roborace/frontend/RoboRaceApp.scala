@@ -1,20 +1,16 @@
 package roborace.frontend
 
 import org.scalajs.dom
-import org.scalajs.dom.Element
-import roborace.frontend.error.ErrorState
-import roborace.frontend.loading.LoadingFrontendState
+import org.scalajs.dom.raw.HTMLElement
 import roborace.frontend.util.SnabbdomApp
 import snabbdom.VNode
 
 import scala.scalajs.js.|
-import scala.util.{Failure, Success}
 
-import scala.concurrent.ExecutionContext.Implicits.global
+class RoboRaceApp(container: HTMLElement) extends SnabbdomApp {
+  val user: User = User(sessionId = container.dataset.get("sessionId").get)
 
-class RoboRaceApp(container: Element) extends SnabbdomApp {
-
-  var node: Element | VNode = container
+  var node: HTMLElement | VNode = container
 
   def renderState(state: FrontendState): Unit = {
     Router.stateToUrl(state) match {
@@ -29,22 +25,10 @@ class RoboRaceApp(container: Element) extends SnabbdomApp {
       case None => ()
     }
 
-    state match {
-      case LoadingFrontendState(future, _) =>
-        future.onComplete {
-          case Success(newState) => renderState(newState)
-          case Failure(exception) =>
-            renderState(
-              ErrorState(s"unexpected problem while initializing app: ${exception.getMessage}")
-            )
-        }
-      case _ => ()
-    }
-
     node = patch(node, Pages.ui(state, renderState).toVNode)
   }
 
-  dom.window.onpopstate = _ => renderState(Router.stateFromUrl(dom.window.location, None)) // todo: get user
+  dom.window.onpopstate = _ => renderState(Router.stateFromUrl(dom.window.location, Some(user)))
 
-  renderState(Router.stateFromUrl(dom.window.location, None))
+  renderState(Router.stateFromUrl(dom.window.location, Some(user)))
 }
