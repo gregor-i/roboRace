@@ -32,7 +32,6 @@ val frontend = project
   .dependsOn(gameEntities.js)
   .enablePlugins(ScalaJSPlugin)
   .settings(
-    scalacOptions += "-P:scalajs:sjsDefinedByDefault",
     scalaJSUseMainModuleInitializer := true,
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) }
   )
@@ -51,7 +50,7 @@ compile in frontend := {
 
 def snabbdom = Seq(
   resolvers += Resolver.bintrayRepo("gregor-i", "maven"),
-  libraryDependencies += "com.github.gregor-i" %%% "scalajs-snabbdom" % "1.0"
+  libraryDependencies += "com.github.gregor-i" %%% "scalajs-snabbdom" % "1.0.1"
 )
 
 def scalaTest = libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.0" % Test
