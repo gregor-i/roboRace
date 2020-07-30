@@ -120,7 +120,6 @@ object GameUi {
       val used    = state.slots.values.count(_ == instruction)
       val free    = allowed - used
 
-      // todo: unsure if correctly translated
       if (free > 0) {
         Some(
           Node("div.action")
@@ -128,12 +127,12 @@ object GameUi {
             .child(
               Node("img")
                 .attr("src", Images.action(instruction))
-                .childOptional(
-                  if (free != 1) Some(Node("div.badge").text(free.toString))
-                  else None
-                )
-                .event("click", Snabbdom.event(_ => PlaceInstruction(instruction, state.focusedSlot).apply(state).foreach(update)))
             )
+            .childOptional(
+              if (free != 1) Some(Node("div.badge").text(free.toString))
+              else None
+            )
+            .event("click", Snabbdom.event(_ => PlaceInstruction(instruction, state.focusedSlot).apply(state).foreach(update)))
         )
       } else {
         None

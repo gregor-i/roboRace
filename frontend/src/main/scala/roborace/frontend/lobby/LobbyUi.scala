@@ -21,8 +21,7 @@ object LobbyUi {
   def renderHeader(): Node =
     Node("nav.navbar.is-light")
       .child(
-        Node("div")
-          .classes("navbar-brand")
+        Node("div.navbar-brand")
           .child(
             Node("a")
               .classes("navbar-item")
@@ -31,9 +30,11 @@ object LobbyUi {
           )
       )
       .child(
-        Node("a.navbar-item")
-          .attr("href", "#")
-          .text("Tutorial")
+        Node("div.navbar-menu").child(
+          Node("a.navbar-item")
+            .attr("href", "#")
+            .text("Tutorial")
+        )
       )
 
   def gameCard(gameResponse: GameResponse, update: FrontendState => Unit): Node = {
