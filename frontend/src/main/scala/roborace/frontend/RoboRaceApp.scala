@@ -11,6 +11,7 @@ import roborace.frontend.service.Service
 import roborace.frontend.util.SnabbdomApp
 import snabbdom.VNode
 import io.circe.generic.auto._
+import roborace.frontend.lobby.LobbyState
 
 import scala.scalajs.js
 import scala.scalajs.js.|
@@ -60,9 +61,36 @@ class RoboRaceApp(container: HTMLElement) extends SnabbdomApp {
     }
   }
 
+  var lobbyEventSource: Option[EventSource] = None
+  def lobbyUpdates(state: FrontendState): Unit = {
+    def eventListener(lobbyState: LobbyState): js.Function1[MessageEvent, Unit] = message => {
+      decode[Seq[GameResponse]](message.data.asInstanceOf[String]) match {
+        case Right(newGames) => renderState(lobbyState.copy(games = newGames))
+        case Left(_)         => renderState(ErrorState("unexpected Message received on SSE"))
+      }
+    }
+
+    (state, lobbyEventSource) match {
+      case (state: LobbyState, Some(eventSource)) =>
+        eventSource.onmessage = eventListener(state)
+
+      case (state: LobbyState, None) =>
+        val eventSource = Service.lobbyUpdates()
+        eventSource.onmessage = eventListener(state)
+        lobbyEventSource = Some(eventSource)
+
+      case (_, Some(eventSource)) =>
+        eventSource.close()
+        lobbyEventSource = None
+
+      case (_, None) => ()
+    }
+  }
+
   def renderState(state: FrontendState): Unit = {
     saveStateToHistory(state)
     gameUpdates(state)
+    lobbyUpdates(state)
 
     node = patch(node, Pages.ui(state, renderState).toVNode)
   }
