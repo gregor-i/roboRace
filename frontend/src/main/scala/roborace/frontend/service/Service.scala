@@ -38,7 +38,7 @@ object Service extends ServiceTrait {
   def createGame(scenario: Scenario, index: Int): Future[GameResponse] =
     withLoadingOverlay {
       post(s"/api/games?index=$index", scenario)
-        .flatMap(check(200))
+        .flatMap(check(201))
         .flatMap(parse[GameResponse])
     }
 

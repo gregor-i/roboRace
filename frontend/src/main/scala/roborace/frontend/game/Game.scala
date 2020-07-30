@@ -1,7 +1,7 @@
 package roborace.frontend.game
 
 object Game {
-  def newCycleEffects(oldState: GameState, newState: GameState): GameState =
+  def clearSlots(oldState: GameState, newState: GameState): GameState =
     if (oldState.game.cycle != newState.game.cycle) {
       oldState.copy(focusedSlot = 0, slots = Map.empty, game = newState.game)
     } else {
