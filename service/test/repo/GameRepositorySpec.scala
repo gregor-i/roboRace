@@ -2,26 +2,30 @@ package repo
 
 import java.time.ZonedDateTime
 
-import gameLogic.DefaultScenario
 import gameEntities._
-import org.scalatest.{BeforeAndAfterEach, FunSuite, Matchers}
+import gameLogic.DefaultScenario
+import org.scalatest.BeforeAndAfterEach
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 
-class GameRepositorySpec extends FunSuite with Matchers with GuiceOneAppPerSuite with BeforeAndAfterEach{
+class GameRepositorySpec extends AnyFunSuite with Matchers with GuiceOneAppPerSuite with BeforeAndAfterEach {
   def repo = app.injector.instanceOf[GameRepository]
 
   val g1 = GameRow(
     id = "initial",
     owner = "player",
-    game = Some(Game(2, DefaultScenario.default, List.empty, Seq(RobotTurns(0, Position(0,0), UpRight, Up)))),
-    creationTime = ZonedDateTime.now().withNano(0))
+    game = Some(Game(2, DefaultScenario.default, List.empty, Seq(RobotTurns(0, Position(0, 0), UpRight, Up)))),
+    creationTime = ZonedDateTime.now().withNano(0)
+  )
   val g2 = GameRow(
     id = "starting",
     owner = "player",
     game = Some(Game(0, DefaultScenario.default, List.empty, Seq())),
-    creationTime = ZonedDateTime.now().withNano(0))
+    creationTime = ZonedDateTime.now().withNano(0)
+  )
 
-  override def beforeEach = {
+  override def beforeEach(): Unit = {
     repo.list().foreach(row => repo.delete(row.id))
     repo.save(g1)
     repo.save(g2)

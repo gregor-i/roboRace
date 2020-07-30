@@ -13,10 +13,7 @@ The current development state is playable at [Heroku](https://roborace.herokuapp
   - rework the lobby ...
 
 ### technical updates:
-  - remove `"com.raquo" %%% "snabbdom"` and replace it with the facade from nutria (maybe extract the facade into its own project)
   - dependency updates
-  - update the frontend integration task
-  - build an router
   - use an icon font lib
   - re-organize the project (ie: what is `gameLogic`?)
   - do some research about rendering engines ...

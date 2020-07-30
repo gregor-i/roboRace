@@ -3,7 +3,7 @@ import scala.sys.process._
 
 name := "roboRace"
 
-scalaVersion in ThisBuild := "2.13.1"
+scalaVersion in ThisBuild := "2.13.3"
 scalafmtOnCompile in ThisBuild := true
 
 lazy val gameEntities = crossProject(JSPlatform, JVMPlatform)
@@ -18,10 +18,10 @@ lazy val service = project.in(file("service"))
   .settings(
     libraryDependencies += guice,
     libraryDependencies += "com.dripower" %% "play-circe" % "2812.0",
-    libraryDependencies += "org.postgresql" % "postgresql" % "42.2.10",
+    libraryDependencies += "org.postgresql" % "postgresql" % "42.2.14",
     libraryDependencies += evolutions,
     libraryDependencies += jdbc,
-    libraryDependencies += "org.playframework.anorm" %% "anorm" % "2.6.5",
+    libraryDependencies += "org.playframework.anorm" %% "anorm" % "2.6.7",
     libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test,
   )
   .enablePlugins(EmbeddedPostgresPlugin)
@@ -68,7 +68,7 @@ def circe = {
 }
 
 def monocle = {
-  val version = "2.0.4"
+  val version = "2.0.5"
   libraryDependencies ++= Seq(
     "com.github.julien-truffaut" %%% "monocle-core"    % version,
     "com.github.julien-truffaut" %%% "monocle-macro"   % version,
