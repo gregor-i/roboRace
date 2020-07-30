@@ -9,14 +9,10 @@ scalafmtOnCompile in ThisBuild := true
 lazy val gameEntities = crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
   .in(file("gameEntities"))
-  .settings(circe)
-
-lazy val gameLogic = project.in(file("gameLogic"))
-  .dependsOn(gameEntities.jvm)
-  .settings( monocle /*, scalaTest */)
+  .settings(circe, monocle, scalaTest)
 
 lazy val service = project.in(file("service"))
-  .dependsOn(gameLogic)
+  .dependsOn(gameEntities.jvm)
 //  .settings(scalaTest)
   .enablePlugins(PlayScala)
   .settings(
@@ -58,7 +54,7 @@ def snabbdom = Seq(
   libraryDependencies += "com.github.gregor-i" %%% "scalajs-snabbdom" % "1.0"
 )
 
-def scalaTest = libraryDependencies += "org.scalatest" %%% "scalatest" % "3.0.5" % Test
+def scalaTest = libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.0" % Test
 
 def circe = {
   val version = "0.13.0"

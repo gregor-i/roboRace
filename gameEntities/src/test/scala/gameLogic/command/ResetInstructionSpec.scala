@@ -3,9 +3,10 @@ package gameLogic.command
 import gameEntities._
 import gameLogic._
 import helper.GameUpdateHelper
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class ResetInstructionSpec extends FunSuite with Matchers with GameUpdateHelper {
+class ResetInstructionSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
   val initialGame = sequenceWithAutoCycle(createGame()(p0))(
     RegisterForGame(1)(p1).accepted,
     clearHistory
@@ -28,10 +29,8 @@ class ResetInstructionSpec extends FunSuite with Matchers with GameUpdateHelper 
     sequenceWithAutoCycle(initialGame)(
       SetInstructions(validInstructionSequence)(p0).accepted,
       ResetInstruction(p0).accepted,
-
       SetInstructions(validInstructionSequence)(p1).accepted,
       assertCycle(0),
-
       SetInstructions(validInstructionSequence)(p0).accepted,
       assertCycle(1)
     )

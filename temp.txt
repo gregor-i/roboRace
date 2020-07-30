@@ -1,9 +1,0 @@
-"Error
-    at $c_s_NotImplementedError.fillInStackTrace__jl_Throwable (http://localhost:9000/assets/robo-race.js:15823:14)
-    at $c_s_NotImplementedError.init___T__jl_Throwable__Z__Z (http://localhost:9000/assets/robo-race.js:15929:10)
-    at $c_s_NotImplementedError.init___ (http://localhost:9000/assets/robo-race.js:35552:58)
-    at $c_s_Predef$.$$qmark$qmark$qmark__sr_Nothing$ (http://localhost:9000/assets/robo-race.js:23304:40)
-    at $c_Lroborace_frontend_RoboRaceApp.renderState__Lroborace_frontend_FrontendState__V (http://localhost:9000/assets/robo-race.js:11385:70)
-    at $c_Lroborace_frontend_RoboRaceApp.init___Lorg_scalajs_dom_raw_Element (http://localhost:9000/assets/robo-race.js:11391:8)
-    at $c_Lroborace_frontend_Main$.roborace$frontend$Main$$$anonfun$main$1__sjs_js_Any__Lroborace_frontend_RoboRaceApp (http://localhost:9000/assets/robo-race.js:4018:50)
-    at HTMLDocument.<anonymous> (http://localhost:9000/assets/robo-race.js:4022:42)"

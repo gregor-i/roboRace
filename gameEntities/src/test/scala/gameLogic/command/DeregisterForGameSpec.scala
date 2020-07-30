@@ -2,9 +2,10 @@ package gameLogic.command
 
 import gameEntities._
 import helper.GameUpdateHelper
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class DeregisterForGameSpec extends FunSuite with Matchers with GameUpdateHelper {
+class DeregisterForGameSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
   test("deregister players") {
     sequenceWithAutoCycle(createGame()(p0))(
       RegisterForGame(1)(p1).accepted,

@@ -1,13 +1,13 @@
 package gameLogic
 
 import gameEntities._
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class PositionSpec extends FunSuite with Matchers {
+class PositionSpec extends AnyFunSuite with Matchers {
 
-  val odd = Position(1, 1)
+  val odd  = Position(1, 1)
   val even = Position(4, 4)
-
 
   test("Up") {
     Direction.move(Up, odd) shouldBe Position(1, 0)
@@ -18,7 +18,6 @@ class PositionSpec extends FunSuite with Matchers {
     Direction.move(UpRight, odd) shouldBe Position(2, 1)
     Direction.move(UpRight, even) shouldBe Position(5, 3)
   }
-
 
   test("DownRight") {
     Direction.move(DownRight, odd) shouldBe Position(2, 2)
@@ -42,12 +41,10 @@ class PositionSpec extends FunSuite with Matchers {
 
   test("walk in a cycle") {
     def cycle(p: Position) =
-      Direction.move(UpRight,
-        Direction.move(DownRight,
-          Direction.move(Down,
-            Direction.move(DownLeft,
-              Direction.move(UpLeft,
-                Direction.move(Up, p))))))
+      Direction.move(
+        UpRight,
+        Direction.move(DownRight, Direction.move(Down, Direction.move(DownLeft, Direction.move(UpLeft, Direction.move(Up, p)))))
+      )
 
     cycle(odd) shouldBe odd
     cycle(even) shouldBe even

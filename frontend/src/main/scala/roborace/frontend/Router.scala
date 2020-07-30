@@ -3,6 +3,7 @@ package roborace.frontend
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder}
 import org.scalajs.dom
+import roborace.frontend.error.ErrorState
 
 import scala.util.Try
 import scala.util.chaining._
@@ -22,7 +23,7 @@ object Router {
       .lift
 
   def stateFromUrl(location: Location, user: Option[User]): FrontendState =
-    stateFromUrlPF((user, location._1, location._2)).getOrElse(???) // todo: replace ??? with ErrorState
+    stateFromUrlPF((user, location._1, location._2)).getOrElse(ErrorState("unkown url"))
 
   def stateToUrl(state: FrontendState): Option[Location] =
     Pages.selectPage(state).stateToUrl(state)

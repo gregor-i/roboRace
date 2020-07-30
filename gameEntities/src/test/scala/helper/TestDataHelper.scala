@@ -3,10 +3,10 @@ package helper
 import gameEntities._
 import gameLogic._
 import gameLogic.command.CreateGame
-import gameLogic.gameUpdate.Cycle
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 
-trait TestDataHelper { _: UpdateChainHelper with Matchers =>
+trait TestDataHelper {
+  _: UpdateChainHelper with Matchers =>
   val p0 = "p0"
   val p1 = "p1"
   val p2 = "p2"
@@ -15,7 +15,7 @@ trait TestDataHelper { _: UpdateChainHelper with Matchers =>
 
   def createGame(scenario: Scenario = DefaultScenario.default, index: Int = 0)(player: String): Game = {
     CreateGame(scenario, index)(player) match {
-      case CommandRejected(reason) => fail(s"command was rejected with $reason")
+      case CommandRejected(reason)   => fail(s"command was rejected with $reason")
       case CommandAccepted(newState) => newState
     }
   }
@@ -31,10 +31,15 @@ trait TestDataHelper { _: UpdateChainHelper with Matchers =>
 
   def forcedInstructions(player: String)(instructions: Instruction*): CE = {
     val filledInstrs = (instructions ++ Seq.fill(Constants.instructionsPerCycle)(Sleep))
-        .take(Constants.instructionsPerCycle)
-    Lenses.runningPlayer(player).modify(_.copy(
-      instructionOptions = filledInstrs.groupBy(identity).map(t => InstructionOption(t._1, t._2.size)).toSeq,
-      instructionSlots = filledInstrs))
+      .take(Constants.instructionsPerCycle)
+    Lenses
+      .runningPlayer(player)
+      .modify(
+        _.copy(
+          instructionOptions = filledInstrs.groupBy(identity).map(t => InstructionOption(t._1, t._2.size)).toSeq,
+          instructionSlots = filledInstrs
+        )
+      )
   }
 
   def forceRobot(id: String, robot: Robot): CE =

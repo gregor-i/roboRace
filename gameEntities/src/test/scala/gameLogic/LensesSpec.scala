@@ -1,10 +1,10 @@
 package gameLogic
 
 import gameEntities._
-import monocle.Traversal
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class LensesSpec extends FunSuite with Matchers {
+class LensesSpec extends AnyFunSuite with Matchers {
   test("self written lenses work") {
     val p = RunningPlayer(
       index = 0,

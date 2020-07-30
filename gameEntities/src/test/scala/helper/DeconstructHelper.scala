@@ -3,7 +3,7 @@ package helper
 import gameEntities._
 import gameLogic.command.Command
 import gameLogic.gameUpdate._
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 
 trait DeconstructHelper {
   _: Matchers =>
@@ -12,11 +12,10 @@ trait DeconstructHelper {
     def apply(playerName: String): Game => CommandResponse = Command.apply(c, playerName)(_)
   }
 
-
   implicit class EnrichCommandReponseFunction(val f: Game => CommandResponse) {
     def accepted: Game => Game = state => {
       f(state) match {
-        case CommandRejected(reason) => fail(s"command was rejected with $reason")
+        case CommandRejected(reason)   => fail(s"command was rejected with $reason")
         case CommandAccepted(newState) => Cycle(newState)
       }
     }

@@ -14,9 +14,6 @@ POST          /api/scenarios                 controller.ScenarioController.post(
 PUT           /api/scenarios/:id             controller.ScenarioController.put(id: String)
 DELETE        /api/scenarios/:id             controller.ScenarioController.delete(id: String)
 
-#Admin
-GET           /admin                         controller.AdminController.ui()
-
 #Frontend
 GET           /                              controller.UiController.lobby(path = "")
 GET           /assets/*file                  controller.UiController.asset(file)

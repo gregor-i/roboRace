@@ -1,7 +1,7 @@
 package roborace.frontend.lobby
 
 import gameEntities._
-import roborace.frontend.{FrontendState, GameFrontendState, LobbyFrontendState, PreviewFrontendState}
+import roborace.frontend.{EditorState, FrontendState, GameFrontendState, LobbyFrontendState, PreviewFrontendState}
 import roborace.frontend.components.{BulmaComponents, Images, RobotImage}
 import snabbdom.Node
 
@@ -72,7 +72,7 @@ object LobbyUi {
             .childOptional(if (scenarioResponse.ownedByYou) Some(BulmaComponents.tag(s"Created by you", "is-info")) else None)
         ),
       "Start Game" -> Some(_ => update(PreviewFrontendState(scenarioResponse))),
-      "Editor"     -> None, //Some(_ => Main.gotoEditor(scenarioResponse)),
+      "Editor"     -> Some(_ => update(EditorState(scenarioResponse.scenario, scenarioResponse.description))),
       "Delete"     -> None
     )
 

@@ -3,9 +3,10 @@ package gameLogic.gameUpdate
 import gameEntities._
 import gameLogic._
 import helper.GameUpdateHelper
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 
-class TrapEffectsSpec extends FunSuite with Matchers with GameUpdateHelper {
+class TrapEffectsSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
   test("TurnRightTrap: should turn robots before the cycle starts") {
     sequenceWithAutoCycle(createGame(DefaultScenario.default)(p0))(
       addTrap(TurnRightTrap(Position(1, 8))),

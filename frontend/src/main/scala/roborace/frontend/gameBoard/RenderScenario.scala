@@ -4,7 +4,7 @@ import gameEntities._
 import snabbdom.Node
 
 object RenderScenario {
-  def apply(scenario: Scenario, click: Option[(Position, Direction) => Unit]): Node = {
+  def apply(scenario: Scenario, click: Option[(Position, Direction) => Unit]): Node =
     Node("div.game-board")
       .child(
         Node("svg")
@@ -17,7 +17,6 @@ object RenderScenario {
             group("startPoints", Svg.startPoints(scenario))
           )
       )
-  }
 
   private def group(name: String, nodes: Seq[Node]): Node =
     Node("g").attr("name", name).child(nodes)
