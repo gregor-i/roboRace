@@ -2,9 +2,9 @@ package roborace.frontend.game
 
 import gameEntities._
 import org.scalajs.dom
-import roborace.frontend.{FrontendState, GameFrontendState, LobbyFrontendState, Main}
+import roborace.frontend.FrontendState
 import roborace.frontend.components.{Fab, Images}
-import roborace.frontend.gameBoard.{Animation, RenderGame}
+import roborace.frontend.components.gameBoard.{Animation, RenderGame}
 import roborace.frontend.lobby.LobbyPage
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}
@@ -12,7 +12,7 @@ import snabbdom.{Node, Snabbdom}
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object GameUi {
-  def apply(state: GameFrontendState, update: FrontendState => Unit): Node = {
+  def apply(state: GameState, update: FrontendState => Unit): Node = {
     val replayFab = Fab(Images.iconReplayAnimation)
       .classes("fab-left-1")
       .event(
@@ -95,7 +95,7 @@ object GameUi {
     }
   }
 
-  def renderInstructionBar(state: GameFrontendState, update: FrontendState => Unit, player: RunningPlayer): Node = {
+  def renderInstructionBar(state: GameState, update: FrontendState => Unit, player: RunningPlayer): Node = {
     def instructionSlot(index: Int): Node = {
       val instruction = state.slots.get(index)
       val focused     = state.focusedSlot == index

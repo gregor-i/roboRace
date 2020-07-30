@@ -7,6 +7,15 @@ import snabbdom.VNode
 
 import scala.scalajs.js.|
 
+//  def renderState(state: GameState): Unit = {
+//    eventSource.onmessage = message => {
+//      val newGame = decode[GameResponse](message.data.asInstanceOf[String]).right.get
+//      renderState(Game.newCycleEffects(state, state.copy(game = newGame)))
+//    }
+//
+//    node = patch(node, GameUi(state, renderState))
+//  }
+
 class RoboRaceApp(container: HTMLElement) extends SnabbdomApp {
   val user: User = User(sessionId = container.dataset.get("sessionId").get)
 

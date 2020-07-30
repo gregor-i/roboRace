@@ -1,19 +1,22 @@
 package roborace.frontend.lobby
 
+import gameEntities.{GameResponse, ScenarioResponse}
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.loading.LoadingFrontendState
 import roborace.frontend.service.Service
-import roborace.frontend.{FrontendState, LobbyFrontendState, Page, User, service}
+import roborace.frontend.{FrontendState, Page, User, service}
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object LobbyPage extends Page[LobbyFrontendState] {
+case class LobbyState(games: Seq[GameResponse], scenarios: Seq[ScenarioResponse]) extends FrontendState
+
+object LobbyPage extends Page[LobbyState] {
   def load(): FrontendState = LoadingFrontendState(
     for {
       games     <- Service.getAllGames()
       scenarios <- service.Service.getAllScenarios()
-    } yield LobbyFrontendState(games, scenarios)
+    } yield LobbyState(games, scenarios)
   )
 
   override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {

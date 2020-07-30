@@ -1,7 +1,6 @@
 package roborace.frontend
 package loading
 
-import monocle.macros.Lenses
 import roborace.frontend.Router.Location
 import roborace.frontend.error.ErrorState
 import snabbdom._

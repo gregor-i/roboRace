@@ -1,15 +1,18 @@
 package roborace.frontend.preview
 
+import gameEntities.ScenarioResponse
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.error.ErrorState
 import roborace.frontend.loading.LoadingFrontendState
 import roborace.frontend.service.Service
-import roborace.frontend.{FrontendState, Page, PreviewFrontendState, User}
+import roborace.frontend.{FrontendState, Page, User}
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object PreviewPage extends Page[PreviewFrontendState] {
+case class PreviewState(scenario: ScenarioResponse) extends FrontendState
+
+object PreviewPage extends Page[PreviewState] {
   override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
     case (_, s"/scenario/${scenarioId}/preview", _) =>
       LoadingFrontendState(
@@ -18,7 +21,7 @@ object PreviewPage extends Page[PreviewFrontendState] {
           thisScenario = scenarios.find(_.id == scenarioId)
           state = thisScenario match {
             case None           => ErrorState("unknown Scenario")
-            case Some(scenario) => PreviewFrontendState(scenario)
+            case Some(scenario) => PreviewState(scenario)
           }
         } yield state
       )

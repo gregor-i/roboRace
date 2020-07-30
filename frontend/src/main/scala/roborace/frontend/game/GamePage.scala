@@ -1,15 +1,18 @@
 package roborace.frontend.game
 
+import gameEntities.{GameResponse, Instruction}
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.error.ErrorState
 import roborace.frontend.loading.LoadingFrontendState
 import roborace.frontend.service.Service
-import roborace.frontend.{FrontendState, GameFrontendState, Page, User}
+import roborace.frontend.{FrontendState, Page, User}
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-object GamePage extends Page[GameFrontendState] {
+case class GameState(game: GameResponse, focusedSlot: Int = 0, slots: Map[Int, Instruction] = Map.empty) extends FrontendState
+
+object GamePage extends Page[GameState] {
   override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
     case (_, s"/games/${gameId}", _) =>
       LoadingFrontendState {
@@ -17,7 +20,7 @@ object GamePage extends Page[GameFrontendState] {
           games <- Service.getAllGames()
           game = games.find(_.id == gameId)
           state = game match {
-            case Some(game) => GameFrontendState(game)
+            case Some(game) => GameState(game)
             case None       => ErrorState("Game not found")
           }
         } yield state

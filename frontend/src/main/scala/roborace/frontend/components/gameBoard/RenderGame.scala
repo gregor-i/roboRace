@@ -1,4 +1,4 @@
-package roborace.frontend.gameBoard
+package roborace.frontend.components.gameBoard
 
 import gameEntities.{Direction, GameResponse, Position, RunningPlayer}
 import org.scalajs.dom.raw.HTMLElement

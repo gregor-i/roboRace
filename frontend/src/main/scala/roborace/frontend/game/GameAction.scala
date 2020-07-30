@@ -1,16 +1,15 @@
 package roborace.frontend.game
 
-import roborace.frontend.GameFrontendState
 import gameEntities.{Constants, Instruction, RunningPlayer, SetInstructions}
 
 import scala.concurrent.Future
 
 sealed trait GameAction {
-  def apply(state: GameFrontendState): Future[GameFrontendState]
+  def apply(state: GameState): Future[GameState]
 }
 
 case class PlaceInstruction(instruction: Instruction, slot: Int) extends GameAction {
-  def apply(state: GameFrontendState): Future[GameFrontendState] = {
+  def apply(state: GameState): Future[GameState] = {
     val newSlots = state.slots + (slot -> instruction)
     val newState = state.copy(slots = newSlots)
     if (newSlots.size == Constants.instructionsPerCycle) {
@@ -27,7 +26,7 @@ case class PlaceInstruction(instruction: Instruction, slot: Int) extends GameAct
 }
 
 case class UnsetInstruction(slot: Int) extends GameAction {
-  def apply(state: GameFrontendState): Future[GameFrontendState] = {
+  def apply(state: GameState): Future[GameState] = {
     val newSlots = state.slots - slot
     val newState = state.copy(slots = newSlots)
     state.game.you match {

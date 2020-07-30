@@ -1,17 +1,18 @@
 package roborace.frontend.preview
 
 import gameEntities.{Direction, Position, Scenario}
+import roborace.frontend.FrontendState
 import roborace.frontend.components.{Fab, Images}
-import roborace.frontend.gameBoard.RenderScenario
+import roborace.frontend.game.GameState
+import roborace.frontend.components.gameBoard.RenderScenario
 import roborace.frontend.lobby.LobbyPage
 import roborace.frontend.service.Service
-import roborace.frontend.{FrontendState, GameFrontendState, PreviewFrontendState}
 import snabbdom.{Node, Snabbdom}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object PreviewUi {
-  def render(state: PreviewFrontendState, update: FrontendState => Unit): Node =
+  def render(state: PreviewState, update: FrontendState => Unit): Node =
     Node("div.game")
       .prop("id", "robo-race")
       .child(Fab(Images.iconClose).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
@@ -24,7 +25,7 @@ object PreviewUi {
       .foreach { robot =>
         (for {
           game <- Service.createGame(scenario, robot.index)
-        } yield GameFrontendState(game))
+        } yield GameState(game))
           .foreach(update)
       }
 

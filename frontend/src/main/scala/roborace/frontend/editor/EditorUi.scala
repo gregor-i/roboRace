@@ -1,13 +1,13 @@
 package roborace.frontend.editor
 
 import gameEntities._
-import roborace.frontend.{EditorState, FrontendState, Main}
+import roborace.frontend.FrontendState
 import roborace.frontend.components.{Fab, Images}
-import roborace.frontend.gameBoard.RenderScenario
+import roborace.frontend.components.gameBoard.RenderScenario
 import roborace.frontend.lobby.LobbyPage
 import roborace.frontend.service.Service
 import roborace.frontend.util.Untyped
-import snabbdom.{Node, Snabbdom, SnabbdomFacade}
+import snabbdom.{Node, Snabbdom}
 
 object EditorUi {
   def apply(state: EditorState, rerender: FrontendState => Unit): Node = {

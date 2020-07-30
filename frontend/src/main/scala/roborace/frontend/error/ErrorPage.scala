@@ -1,7 +1,6 @@
 package roborace.frontend
 package error
 
-import monocle.macros.Lenses
 import roborace.frontend.Router.Location
 import roborace.frontend.components.Body
 import snabbdom._
@@ -16,7 +15,7 @@ object ErrorPage extends Page[ErrorState] {
 
   def render(implicit state: ErrorState, update: FrontendState => Unit): Node =
     Body()
-    //      .child(Header(ErrorState.navbarExpanded))
+    //          .child(Header(ErrorState.navbarExpanded))
       .child(
         Node("div.section")
           .child(
