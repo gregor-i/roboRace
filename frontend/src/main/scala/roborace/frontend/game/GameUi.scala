@@ -3,7 +3,7 @@ package roborace.frontend.game
 import gameEntities._
 import org.scalajs.dom
 import roborace.frontend.FrontendState
-import roborace.frontend.components.{Fab, Images}
+import roborace.frontend.components.{Body, Fab, Images}
 import roborace.frontend.components.gameBoard.{Animation, RenderGame}
 import roborace.frontend.lobby.LobbyPage
 import roborace.frontend.util.Untyped
@@ -13,33 +13,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object GameUi {
   def apply(state: GameState, update: FrontendState => Unit): Node = {
-    val replayFab = Fab(Images.iconReplayAnimation)
-      .classes("fab-left-1")
-      .event(
-        "click",
-        Snabbdom.event { _ =>
-          Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(
-            if (state.game.cycle == 0)
-              0
-            else
-              Animation.eventSequenceDuration(state.game.events.takeWhile {
-                case s: StartCycleEvaluation => s.cycle != state.game.cycle - 1
-                case _                       => true
-              })
-          )
-        }
-      )
-      .event("dblclick", Snabbdom.event(_ => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
-
-    val returnToLobbyFab = Fab(Images.iconClose).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load())))
-
-    val body = Node("div.game").prop("id", "robo-race")
-
     state.game.you match {
       case None if state.game.cycle == 0 =>
-        body
-          .child(returnToLobbyFab)
-          .child(replayFab)
+        Body.game()
+          .child(returnToLobbyFab(state, update))
+          .child(replayFab(state, update))
           .child(
             RenderGame(
               state.game,
@@ -59,43 +37,64 @@ object GameUi {
           )
 
       case None =>
-        body
-          .child(returnToLobbyFab)
-          .child(replayFab)
+        Body.game()
+          .child(returnToLobbyFab(state, update))
+          .child(replayFab(state, update))
           .child(RenderGame(state.game, None))
           .child(Node("div.text-panel").text("observer mode"))
 
       case Some(you: QuittedPlayer) =>
-        body
+        Body.game()
           .children(
-            returnToLobbyFab,
-            replayFab,
+            returnToLobbyFab(state, update),
+            replayFab(state, update),
             RenderGame(state.game, None),
             Node("div.text-panel").text("game quitted")
           )
 
       case Some(you: FinishedPlayer) =>
-        body.children(
-          returnToLobbyFab,
-          replayFab,
+        Body.game().children(
+          returnToLobbyFab(state, update),
+          replayFab(state, update),
           RenderGame(state.game, None),
           Node("div.text-panel").text("target reached as " + you.rank)
         )
 
       case Some(you: RunningPlayer) =>
-        body
+        Body.game()
           .children(
             Fab(Images.iconClose)
               .classes("fab-right-1")
               .event("click", Snabbdom.event(_ => SendCommand(state, DeregisterForGame).foreach(update))),
-            replayFab,
+            replayFab(state, update),
             RenderGame(state.game, None),
-            renderInstructionBar(state, update, you)
+            instructionBar(state, update, you)
           )
     }
   }
 
-  def renderInstructionBar(state: GameState, update: FrontendState => Unit, player: RunningPlayer): Node = {
+  private def replayFab(state: GameState, update: FrontendState => Unit) = Fab(Images.iconReplayAnimation)
+    .classes("fab-left-1")
+    .event(
+      "click",
+      Snabbdom.event { _ =>
+        Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(
+          if (state.game.cycle == 0)
+            0
+          else
+            Animation.eventSequenceDuration(state.game.events.takeWhile {
+              case s: StartCycleEvaluation => s.cycle != state.game.cycle - 1
+              case _                       => true
+            })
+        )
+      }
+    )
+    .event("dblclick", Snabbdom.event(_ => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
+
+  private def returnToLobbyFab(state: GameState, update: FrontendState => Unit) =
+    Fab(Images.iconClose).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load())))
+
+  private def instructionBar(state: GameState, update: FrontendState => Unit, player: RunningPlayer): Node = {
     def instructionSlot(index: Int): Node = {
       val instruction = state.slots.get(index)
       val focused     = state.focusedSlot == index

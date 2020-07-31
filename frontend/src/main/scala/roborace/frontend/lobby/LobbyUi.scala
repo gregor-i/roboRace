@@ -2,7 +2,7 @@ package roborace.frontend.lobby
 
 import gameEntities._
 import roborace.frontend.FrontendState
-import roborace.frontend.components.{Tag, Card, Column, Images, MediaObject, RobotImage}
+import roborace.frontend.components.{Body, Card, Column, Images, MediaObject, RobotImage, Tag}
 import roborace.frontend.editor.EditorState
 import roborace.frontend.game.GameState
 import roborace.frontend.preview.PreviewState
@@ -10,7 +10,7 @@ import snabbdom.Node
 
 object LobbyUi {
   def render(lobbyState: LobbyState, update: FrontendState => Unit): Node =
-    Node("div.robo-race")
+    Body()
       .child(renderHeader())
       .child(
         Column(

@@ -32,7 +32,7 @@ object Command {
       )
       CommandAccepted(
         State.sequence(
-          Lenses.players.modify(players => players :+ newPlayer),
+          Game.players.modify(players => players :+ newPlayer),
           Lenses.log(PlayerJoinedGame(newPlayer.index, newPlayer.robot))
         )(game)
       )
@@ -50,7 +50,7 @@ object Command {
       case Some(player: RunningPlayer) if game.cycle == 0 =>
         CommandAccepted(
           State.sequence(
-            Lenses.players.modify(_.filter(_ != player)),
+            Game.players.modify(_.filter(_ != player)),
             Lenses.log(PlayerQuitted(player.index, player.robot))
           )(game)
         )

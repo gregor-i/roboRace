@@ -1,5 +1,8 @@
 package gameEntities
 
+import monocle.macros.Lenses
+
+@Lenses
 case class Scenario(
     width: Int,
     height: Int,

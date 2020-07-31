@@ -16,8 +16,8 @@ object Cycle extends (Game => Game) {
         execAllActions,
         ScenarioEffects.afterCycle,
         g => Lenses.log(FinishedCycleEvaluation(g.cycle))(g),
-        Lenses.runningPlayers composeLens PlayerLenses.instructionOptions modify DealOptions.apply,
-        Lenses.cycle modify (_ + 1),
+        Lenses.runningPlayers composeLens RunningPlayer.instructionOptions modify DealOptions.apply,
+        Game.cycle.modify(_ + 1),
         State.conditional(Lenses.runningPlayers.isEmpty)(
           Lenses.log(AllPlayersFinished)
         )

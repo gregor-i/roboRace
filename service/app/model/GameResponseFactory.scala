@@ -1,6 +1,6 @@
 package model
 
-import gameEntities.{Game, GameResponse}
+import gameEntities.{Game, GameResponse, RunningPlayer}
 import gameLogic.{Lenses, PlayerLenses}
 import repo.{GameRow, Session}
 
@@ -9,7 +9,7 @@ object GameResponseFactory {
     id = gameId,
     cycle = game.cycle,
     scenario = game.scenario,
-    robots = Lenses.runningPlayers.composeLens(PlayerLenses.robot).getAll(game),
+    robots = Lenses.runningPlayers.composeLens(RunningPlayer.robot).getAll(game),
     events = game.events,
     you = game.players.find(_.id == session.playerId)
   )

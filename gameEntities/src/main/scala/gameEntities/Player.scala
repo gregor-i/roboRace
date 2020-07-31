@@ -1,10 +1,13 @@
 package gameEntities
 
+import monocle.macros.Lenses
+
 sealed trait Player {
   val index: Int
   val id: String
 }
 
+@Lenses
 case class RunningPlayer(
     index: Int,
     id: String,

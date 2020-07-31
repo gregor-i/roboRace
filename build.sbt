@@ -5,6 +5,7 @@ import scala.sys.process._
 name := "roboRace"
 
 scalaVersion in ThisBuild := "2.13.3"
+scalacOptions in ThisBuild ++= Seq("-feature", "-deprecation", "-Ymacro-annotations")
 
 // projects
 lazy val root = project
@@ -134,8 +135,7 @@ def circe = {
     "io.circe" %%% "circe-core"           % version,
     "io.circe" %%% "circe-generic"        % version,
     "io.circe" %%% "circe-generic-extras" % version,
-    "io.circe" %%% "circe-parser"         % version,
-    "io.circe" %%% "circe-refined"        % version
+    "io.circe" %%% "circe-parser"         % version
   )
 }
 
@@ -144,8 +144,7 @@ def monocle = {
   libraryDependencies ++= Seq(
     "com.github.julien-truffaut" %%% "monocle-core"    % version,
     "com.github.julien-truffaut" %%% "monocle-macro"   % version,
-    "com.github.julien-truffaut" %%% "monocle-unsafe"  % version,
-    "com.github.julien-truffaut" %%% "monocle-refined" % version
+    "com.github.julien-truffaut" %%% "monocle-unsafe"  % version
   )
 }
 

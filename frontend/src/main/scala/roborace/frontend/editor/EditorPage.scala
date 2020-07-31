@@ -2,10 +2,12 @@ package roborace.frontend.editor
 
 import gameEntities.Scenario
 import gameLogic.DefaultScenario
+import monocle.macros.Lenses
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.{FrontendState, Page, User, editor}
 import snabbdom.Node
 
+@Lenses
 case class EditorState(scenario: Scenario, description: String = "", clickAction: Option[editor.ClickAction] = None) extends FrontendState
 
 object EditorPage extends Page[EditorState] {

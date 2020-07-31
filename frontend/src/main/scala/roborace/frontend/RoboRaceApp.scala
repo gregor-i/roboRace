@@ -1,25 +1,33 @@
 package roborace.frontend
 
 import gameEntities.GameResponse
+import io.circe.generic.auto._
 import io.circe.parser.decode
 import org.scalajs.dom
-import org.scalajs.dom.{EventSource, MessageEvent}
 import org.scalajs.dom.raw.HTMLElement
+import org.scalajs.dom.{EventSource, MessageEvent}
 import roborace.frontend.error.ErrorState
-import roborace.frontend.game.{Game, GameState}
-import roborace.frontend.service.Service
-import roborace.frontend.util.SnabbdomApp
-import snabbdom.VNode
-import io.circe.generic.auto._
+import roborace.frontend.game.GameState
 import roborace.frontend.lobby.LobbyState
+import roborace.frontend.service.Service
+import snabbdom.{Snabbdom, SnabbdomFacade, VNode}
 
 import scala.scalajs.js
 import scala.scalajs.js.|
 
-class RoboRaceApp(container: HTMLElement) extends SnabbdomApp {
+class RoboRaceApp(container: HTMLElement) {
   val user: User = User(sessionId = container.dataset.get("sessionId").get)
 
   var node: HTMLElement | VNode = container
+
+  val patch: SnabbdomFacade.PatchFunction = Snabbdom.init(
+    classModule = true,
+    propsModule = true,
+    attributesModule = true,
+    datasetModule = true,
+    styleModule = true,
+    eventlistenersModule = true
+  )
 
   private def saveStateToHistory(state: FrontendState): Unit = {
     Router.stateToUrl(state) match {
@@ -39,7 +47,7 @@ class RoboRaceApp(container: HTMLElement) extends SnabbdomApp {
   def gameUpdates(state: FrontendState): Unit = {
     def eventListener(gameState: GameState): js.Function1[MessageEvent, Unit] = message => {
       decode[GameResponse](message.data.asInstanceOf[String]) match {
-        case Right(newGame) => renderState(Game.clearSlots(gameState, gameState.copy(game = newGame)))
+        case Right(newGame) => renderState(GameState.clearSlots(gameState, gameState.copy(game = newGame)))
         case Left(_)        => renderState(ErrorState("unexpected Message received on SSE"))
       }
     }

@@ -12,6 +12,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 case class GameState(game: GameResponse, focusedSlot: Int = 0, slots: Map[Int, Instruction] = Map.empty) extends FrontendState
 
+object GameState {
+  def clearSlots(oldState: GameState, newState: GameState): GameState =
+    if (oldState.game.cycle != newState.game.cycle) {
+      oldState.copy(focusedSlot = 0, slots = Map.empty, game = newState.game)
+    } else {
+      oldState.copy(game = newState.game)
+    }
+}
+
 object GamePage extends Page[GameState] {
   override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
     case (_, s"/games/${gameId}", _) =>

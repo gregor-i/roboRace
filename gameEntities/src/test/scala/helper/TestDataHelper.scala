@@ -21,13 +21,13 @@ trait TestDataHelper {
   }
 
   def addWall(wall: Wall): CE =
-    Lenses.scenario.modify(s => s.copy(walls = s.walls :+ wall))
+    Game.scenario.modify(s => s.copy(walls = s.walls :+ wall))
 
   def addPit(pit: Position): CE =
-    Lenses.scenario.modify(s => s.copy(pits = s.pits :+ pit))
+    Game.scenario.modify(s => s.copy(pits = s.pits :+ pit))
 
   def addTrap(trap: Trap): CE =
-    Lenses.scenario.modify(s => s.copy(traps = s.traps :+ trap))
+    Game.scenario.modify(s => s.copy(traps = s.traps :+ trap))
 
   def forcedInstructions(player: String)(instructions: Instruction*): CE = {
     val filledInstrs = (instructions ++ Seq.fill(Constants.instructionsPerCycle)(Sleep))
@@ -45,5 +45,5 @@ trait TestDataHelper {
   def forceRobot(id: String, robot: Robot): CE =
     Lenses.robot(id).set(robot)
 
-  def clearHistory: CE = Lenses.events.set(Seq.empty)
+  def clearHistory: CE = Game.events.set(Seq.empty)
 }

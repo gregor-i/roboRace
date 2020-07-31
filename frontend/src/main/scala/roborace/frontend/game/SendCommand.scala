@@ -10,5 +10,5 @@ object SendCommand {
   def apply(gameState: GameState, command: Command): Future[GameState] =
     Service
       .sendCommand(gameState.game.id, command)
-      .map(g => roborace.frontend.game.Game.clearSlots(gameState, gameState.copy(game = g)))
+      .map(g => GameState.clearSlots(gameState, gameState.copy(game = g)))
 }
