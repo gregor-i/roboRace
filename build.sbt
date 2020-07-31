@@ -6,6 +6,7 @@ name := "roboRace"
 
 scalaVersion in ThisBuild := "2.13.3"
 scalacOptions in ThisBuild ++= Seq("-feature", "-deprecation", "-Ymacro-annotations")
+scalafmtOnCompile in ThisBuild := true
 
 // projects
 lazy val root = project

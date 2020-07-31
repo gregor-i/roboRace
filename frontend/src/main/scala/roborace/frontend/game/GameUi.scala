@@ -3,7 +3,7 @@ package roborace.frontend.game
 import gameEntities._
 import org.scalajs.dom
 import roborace.frontend.FrontendState
-import roborace.frontend.components.{Body, Fab, Icon, Images}
+import roborace.frontend.components.{Body, Fab, Icon, Images, RobotColor}
 import roborace.frontend.components.gameBoard.{Animation, RenderGame}
 import roborace.frontend.lobby.LobbyPage
 import roborace.frontend.util.Untyped
