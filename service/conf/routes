@@ -16,5 +16,6 @@ DELETE        /api/scenarios/:id             controller.ScenarioController.delet
 
 #Frontend
 GET           /                              controller.UiController.lobby(path = "")
+GET           /assets/sw.js                  controller.UiController.serviceWorker(path = "sw.js", folder = "/public")
 GET           /assets/*file                  controller.UiController.asset(file)
 GET           /*path                         controller.UiController.lobby(path : String)

@@ -1,17 +1,22 @@
 import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+
 import scala.sys.process._
 
 name := "roboRace"
 
 scalaVersion in ThisBuild := "2.13.3"
-scalafmtOnCompile in ThisBuild := true
+
+// projects
+lazy val root = project
+  .in(file("."))
+  .aggregate(gameEntities.js, gameEntities.jvm, frontend, `service-worker`, backend)
 
 lazy val gameEntities = crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
   .in(file("gameEntities"))
   .settings(circe, monocle, scalaTest)
 
-lazy val service = project.in(file("service"))
+lazy val backend = project.in(file("service"))
   .dependsOn(gameEntities.jvm)
 //  .settings(scalaTest)
   .enablePlugins(PlayScala)
@@ -38,15 +43,83 @@ val frontend = project
   .settings(snabbdom, monocle)
   .settings(    libraryDependencies +=        "org.scala-js" %%% "scalajs-dom" % "1.0.0")
 
+val `service-worker` = project
+  .in(file("service-worker"))
+  .enablePlugins(ScalaJSPlugin)
+  .settings(scalaJSUseMainModuleInitializer := true)
+  .enablePlugins(BuildInfoPlugin)
+  .settings(
+    buildInfoKeys := Seq(
+      BuildInfoKey.action("buildTime") { System.currentTimeMillis },
+      BuildInfoKey.action("assetFiles") { "ls service/public".!! }
+    )
+  )
+  .settings(libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0")
+
+// tasks
+
 compile in frontend := {
   val ret           = (frontend / Compile / compile).value
   val buildFrontend = (frontend / Compile / fastOptJS).value.data
-  val outputFile    = (service / baseDirectory).value / "public" / "robo-race.js"
+  val outputFile    = (backend / baseDirectory).value / "public" / "robo-race.js"
   streams.value.log.info("integrating frontend (fastOptJS)")
   val npmLog = Seq("./node_modules/.bin/browserify", buildFrontend.toString, "-o", outputFile.toString).!!
   streams.value.log.info(npmLog)
   ret
 }
+
+stage in frontend := {
+  val buildFrontend = (frontend / Compile / fullOptJS).value.data
+  val outputFile    = (backend / baseDirectory).value / "public" / "robo-race.js"
+  streams.value.log.info("integrating frontend (fullOptJS)")
+  val npmLog = Seq("./node_modules/.bin/browserify", buildFrontend.toString, "-o", outputFile.toString).!!
+  streams.value.log.info(npmLog)
+  outputFile
+}
+
+compile in `service-worker` := {
+  val ret        = (`service-worker` / Compile / compile).value
+  val buildSw    = (`service-worker` / Compile / fastOptJS).value.data
+  val outputFile = (backend / baseDirectory).value / "public" / "sw.js"
+  streams.value.log.info("integrating service-worker (fastOptJS)")
+  val buildLog = Seq("cp", buildSw.toString, outputFile.toString).!!
+  streams.value.log.info(buildLog)
+  ret
+}
+
+stage in `service-worker` := {
+  val buildSw    = (`service-worker` / Compile / fullOptJS).value.data
+  val outputFile = (backend / baseDirectory).value / "public" / "sw.js"
+  streams.value.log.info("integrating service-worker (fullOptJS)")
+  val buildLog = Seq("cp", buildSw.toString, outputFile.toString).!!
+  streams.value.log.info(buildLog)
+  outputFile
+}
+
+compile in Compile in root := Def
+  .sequential(
+    (compile in Compile in frontend),
+    (compile in Compile in `service-worker`),
+    (compile in Compile in backend)
+  )
+  .value
+
+stage in root := Def
+  .sequential(
+    (stage in frontend),
+    (stage in `service-worker`),
+    (stage in backend)
+  )
+  .value
+
+test in root := Def
+  .sequential(
+    test in Test in gameEntities.jvm,
+    test in Test in gameEntities.js,
+    test in Test in frontend,
+    test in Test in backend
+  )
+  .value
 
 def snabbdom = Seq(
   resolvers += Resolver.bintrayRepo("gregor-i", "maven"),

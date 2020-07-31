@@ -1,5 +1,6 @@
 // cross
 addSbtPlugin("org.portable-scala" % "sbt-scalajs-crossproject" % "0.6.0")
+addSbtPlugin("org.scalameta"      % "sbt-scalafmt"             % "2.2.1")
 
 // jvm
 addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.8.2")
@@ -8,3 +9,6 @@ addSbtPlugin("com.github.gregor-i" % "sbt-embedded-postgres" % "2.0.0-RC1")
 
 // js
 addSbtPlugin("org.scala-js" % "sbt-scalajs" % "1.1.1")
+
+// service worker
+addSbtPlugin("com.eed3si9n" % "sbt-buildinfo" % "0.9.0")
