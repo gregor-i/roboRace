@@ -3,7 +3,6 @@ package roborace.frontend.components
 import snabbdom.Node
 
 object Fab {
-  def apply(image: String): Node =
-    Node("div.fab")
-      .child(Node("img").attr("src", image))
+  def apply(fontAwesomeClass: String): Node =
+    Node("div.fab.fa-lg").child(Node("i.fas").classes(fontAwesomeClass))
 }

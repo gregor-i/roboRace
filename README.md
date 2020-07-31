@@ -14,6 +14,5 @@ The current development state is playable at [Heroku](https://roborace.herokuapp
 
 ### technical updates:
   - dependency updates
-  - use an icon font lib
   - re-organize the project (ie: what is `gameLogic`?)
   - do some research about rendering engines ...

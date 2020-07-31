@@ -4,7 +4,7 @@ import gameEntities._
 import gameLogic.Direction
 import monocle.Lens
 import roborace.frontend.FrontendState
-import roborace.frontend.components.{Body, Fab, Images}
+import roborace.frontend.components.{Body, Fab, Icon, Images}
 import roborace.frontend.components.gameBoard.RenderScenario
 import roborace.frontend.lobby.LobbyPage
 import roborace.frontend.service.Service
@@ -13,16 +13,16 @@ import snabbdom.{Node, Snabbdom}
 
 object EditorUi {
   def apply(state: EditorState, update: FrontendState => Unit): Node = {
-    Body.game()
-      .child(Fab(Images.iconClose).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
+    Body
+      .game()
+      .child(Fab(Icon.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
       .child(RenderScenario(state.scenario, clickListener(state, update)))
       .child(actionbar(state, update))
   }
 
   private def clickListener(state: EditorState, update: FrontendState => Unit): Option[(Position, Direction) => Unit] =
-    state.clickAction.map { action =>
-      (position: Position, direction: Direction) =>
-        update(EditorState.scenario.modify(action.apply(position, direction))(state))
+    state.clickAction.map { action => (position: Position, direction: Direction) =>
+      update(EditorState.scenario.modify(action.apply(position, direction))(state))
     }
 
   private def actionbar(state: EditorState, update: EditorState => Unit): Node = {

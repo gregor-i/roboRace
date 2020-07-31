@@ -1,17 +1,13 @@
 {
   "dependencies": {
-    "@types/lodash": "^4.14.118",
+    "@fortawesome/fontawesome-free": "^5.14.0",
     "bulma": "^0.7.2",
-    "convert-svg-to-png": "^0.5.0",
-    "lodash": "^4.17.11",
-    "snabbdom": "^0.7.2",
-    "npm-run-all": "^4.1.5"
+    "npm-run-all": "^4.1.5",
+    "snabbdom": "^0.7.2"
   },
   "devDependencies": {
     "browserify": "^16.2.3",
-    "clean-css-cli": "^4.2.1",
-    "tsify": "^4.0.1",
-    "typescript": "^3.2.2",
+    "sass": "^1.26.10",
     "svgo": "^1.1.1"
   },
   "scripts": {
@@ -19,7 +15,8 @@
     "build": "npm run make-dirs && run-p build-*",
     "make-dirs": "mkdir -p service/public",
     "build-img": "svgo -f frontend/src/main/img -o service/public",
-    "build-css": "cleancss node_modules/bulma/css/bulma.min.css frontend/src/main/css/*.css -o service/public/robo-race.css",
+    "build-fonts": "cp -r node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid* service/public/.",
+    "build-css": "sass frontend/src/main/css/roborace.sass service/public/robo-race.css --no-source-map --style compressed",
     "build-static": "cp frontend/src/main/static/* service/public/."
   }
 }

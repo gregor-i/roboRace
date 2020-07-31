@@ -5,10 +5,6 @@ import gameEntities._
 object Images {
   val logo: String = "/assets/logo.svg"
 
-  val iconClose: String           = "/assets/ic-close.svg"
-  val iconGamerlist: String       = "/assets/ic-gamerlist.svg"
-  val iconReplayAnimation: String = "/assets/ic-replay-animation.svg"
-
   val tile: String = "/assets/tile.svg"
 
   val target: String         = "/assets/target.svg"

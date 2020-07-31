@@ -3,7 +3,7 @@ package roborace.frontend.game
 import gameEntities._
 import org.scalajs.dom
 import roborace.frontend.FrontendState
-import roborace.frontend.components.{Body, Fab, Images}
+import roborace.frontend.components.{Body, Fab, Icon, Images}
 import roborace.frontend.components.gameBoard.{Animation, RenderGame}
 import roborace.frontend.lobby.LobbyPage
 import roborace.frontend.util.Untyped
@@ -15,7 +15,8 @@ object GameUi {
   def apply(state: GameState, update: FrontendState => Unit): Node = {
     state.game.you match {
       case None if state.game.cycle == 0 =>
-        Body.game()
+        Body
+          .game()
           .child(returnToLobbyFab(state, update))
           .child(replayFab(state, update))
           .child(
@@ -37,14 +38,16 @@ object GameUi {
           )
 
       case None =>
-        Body.game()
+        Body
+          .game()
           .child(returnToLobbyFab(state, update))
           .child(replayFab(state, update))
           .child(RenderGame(state.game, None))
           .child(Node("div.text-panel").text("observer mode"))
 
       case Some(you: QuittedPlayer) =>
-        Body.game()
+        Body
+          .game()
           .children(
             returnToLobbyFab(state, update),
             replayFab(state, update),
@@ -53,17 +56,20 @@ object GameUi {
           )
 
       case Some(you: FinishedPlayer) =>
-        Body.game().children(
-          returnToLobbyFab(state, update),
-          replayFab(state, update),
-          RenderGame(state.game, None),
-          Node("div.text-panel").text("target reached as " + you.rank)
-        )
+        Body
+          .game()
+          .children(
+            returnToLobbyFab(state, update),
+            replayFab(state, update),
+            RenderGame(state.game, None),
+            Node("div.text-panel").text("target reached as " + you.rank)
+          )
 
       case Some(you: RunningPlayer) =>
-        Body.game()
+        Body
+          .game()
           .children(
-            Fab(Images.iconClose)
+            Fab(Icon.close)
               .classes("fab-right-1")
               .event("click", Snabbdom.event(_ => SendCommand(state, DeregisterForGame).foreach(update))),
             replayFab(state, update),
@@ -73,26 +79,27 @@ object GameUi {
     }
   }
 
-  private def replayFab(state: GameState, update: FrontendState => Unit) = Fab(Images.iconReplayAnimation)
-    .classes("fab-left-1")
-    .event(
-      "click",
-      Snabbdom.event { _ =>
-        Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(
-          if (state.game.cycle == 0)
-            0
-          else
-            Animation.eventSequenceDuration(state.game.events.takeWhile {
-              case s: StartCycleEvaluation => s.cycle != state.game.cycle - 1
-              case _                       => true
-            })
-        )
-      }
-    )
-    .event("dblclick", Snabbdom.event(_ => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
+  private def replayFab(state: GameState, update: FrontendState => Unit) =
+    Fab(Icon.replay)
+      .classes("fab-left-1")
+      .event(
+        "click",
+        Snabbdom.event { _ =>
+          Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(
+            if (state.game.cycle == 0)
+              0
+            else
+              Animation.eventSequenceDuration(state.game.events.takeWhile {
+                case s: StartCycleEvaluation => s.cycle != state.game.cycle - 1
+                case _                       => true
+              })
+          )
+        }
+      )
+      .event("dblclick", Snabbdom.event(_ => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
 
   private def returnToLobbyFab(state: GameState, update: FrontendState => Unit) =
-    Fab(Images.iconClose).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load())))
+    Fab(Icon.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load())))
 
   private def instructionBar(state: GameState, update: FrontendState => Unit, player: RunningPlayer): Node = {
     def instructionSlot(index: Int): Node = {

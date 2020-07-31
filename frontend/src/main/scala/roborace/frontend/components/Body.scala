@@ -7,6 +7,6 @@ object Body {
     Node("div.robo-race").prop("id", "robo-race")
 
   def game(): Node =
-  val body = Node("div.game").prop("id", "robo-race")
+    Node("div.game").prop("id", "robo-race")
 
 }

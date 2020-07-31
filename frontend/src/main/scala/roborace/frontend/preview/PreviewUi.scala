@@ -2,7 +2,7 @@ package roborace.frontend.preview
 
 import gameEntities.{Direction, Position, Scenario}
 import roborace.frontend.FrontendState
-import roborace.frontend.components.{Body, Fab, Images}
+import roborace.frontend.components.{Body, Fab, Icon, Images}
 import roborace.frontend.game.GameState
 import roborace.frontend.components.gameBoard.RenderScenario
 import roborace.frontend.lobby.LobbyPage
@@ -13,8 +13,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 object PreviewUi {
   def render(state: PreviewState, update: FrontendState => Unit): Node =
-    Body.game()
-      .child(Fab(Images.iconClose).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
+    Body
+      .game()
+      .child(Fab(Icon.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
       .child(RenderScenario(state.scenario.scenario, Some(createGame(state.scenario.scenario, update))))
       .child(bottomLine)
 
