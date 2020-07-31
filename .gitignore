@@ -9,7 +9,4 @@ target/
 node_modules/
 temp/
 
-package-lock.json
-service/public/*.svg
-service/public/*.js
-service/public/*.css
+service/public

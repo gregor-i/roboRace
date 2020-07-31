@@ -3,8 +3,8 @@
   "name": "Robo Race",
   "icons": [
     {
-      "src": "/assets/icon.svg",
-      "type": "image/svg",
+      "src": "/assets/icon.png",
+      "type": "image/png",
       "sizes": "256x256"
     }
   ],
