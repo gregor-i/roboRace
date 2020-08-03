@@ -130,16 +130,18 @@ object Svg {
   def startPoints(scenario: Scenario): Seq[Node] =
     scenario.initialRobots.map(
       robot =>
-        Node("image").attrs(
-          Seq(
-            "href"      -> Images.playerStart(robot.index),
-            "transform" -> (translate(robot.position) + " translate(0.5 0.5) " + s"rotate(${directionToRotation(robot.direction)})" + " translate(-0.5 -0.5)"),
-            "width"     -> "1",
-            "height"    -> "1",
-            "x"         -> "0",
-            "y"         -> "0"
+        Node("image")
+          .attrs(
+            Seq(
+              "href"      -> Images.playerStart(robot.index),
+              "transform" -> (translate(robot.position) + " translate(0.5 0.5) " + s"rotate(${directionToRotation(robot.direction)})" + " translate(-0.5 -0.5)"),
+              "width"     -> "1",
+              "height"    -> "1",
+              "x"         -> "0",
+              "y"         -> "0"
+            )
           )
-        )
+          .style("color", RobotColor.dark(robot.index))
     )
 
   def robots(robots: Seq[Robot]): Seq[Node] = {
