@@ -1,5 +1,6 @@
 package roborace.frontend
 
+import api.User
 import gameEntities.GameResponse
 import io.circe.generic.auto._
 import io.circe.parser.decode
@@ -15,9 +16,9 @@ import snabbdom.{Snabbdom, SnabbdomFacade, VNode}
 import scala.scalajs.js
 import scala.scalajs.js.|
 
-class RoboRaceApp(container: HTMLElement) {
-  val user: User = User(sessionId = container.dataset.get("sessionId").get)
+import scala.concurrent.ExecutionContext.Implicits.global
 
+class RoboRaceApp(container: HTMLElement) {
   var node: HTMLElement | VNode = container
 
   val patch: SnabbdomFacade.PatchFunction = Snabbdom.init(
@@ -103,7 +104,12 @@ class RoboRaceApp(container: HTMLElement) {
     node = patch(node, Pages.ui(state, renderState).toVNode)
   }
 
-  dom.window.onpopstate = _ => renderState(Router.stateFromUrl(dom.window.location, Some(user)))
+  private def loadUserAndRenderFromLocation(): Unit =
+    for (user <- Service.whoAmI()) yield {
+      renderState(Router.stateFromUrl(dom.window.location, Some(user)))
+    }
 
-  renderState(Router.stateFromUrl(dom.window.location, Some(user)))
+  dom.window.onpopstate = _ => loadUserAndRenderFromLocation()
+
+  loadUserAndRenderFromLocation()
 }

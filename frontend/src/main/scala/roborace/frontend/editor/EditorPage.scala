@@ -1,10 +1,11 @@
 package roborace.frontend.editor
 
+import api.User
 import gameEntities.Scenario
 import gameLogic.DefaultScenario
 import monocle.macros.Lenses
 import roborace.frontend.Router.{Path, QueryParameter}
-import roborace.frontend.{FrontendState, Page, User, editor}
+import roborace.frontend.{FrontendState, Page, editor}
 import snabbdom.Node
 
 @Lenses

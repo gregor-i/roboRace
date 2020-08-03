@@ -7,11 +7,9 @@ import repo.{GameRepository, ScenarioRepository}
 
 import scala.concurrent.ExecutionContext
 
-class UiController @Inject() (sessionAction: SessionAction, assets: Assets)(implicit ex: ExecutionContext) extends InjectedController {
+class UiController @Inject() (assets: Assets)(implicit ex: ExecutionContext) extends InjectedController {
 
-  def lobby(path: String) = sessionAction { (session, _) =>
-    Ok(views.html.RoboRace(session.id))
-  }
+  def lobby(path: String) = assets.at("index.html")
 
   def asset(path: String) = assets.at(path)
 

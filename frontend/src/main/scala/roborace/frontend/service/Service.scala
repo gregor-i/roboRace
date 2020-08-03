@@ -1,5 +1,6 @@
 package roborace.frontend.service
 
+import api.User
 import gameEntities._
 import io.circe.generic.auto._
 import org.scalajs.dom.EventSource
@@ -19,6 +20,11 @@ object Service extends ServiceTrait {
     get("/api/scenarios")
       .flatMap(check(200))
       .flatMap(parse[Seq[ScenarioResponse]])
+
+  def whoAmI(): Future[User] =
+    get("/api/users/me")
+      .flatMap(check(200))
+      .flatMap(parse[User])
 
   def lobbyUpdates(): EventSource = new EventSource("/api/games/events")
 

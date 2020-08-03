@@ -1,5 +1,6 @@
 package roborace.frontend
 
+import api.User
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext

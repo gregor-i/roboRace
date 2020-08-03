@@ -1,10 +1,11 @@
 package roborace.frontend.lobby
 
+import api.User
 import gameEntities.{GameResponse, ScenarioResponse}
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.loading.LoadingFrontendState
 import roborace.frontend.service.Service
-import roborace.frontend.{FrontendState, Page, User, service}
+import roborace.frontend.{FrontendState, Page, service}
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global

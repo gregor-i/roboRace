@@ -1,5 +1,6 @@
 package roborace.frontend
 
+import api.User
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder}
 import org.scalajs.dom

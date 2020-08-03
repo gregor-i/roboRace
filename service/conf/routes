@@ -14,6 +14,8 @@ POST          /api/scenarios                 controller.ScenarioController.post(
 PUT           /api/scenarios/:id             controller.ScenarioController.put(id: String)
 DELETE        /api/scenarios/:id             controller.ScenarioController.delete(id: String)
 
+GET           /api/users/me                  controller.UserController.me()
+
 #Frontend
 GET           /                              controller.UiController.lobby(path = "")
 GET           /assets/sw.js                  controller.UiController.serviceWorker(path = "sw.js", folder = "/public")
