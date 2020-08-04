@@ -9,4 +9,4 @@ target/
 node_modules/
 temp/
 
-service/public
+backend/public

@@ -1,1 +1,1 @@
-web: service/target/universal/stage/bin/backend -Dhttp.port=${PORT} ${JAVA}
+web: backend/target/universal/stage/bin/backend -Dhttp.port=${PORT} ${JAVA}

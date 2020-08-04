@@ -14,11 +14,11 @@ lazy val root = project
   .aggregate(core.js, core.jvm, frontend, `service-worker`, backend)
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
-    .crossType(CrossType.Pure)
+  .crossType(CrossType.Pure)
   .in(file("core"))
   .settings(circe, monocle, scalaTest)
 
-lazy val backend = project.in(file("service"))
+lazy val backend = project.in(file("backend"))
   .dependsOn(core.jvm)
   .enablePlugins(PlayScala)
   .settings(
@@ -52,13 +52,12 @@ val `service-worker` = project
   .settings(
     buildInfoKeys := Seq(
       BuildInfoKey.action("buildTime") { System.currentTimeMillis },
-      BuildInfoKey.action("assetFiles") { "ls service/public".!! }
+      BuildInfoKey.action("assetFiles") { "ls backend/public".!! }
     )
   )
   .settings(libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0")
 
 // tasks
-
 compile in frontend := {
   val ret           = (frontend / Compile / compile).value
   val buildFrontend = (frontend / Compile / fastOptJS).value.data
