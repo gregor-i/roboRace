@@ -11,16 +11,15 @@ scalafmtOnCompile in ThisBuild := true
 // projects
 lazy val root = project
   .in(file("."))
-  .aggregate(gameEntities.js, gameEntities.jvm, frontend, `service-worker`, backend)
+  .aggregate(core.js, core.jvm, frontend, `service-worker`, backend)
 
-lazy val gameEntities = crossProject(JSPlatform, JVMPlatform)
+lazy val core = crossProject(JSPlatform, JVMPlatform)
     .crossType(CrossType.Pure)
-  .in(file("gameEntities"))
+  .in(file("core"))
   .settings(circe, monocle, scalaTest)
 
 lazy val backend = project.in(file("service"))
-  .dependsOn(gameEntities.jvm)
-//  .settings(scalaTest)
+  .dependsOn(core.jvm)
   .enablePlugins(PlayScala)
   .settings(
     libraryDependencies += guice,
@@ -36,7 +35,7 @@ lazy val backend = project.in(file("service"))
 
 val frontend = project
   .in(file("frontend"))
-  .dependsOn(gameEntities.js)
+  .dependsOn(core.js)
   .enablePlugins(ScalaJSPlugin)
   .settings(
     scalaJSUseMainModuleInitializer := true,
@@ -116,8 +115,8 @@ stage in root := Def
 
 test in root := Def
   .sequential(
-    test in Test in gameEntities.jvm,
-    test in Test in gameEntities.js,
+    test in Test in core.jvm,
+    test in Test in core.js,
     test in Test in frontend,
     test in Test in backend
   )

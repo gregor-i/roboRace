@@ -12,5 +12,4 @@ The current development state is playable at [Heroku](https://roborace.herokuapp
 
 ### technical updates:
   - re-organize the project 
-    - rename `gameEntities` to `core`
     - rename `service` to `backend`
