@@ -1,12 +1,10 @@
-package roborace.frontend.editor
+package roborace.frontend.pages.editor
 
 import gameEntities._
-import gameLogic.Direction
-import monocle.Lens
 import roborace.frontend.FrontendState
-import roborace.frontend.components.{Body, Fab, Icon, Images}
 import roborace.frontend.components.gameBoard.RenderScenario
-import roborace.frontend.lobby.LobbyPage
+import roborace.frontend.components.{Body, Fab, Icon, Images}
+import roborace.frontend.pages.lobby.LobbyPage
 import roborace.frontend.service.Service
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}

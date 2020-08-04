@@ -1,8 +1,8 @@
-package roborace.frontend
-package error
+package roborace.frontend.pages
 
 import roborace.frontend.Router.Location
 import roborace.frontend.components.Body
+import roborace.frontend.{FrontendState, Page}
 import snabbdom._
 
 //@Lenses

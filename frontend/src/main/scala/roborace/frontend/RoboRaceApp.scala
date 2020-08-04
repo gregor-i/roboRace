@@ -7,15 +7,14 @@ import io.circe.parser.decode
 import org.scalajs.dom
 import org.scalajs.dom.raw.HTMLElement
 import org.scalajs.dom.{EventSource, MessageEvent}
-import roborace.frontend.error.ErrorState
-import roborace.frontend.game.GameState
-import roborace.frontend.lobby.LobbyState
+import roborace.frontend.pages.ErrorState
+import roborace.frontend.pages.game.GameState
+import roborace.frontend.pages.lobby.LobbyState
 import roborace.frontend.service.Service
 import snabbdom.{Snabbdom, SnabbdomFacade, VNode}
 
 import scala.scalajs.js
 import scala.scalajs.js.|
-
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class RoboRaceApp(container: HTMLElement) {

@@ -9,4 +9,5 @@ The current development state is playable at [Heroku](https://roborace.herokuapp
   - display the state of other players in the game board. ie. a green shadow for ready players, red shadow for not ready player
   - rework the lobby ...
   - do some research about rendering engines ...
-
+  - more user-feedback (ie. toasts)
+  - greeting

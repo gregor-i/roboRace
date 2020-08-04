@@ -1,11 +1,10 @@
 package roborace.frontend
 
-import roborace.frontend.editor.EditorPage
-import roborace.frontend.error.ErrorPage
-import roborace.frontend.game.GamePage
-import roborace.frontend.loading.LoadingPage
-import roborace.frontend.lobby.LobbyPage
-import roborace.frontend.preview.PreviewPage
+import roborace.frontend.pages.{ErrorPage, LoadingPage}
+import roborace.frontend.pages.editor.EditorPage
+import roborace.frontend.pages.game.GamePage
+import roborace.frontend.pages.lobby.LobbyPage
+import roborace.frontend.pages.preview.PreviewPage
 import snabbdom.Node
 
 object Pages {

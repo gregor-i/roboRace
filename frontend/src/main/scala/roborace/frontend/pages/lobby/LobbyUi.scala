@@ -1,12 +1,12 @@
-package roborace.frontend.lobby
+package roborace.frontend.pages.lobby
 
 import gameEntities._
 import roborace.frontend.FrontendState
-import roborace.frontend.components.{Body, Card, Column, Images, MediaObject, RobotImage, Tag}
-import roborace.frontend.editor.EditorState
-import roborace.frontend.game.GameState
-import roborace.frontend.preview.PreviewState
+import roborace.frontend.components._
+import roborace.frontend.pages.game.GameState
+import roborace.frontend.pages.preview.PreviewState
 import snabbdom.Node
+import roborace.frontend.pages.editor.EditorState
 
 object LobbyUi {
   def render(lobbyState: LobbyState, update: FrontendState => Unit): Node =

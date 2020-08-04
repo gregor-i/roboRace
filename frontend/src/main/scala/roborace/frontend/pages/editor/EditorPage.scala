@@ -1,15 +1,15 @@
-package roborace.frontend.editor
+package roborace.frontend.pages.editor
 
 import api.User
 import gameEntities.Scenario
 import gameLogic.DefaultScenario
 import monocle.macros.Lenses
 import roborace.frontend.Router.{Path, QueryParameter}
-import roborace.frontend.{FrontendState, Page, editor}
+import roborace.frontend.{FrontendState, Page}
 import snabbdom.Node
 
 @Lenses
-case class EditorState(scenario: Scenario, description: String = "", clickAction: Option[editor.ClickAction] = None) extends FrontendState
+case class EditorState(scenario: Scenario, description: String = "", clickAction: Option[ClickAction] = None) extends FrontendState
 
 object EditorPage extends Page[EditorState] {
   override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {

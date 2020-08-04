@@ -1,10 +1,9 @@
-package roborace.frontend.game
+package roborace.frontend.pages.game
 
 import api.User
 import gameEntities.{GameResponse, Instruction}
 import roborace.frontend.Router.{Path, QueryParameter}
-import roborace.frontend.error.ErrorState
-import roborace.frontend.loading.LoadingFrontendState
+import roborace.frontend.pages.{ErrorState, LoadingState}
 import roborace.frontend.service.Service
 import roborace.frontend.{FrontendState, Page}
 import snabbdom.Node
@@ -25,7 +24,7 @@ object GameState {
 object GamePage extends Page[GameState] {
   override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
     case (_, s"/games/${gameId}", _) =>
-      LoadingFrontendState {
+      LoadingState {
         for {
           games <- Service.getAllGames()
           game = games.find(_.id == gameId)

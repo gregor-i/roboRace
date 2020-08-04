@@ -1,9 +1,9 @@
-package roborace.frontend.lobby
+package roborace.frontend.pages.lobby
 
 import api.User
 import gameEntities.{GameResponse, ScenarioResponse}
 import roborace.frontend.Router.{Path, QueryParameter}
-import roborace.frontend.loading.LoadingFrontendState
+import roborace.frontend.pages.LoadingState
 import roborace.frontend.service.Service
 import roborace.frontend.{FrontendState, Page, service}
 import snabbdom.Node
@@ -13,7 +13,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class LobbyState(games: Seq[GameResponse], scenarios: Seq[ScenarioResponse]) extends FrontendState
 
 object LobbyPage extends Page[LobbyState] {
-  def load(): FrontendState = LoadingFrontendState(
+  def load(): FrontendState = LoadingState(
     for {
       games     <- Service.getAllGames()
       scenarios <- service.Service.getAllScenarios()

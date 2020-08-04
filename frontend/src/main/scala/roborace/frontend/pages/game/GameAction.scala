@@ -1,4 +1,4 @@
-package roborace.frontend.game
+package roborace.frontend.pages.game
 
 import gameEntities.{Constants, Instruction, RunningPlayer, SetInstructions}
 

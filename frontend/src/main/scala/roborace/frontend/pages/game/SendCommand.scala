@@ -1,4 +1,4 @@
-package roborace.frontend.game
+package roborace.frontend.pages.game
 
 import gameEntities.Command
 import roborace.frontend.service.Service

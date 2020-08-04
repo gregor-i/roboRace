@@ -1,8 +1,8 @@
-package roborace.frontend.editor
+package roborace.frontend.pages.editor
 
-import gameEntities.{Direction, Position, Robot, Scenario, StunTrap, TurnLeftTrap, TurnRightTrap, Up, Wall}
+import gameEntities._
 import gameLogic.Direction
-import roborace.frontend.editor.Helper.toggle
+import roborace.frontend.pages.editor.Helper.toggle
 
 sealed trait ClickAction {
   def apply(position: Position, direction: Direction): Scenario => Scenario
