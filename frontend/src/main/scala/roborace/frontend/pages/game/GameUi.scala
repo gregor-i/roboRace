@@ -6,13 +6,14 @@ import roborace.frontend.FrontendState
 import roborace.frontend.components.gameBoard.{Animation, RenderGame}
 import roborace.frontend.components.{Body, Fab, Icons, Images}
 import roborace.frontend.pages.lobby.LobbyPage
+import roborace.frontend.service.Actions
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 object GameUi {
-  def apply(state: GameState, update: FrontendState => Unit): Node = {
+  def apply(implicit state: GameState, update: FrontendState => Unit): Node = {
     state.game.you match {
       case None if state.game.cycle == 0 =>
         Body
@@ -25,11 +26,7 @@ object GameUi {
               Some { (p, _) =>
                 state.game.scenario.initialRobots
                   .find(r => r.position == p && !state.game.robots.contains(r))
-                  .foreach(
-                    r =>
-                      SendCommand(state, RegisterForGame(r.index))
-                        .foreach(update)
-                  )
+                  .foreach(r => Actions.sendCommand(RegisterForGame(r.index)))
               }
             )
           )
@@ -71,10 +68,10 @@ object GameUi {
           .children(
             Fab(Icons.close)
               .classes("fab-right-1")
-              .event("click", Snabbdom.event(_ => SendCommand(state, DeregisterForGame).foreach(update))),
+              .event("click", Snabbdom.event(_ => Actions.sendCommand(DeregisterForGame))),
             replayFab(state, update),
             RenderGame(state.game, None),
-            instructionBar(state, update, you)
+            instructionBar(you)
           )
     }
   }
@@ -98,26 +95,26 @@ object GameUi {
       )
       .event("dblclick", Snabbdom.event(_ => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
 
-  private def returnToLobbyFab(state: GameState, update: FrontendState => Unit) =
+  private def returnToLobbyFab(implicit state: GameState, update: FrontendState => Unit) =
     Fab(Icons.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load())))
 
-  private def instructionBar(state: GameState, update: FrontendState => Unit, player: RunningPlayer): Node = {
+  private def instructionBar(player: RunningPlayer)(implicit state: GameState, update: FrontendState => Unit): Node = {
     def instructionSlot(index: Int): Node = {
       val instruction = state.slots.get(index)
       val focused     = state.focusedSlot == index
 
       val setFocus  = Snabbdom.event(_ => update(state.copy(focusedSlot = index)))
-      val resetSlot = Snabbdom.event(_ => UnsetInstruction(index).apply(state).foreach(update))
+      val resetSlot = Snabbdom.event(_ => Actions.unsetInstruction(index))
 
       instruction match {
         case Some(instr) =>
           Node("span.slot.filled")
             .`class`("focused", focused)
             .event("click", setFocus)
-            .event("dblClick", resetSlot)
+            .event("dblclick", resetSlot)
             .child(Node("img").attr("src", Images.action(instr)))
         case None =>
-          Node("span.slot").`class`("focused", focused).event("click", setFocus).event("dblClick", resetSlot).text((index + 1).toString)
+          Node("span.slot").`class`("focused", focused).event("click", setFocus).text((index + 1).toString)
       }
     }
 
@@ -138,7 +135,7 @@ object GameUi {
               if (free != 1) Some(Node("div.badge").text(free.toString))
               else None
             )
-            .event("click", Snabbdom.event(_ => PlaceInstruction(instruction, state.focusedSlot).apply(state).foreach(update)))
+            .event("click", Snabbdom.event(_ => Actions.placeInstruction(instruction, state.focusedSlot)))
         )
       } else {
         None

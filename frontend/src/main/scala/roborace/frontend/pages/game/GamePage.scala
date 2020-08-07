@@ -2,6 +2,7 @@ package roborace.frontend.pages.game
 
 import api.User
 import gameEntities.{GameResponse, Instruction}
+import monocle.macros.Lenses
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.pages.{ErrorState, LoadingState}
 import roborace.frontend.service.Service
@@ -10,6 +11,7 @@ import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
+@Lenses
 case class GameState(game: GameResponse, focusedSlot: Int = 0, slots: Map[Int, Instruction] = Map.empty) extends FrontendState
 
 object GameState {

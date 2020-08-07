@@ -5,7 +5,7 @@ import roborace.frontend.FrontendState
 import roborace.frontend.components.gameBoard.RenderScenario
 import roborace.frontend.components.{Body, Fab, Icons, Images}
 import roborace.frontend.pages.lobby.LobbyPage
-import roborace.frontend.service.Service
+import roborace.frontend.service.{Actions, Service}
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}
 
@@ -69,7 +69,7 @@ object EditorUi {
                 Node("div.control")
                   .child(
                     Node("button.button.is-primary")
-                      .event("click", Snabbdom.event(_ => Service.saveScenario(ScenarioPost(state.description, state.scenario))))
+                      .event("click", Snabbdom.event(_ => Actions.saveScenario(ScenarioPost(state.description, state.scenario))))
                       .text("Save Scenario")
                   )
               )

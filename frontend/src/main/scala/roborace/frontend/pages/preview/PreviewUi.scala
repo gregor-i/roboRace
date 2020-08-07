@@ -6,7 +6,7 @@ import roborace.frontend.components.gameBoard.RenderScenario
 import roborace.frontend.components.{Body, Fab, Icons}
 import roborace.frontend.pages.game.GameState
 import roborace.frontend.pages.lobby.LobbyPage
-import roborace.frontend.service.Service
+import roborace.frontend.service.{Actions, Service}
 import snabbdom.{Node, Snabbdom}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -24,7 +24,7 @@ object PreviewUi {
       .find(_.position == pos)
       .foreach { robot =>
         (for {
-          game <- Service.createGame(scenario, robot.index)
+          game <- Actions.createGame(scenario, robot.index)
         } yield GameState(game))
           .foreach(update)
       }

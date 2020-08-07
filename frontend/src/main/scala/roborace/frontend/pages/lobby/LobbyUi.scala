@@ -7,14 +7,15 @@ import roborace.frontend.pages.game.GameState
 import roborace.frontend.pages.preview.PreviewState
 import snabbdom.{Node, Snabbdom}
 import roborace.frontend.pages.editor.EditorState
+import roborace.frontend.service.Actions
 
 object LobbyUi {
-  def render(lobbyState: LobbyState, update: FrontendState => Unit): Node =
+  def render(implicit lobbyState: LobbyState, update: FrontendState => Unit): Node =
     Body()
       .child(renderHeader())
       .child(
         Column(
-          lobbyState.games.map(gameCard(_, update)) ++ lobbyState.scenarios.map(scenarioCard(_, update))
+          lobbyState.games.map(gameCard(_, update)) ++ lobbyState.scenarios.map(scenarioCard(_))
         )
       )
 
@@ -67,7 +68,7 @@ object LobbyUi {
     )
   }
 
-  def scenarioCard(scenarioResponse: ScenarioResponse, update: FrontendState => Unit): Node =
+  def scenarioCard(scenarioResponse: ScenarioResponse)(implicit state: LobbyState, update: FrontendState => Unit): Node =
     Card(
       MediaObject(
         Some(RobotImage(scenarioResponse.id.hashCode().abs % 6, filled = true)),
@@ -80,6 +81,11 @@ object LobbyUi {
           ButtonList(
             Button("Editor Scenario", Snabbdom.event(_ => update(EditorState(scenarioResponse.scenario, scenarioResponse.description)))),
             Button("Start Game", Snabbdom.event(_ => update(PreviewState(scenarioResponse)))).classes("is-primary")
+          ).childOptional(
+            if (scenarioResponse.ownedByYou)
+              Some(Button("Delete Scenario", Snabbdom.event(_ => Actions.deleteScenario(scenarioResponse))))
+            else
+              None
           )
         )
       )
