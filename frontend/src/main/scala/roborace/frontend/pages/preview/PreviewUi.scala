@@ -3,7 +3,7 @@ package roborace.frontend.pages.preview
 import gameEntities.{Direction, Position, Scenario}
 import roborace.frontend.FrontendState
 import roborace.frontend.components.gameBoard.RenderScenario
-import roborace.frontend.components.{Body, Fab, Icon}
+import roborace.frontend.components.{Body, Fab, Icons}
 import roborace.frontend.pages.game.GameState
 import roborace.frontend.pages.lobby.LobbyPage
 import roborace.frontend.service.Service
@@ -15,7 +15,7 @@ object PreviewUi {
   def render(state: PreviewState, update: FrontendState => Unit): Node =
     Body
       .game()
-      .child(Fab(Icon.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
+      .child(Fab(Icons.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
       .child(RenderScenario(state.scenario.scenario, Some(createGame(state.scenario.scenario, update))))
       .child(bottomLine)
 

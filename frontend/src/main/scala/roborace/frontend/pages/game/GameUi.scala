@@ -4,7 +4,7 @@ import gameEntities._
 import org.scalajs.dom
 import roborace.frontend.FrontendState
 import roborace.frontend.components.gameBoard.{Animation, RenderGame}
-import roborace.frontend.components.{Body, Fab, Icon, Images}
+import roborace.frontend.components.{Body, Fab, Icons, Images}
 import roborace.frontend.pages.lobby.LobbyPage
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}
@@ -69,7 +69,7 @@ object GameUi {
         Body
           .game()
           .children(
-            Fab(Icon.close)
+            Fab(Icons.close)
               .classes("fab-right-1")
               .event("click", Snabbdom.event(_ => SendCommand(state, DeregisterForGame).foreach(update))),
             replayFab(state, update),
@@ -80,7 +80,7 @@ object GameUi {
   }
 
   private def replayFab(state: GameState, update: FrontendState => Unit) =
-    Fab(Icon.replay)
+    Fab(Icons.replay)
       .classes("fab-left-1")
       .event(
         "click",
@@ -99,7 +99,7 @@ object GameUi {
       .event("dblclick", Snabbdom.event(_ => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
 
   private def returnToLobbyFab(state: GameState, update: FrontendState => Unit) =
-    Fab(Icon.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load())))
+    Fab(Icons.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load())))
 
   private def instructionBar(state: GameState, update: FrontendState => Unit, player: RunningPlayer): Node = {
     def instructionSlot(index: Int): Node = {

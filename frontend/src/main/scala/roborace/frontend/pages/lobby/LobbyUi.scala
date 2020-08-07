@@ -5,7 +5,7 @@ import roborace.frontend.FrontendState
 import roborace.frontend.components._
 import roborace.frontend.pages.game.GameState
 import roborace.frontend.pages.preview.PreviewState
-import snabbdom.Node
+import snabbdom.{Node, Snabbdom}
 import roborace.frontend.pages.editor.EditorState
 
 object LobbyUi {
@@ -54,13 +54,16 @@ object LobbyUi {
     Card(
       MediaObject(
         Some(RobotImage(gameResponse.id.hashCode().abs % 6, filled = true)),
-        Node("div.tags.are-large")
-          .child(sizeTag)
-          .childOptional(youTag)
-          .childOptional(joinTag)
-      ),
-      "Enter" -> Some(_ => update(GameState(gameResponse))),
-      "Quit"  -> None
+        Node("div").children(
+          Node("div.tags.are-large")
+            .child(sizeTag)
+            .childOptional(youTag)
+            .childOptional(joinTag),
+          ButtonList(
+            Button("Join Game", Snabbdom.event(_ => update(GameState(gameResponse)))).classes("is-primary")
+          )
+        )
+      )
     )
   }
 
@@ -68,15 +71,18 @@ object LobbyUi {
     Card(
       MediaObject(
         Some(RobotImage(scenarioResponse.id.hashCode().abs % 6, filled = true)),
-        Node("div.tags.are-large")
-          .child(Tag(s"Description: ${scenarioResponse.description}", "is-info"))
-          .child(Tag(s"Size: ${scenarioResponse.scenario.initialRobots.size} players", "is-info"))
-          .childOptional(if (scenarioResponse.scenario.traps.nonEmpty) Some(Tag(s"Contains traps", "is-warning")) else None)
-          .childOptional(if (scenarioResponse.ownedByYou) Some(Tag(s"Created by you", "is-info")) else None)
-      ),
-      "Start Game" -> Some(_ => update(PreviewState(scenarioResponse))),
-      "Editor"     -> Some(_ => update(EditorState(scenarioResponse.scenario, scenarioResponse.description))),
-      "Delete"     -> None
+        Node("div").children(
+          Node("h4.title").text(scenarioResponse.description),
+          Node("div.tags")
+            .child(Tag(s"Size: ${scenarioResponse.scenario.initialRobots.size} players", "is-info"))
+            .childOptional(if (scenarioResponse.scenario.traps.nonEmpty) Some(Tag(s"Contains traps", "is-warning")) else None)
+            .childOptional(if (scenarioResponse.ownedByYou) Some(Tag(s"Created by you", "is-info")) else None),
+          ButtonList(
+            Button("Editor Scenario", Snabbdom.event(_ => update(EditorState(scenarioResponse.scenario, scenarioResponse.description)))),
+            Button("Start Game", Snabbdom.event(_ => update(PreviewState(scenarioResponse)))).classes("is-primary")
+          )
+        )
+      )
     )
 
 }
