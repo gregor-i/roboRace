@@ -78,15 +78,17 @@ object LobbyUi {
             .child(Tag(s"Size: ${scenarioResponse.scenario.initialRobots.size} players", "is-info"))
             .childOptional(if (scenarioResponse.scenario.traps.nonEmpty) Some(Tag(s"Contains traps", "is-warning")) else None)
             .childOptional(if (scenarioResponse.ownedByYou) Some(Tag(s"Created by you", "is-info")) else None),
-          ButtonList(
-            Button("Editor Scenario", Snabbdom.event(_ => update(EditorState(scenarioResponse.scenario, scenarioResponse.description)))),
-            Button("Start Game", Snabbdom.event(_ => update(PreviewState(scenarioResponse)))).classes("is-primary")
-          ).childOptional(
-            if (scenarioResponse.ownedByYou)
-              Some(Button("Delete Scenario", Snabbdom.event(_ => Actions.deleteScenario(scenarioResponse))))
-            else
-              None
-          )
+          ButtonList()
+            .childOptional(
+              if (scenarioResponse.ownedByYou)
+                Some(Button("Delete Scenario", Snabbdom.event(_ => Actions.deleteScenario(scenarioResponse))))
+              else
+                None
+            )
+            .children(
+              Button("Edit Scenario", Snabbdom.event(_ => update(EditorState(scenarioResponse.scenario, scenarioResponse.description)))),
+              Button("Start Game", Snabbdom.event(_ => update(PreviewState(scenarioResponse)))).classes("is-primary")
+            )
         )
       )
     )

@@ -32,7 +32,7 @@ object Service extends ServiceTrait {
 
   def postScenario(scenario: ScenarioPost): Future[ScenarioResponse] =
     post("/api/scenarios", scenario)
-      .flatMap(check(200))
+      .flatMap(check(201))
       .flatMap(parse[ScenarioResponse])
 
   def deleteScenario(scenario: ScenarioResponse): Future[Unit] =
