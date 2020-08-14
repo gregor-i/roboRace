@@ -1,6 +1,6 @@
 package roborace.frontend.pages.preview
 
-import gameEntities.{Direction, Position, Scenario}
+import entities.{Direction, Position, Scenario}
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.RenderScenario
 import roborace.frontend.pages.components.{Body, Fab, Icons}

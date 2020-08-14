@@ -1,6 +1,6 @@
 package repo
 
-import gameLogic.DefaultScenario
+import logic.DefaultScenario
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers

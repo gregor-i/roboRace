@@ -1,8 +1,8 @@
 package helper
 
-import gameEntities._
-import gameLogic._
-import gameLogic.command.CreateGame
+import entities._
+import logic._
+import logic.command.CreateGame
 import org.scalatest.matchers.should.Matchers
 
 trait TestDataHelper {

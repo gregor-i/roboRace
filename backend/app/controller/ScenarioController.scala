@@ -1,7 +1,7 @@
 package controller
 
-import gameEntities.ScenarioPost
-import gameLogic.{DefaultScenario, ValidateScenario}
+import api.ScenarioPost
+import logic.{DefaultScenario, ValidateScenario}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}

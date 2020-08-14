@@ -1,8 +1,8 @@
 package helper
 
-import gameEntities._
-import gameLogic.command.Command
-import gameLogic.gameUpdate._
+import entities._
+import logic.command.Command
+import logic.gameUpdate._
 import org.scalatest.matchers.should.Matchers
 
 trait DeconstructHelper {

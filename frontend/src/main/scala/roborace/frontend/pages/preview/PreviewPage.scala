@@ -1,8 +1,7 @@
 package roborace.frontend.pages
 package preview
 
-import api.User
-import gameEntities.ScenarioResponse
+import api.{ScenarioResponse, User}
 import roborace.frontend.FrontendState
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.service.Service

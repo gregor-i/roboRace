@@ -2,8 +2,8 @@ package roborace.frontend.pages
 package editor
 
 import api.User
-import gameEntities.Scenario
-import gameLogic.DefaultScenario
+import entities.Scenario
+import logic.DefaultScenario
 import monocle.macros.Lenses
 import roborace.frontend.FrontendState
 import roborace.frontend.Router.{Path, QueryParameter}

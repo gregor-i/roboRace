@@ -1,6 +1,6 @@
 package roborace.frontend.pages.game
 
-import gameEntities._
+import entities._
 import org.scalajs.dom
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.{Animation, RenderGame}

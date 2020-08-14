@@ -1,7 +1,8 @@
 package model
 
-import gameEntities.{Game, GameResponse, RunningPlayer}
-import gameLogic.{Lenses, PlayerLenses}
+import api.GameResponse
+import entities.{Game, RunningPlayer}
+import logic.{Lenses, PlayerLenses}
 import repo.{GameRow, Session}
 
 object GameResponseFactory {
@@ -10,7 +11,7 @@ object GameResponseFactory {
     gameRow.game.map(game => apply(gameRow, game)(session))
 
   def apply(gameRow: GameRow, game: Game)(implicit session: Session): GameResponse =
-    GameResponse(
+    api.GameResponse(
       id = gameRow.id,
       cycle = game.cycle,
       scenario = game.scenario,

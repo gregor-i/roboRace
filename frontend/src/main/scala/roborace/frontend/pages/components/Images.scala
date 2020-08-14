@@ -1,6 +1,6 @@
 package roborace.frontend.pages.components
 
-import gameEntities._
+import entities._
 
 object Images {
   val logo: String = "/assets/logo.svg"

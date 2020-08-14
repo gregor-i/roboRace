@@ -1,7 +1,7 @@
 package repo
 
 import anorm._
-import gameEntities.Scenario
+import entities.Scenario
 import io.circe.generic.auto._
 import io.circe.parser._
 import io.circe.syntax._

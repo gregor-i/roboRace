@@ -1,7 +1,6 @@
 package roborace.frontend
 
-import api.User
-import gameEntities.GameResponse
+import api.{GameResponse, User}
 import io.circe.generic.auto._
 import io.circe.parser.decode
 import org.scalajs.dom

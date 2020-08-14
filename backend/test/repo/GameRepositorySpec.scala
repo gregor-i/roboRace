@@ -2,8 +2,8 @@ package repo
 
 import java.time.ZonedDateTime
 
-import gameEntities._
-import gameLogic.DefaultScenario
+import entities._
+import logic.DefaultScenario
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers

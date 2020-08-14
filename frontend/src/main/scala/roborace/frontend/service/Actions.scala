@@ -1,6 +1,7 @@
 package roborace.frontend.service
 
-import gameEntities.{Command, Constants, GameResponse, Instruction, RunningPlayer, Scenario, ScenarioPost, ScenarioResponse, SetInstructions}
+import api.{GameResponse, ScenarioPost, ScenarioResponse}
+import entities.{Command, Constants, Instruction, RunningPlayer, Scenario, SetInstructions}
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.game.GameState
 import roborace.frontend.pages.lobby.{LobbyPage, LobbyState}
@@ -51,7 +52,7 @@ object Actions {
     println(newState.slots)
     newState.game.you match {
       case Some(you: RunningPlayer) if you.instructionSlots.nonEmpty =>
-        sendCommand(gameEntities.ResetInstruction)
+        sendCommand(entities.ResetInstruction)
       case _ =>
         update(newState)
     }

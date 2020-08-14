@@ -5,8 +5,8 @@ import java.time.ZonedDateTime
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import gameEntities.{CommandAccepted, CommandRejected, Scenario}
-import gameLogic.command.CreateGame
+import entities.{CommandAccepted, CommandRejected, Scenario}
+import logic.command.CreateGame
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}

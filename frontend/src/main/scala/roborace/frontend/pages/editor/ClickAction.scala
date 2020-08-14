@@ -1,7 +1,7 @@
 package roborace.frontend.pages.editor
 
-import gameEntities._
-import gameLogic.Direction
+import entities._
+import logic.Direction
 import roborace.frontend.pages.editor.Helper.toggle
 
 sealed trait ClickAction {

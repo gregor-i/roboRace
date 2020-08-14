@@ -1,7 +1,7 @@
 package roborace.frontend.service
 
-import api.User
-import gameEntities._
+import api.{GameResponse, ScenarioPost, ScenarioResponse, User}
+import entities._
 import io.circe.generic.auto._
 import org.scalajs.dom.EventSource
 

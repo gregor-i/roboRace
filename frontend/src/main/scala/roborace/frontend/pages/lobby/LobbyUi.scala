@@ -1,6 +1,7 @@
 package roborace.frontend.pages.lobby
 
-import gameEntities._
+import api.{GameResponse, ScenarioResponse}
+import entities._
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components._
 import roborace.frontend.pages.game.GameState

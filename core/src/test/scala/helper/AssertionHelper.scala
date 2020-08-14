@@ -1,6 +1,6 @@
 package helper
 
-import gameEntities._
+import entities._
 import org.scalatest.Assertion
 import org.scalatest.matchers.should.Matchers
 

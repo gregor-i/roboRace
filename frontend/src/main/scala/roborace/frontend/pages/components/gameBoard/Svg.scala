@@ -1,6 +1,6 @@
 package roborace.frontend.pages.components.gameBoard
 
-import gameEntities._
+import entities._
 import org.scalajs.dom.raw.{HTMLElement, MouseEvent}
 import roborace.frontend.pages.components.{Images, RobotColor}
 import snabbdom.{Node, Snabbdom}

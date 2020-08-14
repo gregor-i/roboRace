@@ -3,9 +3,9 @@ package controller
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import gameEntities.{Command, CommandAccepted, CommandRejected, Game}
-import gameLogic.command.Command
-import gameLogic.gameUpdate._
+import entities.{Command, CommandAccepted, CommandRejected, Game}
+import logic.command.Command
+import logic.gameUpdate._
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}

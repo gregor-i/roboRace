@@ -1,6 +1,7 @@
 package roborace.frontend.pages.editor
 
-import gameEntities._
+import api.ScenarioPost
+import entities._
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.RenderScenario
 import roborace.frontend.pages.components.{Body, Fab, Icons, Images}

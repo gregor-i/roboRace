@@ -1,6 +1,6 @@
 package roborace.frontend.pages.components.gameBoard
 
-import gameEntities._
+import entities._
 import snabbdom.Node
 
 object RenderScenario {

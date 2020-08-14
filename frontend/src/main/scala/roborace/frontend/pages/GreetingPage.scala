@@ -1,7 +1,7 @@
 package roborace.frontend.pages
 
 import api.User
-import gameLogic.DefaultScenario
+import logic.DefaultScenario
 import org.scalajs.dom
 import roborace.frontend.pages.components.gameBoard.RenderScenario
 import roborace.frontend.pages.components.{Body, Button, ButtonList, Images, Modal}

@@ -1,6 +1,7 @@
 package roborace.frontend.pages.components.gameBoard
 
-import gameEntities._
+import api.GameResponse
+import entities._
 import roborace.frontend.pages.components.gameBoard.Svg._
 import snabbdom.Node
 

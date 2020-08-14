@@ -1,8 +1,8 @@
 package helper
 
-import gameEntities.Game
-import gameLogic.State
-import gameLogic.gameUpdate.Cycle
+import entities.Game
+import logic.State
+import logic.gameUpdate.Cycle
 
 trait UpdateChainHelper {
   def sequenceWithAutoCycle(state: Game)(fs: (Game => Game)*): Game =

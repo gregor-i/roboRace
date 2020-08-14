@@ -1,8 +1,7 @@
 package roborace.frontend.pages
 package lobby
 
-import api.User
-import gameEntities.{GameResponse, ScenarioResponse}
+import api.{GameResponse, ScenarioResponse, User}
 import monocle.macros.Lenses
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.service.Service

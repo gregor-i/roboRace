@@ -1,6 +1,7 @@
 package roborace.frontend.pages.components.gameBoard
 
-import gameEntities.{Direction, GameResponse, Position, RunningPlayer}
+import api.GameResponse
+import entities.{Direction, Position, RunningPlayer}
 import org.scalajs.dom.raw.HTMLElement
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}

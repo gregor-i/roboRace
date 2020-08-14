@@ -1,8 +1,8 @@
 package roborace.frontend.pages
 package game
 
-import api.User
-import gameEntities.{GameResponse, Instruction}
+import api.{GameResponse, User}
+import entities.Instruction
 import monocle.macros.Lenses
 import roborace.frontend.FrontendState
 import roborace.frontend.Router.{Path, QueryParameter}
