@@ -71,7 +71,8 @@ object GameUi {
               .event("click", Snabbdom.event(_ => Actions.sendCommand(DeregisterForGame))),
             replayFab(state, update),
             RenderGame(state.game, None),
-            instructionBar(you)
+            instructionSlots(you),
+            cardsBar(you)
           )
     }
   }
@@ -98,7 +99,7 @@ object GameUi {
   private def returnToLobbyFab(implicit state: GameState, update: FrontendState => Unit) =
     Fab(Icons.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load())))
 
-  private def instructionBar(player: RunningPlayer)(implicit state: GameState, update: FrontendState => Unit): Node = {
+  def instructionSlots(player: RunningPlayer)(implicit state: GameState, update: FrontendState => Unit) = {
     def instructionSlot(index: Int): Node = {
       val instruction = state.slots.get(index)
       val focused     = state.focusedSlot == index
@@ -112,12 +113,16 @@ object GameUi {
             .`class`("focused", focused)
             .event("click", setFocus)
             .event("dblclick", resetSlot)
-            .child(Node("img").attr("src", Images.action(instr)))
+            .child(Node("img").attr("src", Images.instructionIcon(instr)))
         case None =>
           Node("span.slot").`class`("focused", focused).event("click", setFocus).text((index + 1).toString)
       }
     }
 
+    Node("div.nowrap-panel").child((0 until Constants.instructionsPerCycle).map(instructionSlot))
+  }
+
+  private def cardsBar(player: RunningPlayer)(implicit state: GameState, update: FrontendState => Unit): Node = {
     def instructionCard(instruction: Instruction): Option[Node] = {
       val allowed = player.instructionOptions.find(_.instruction == instruction).fold(0)(_.count)
       val used    = state.slots.values.count(_ == instruction)
@@ -125,11 +130,11 @@ object GameUi {
 
       if (free > 0) {
         Some(
-          Node("div.action")
-            .classes(s"stacked-action-${free.min(5)}")
+          Node("div.instruction-card")
+            .classes(s"stacked-instruction-card-${free.min(5)}")
             .child(
               Node("img")
-                .attr("src", Images.action(instruction))
+                .attr("src", Images.instructionIcon(instruction))
             )
             .childOptional(
               if (free != 1) Some(Node("div.badge").text(free.toString))
@@ -142,9 +147,7 @@ object GameUi {
       }
     }
 
-    Node("div.footer-group")
-      .child(Node("div.slots-panel").child((0 until Constants.instructionsPerCycle).map(instructionSlot)))
-      .child(Node("div.cards-panel").child(Instruction.instructions.flatMap(instructionCard)))
+    Node("div.nowrap-panel").child(Instruction.instructions.flatMap(instructionCard))
   }
 
 }

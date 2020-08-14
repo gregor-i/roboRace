@@ -20,7 +20,7 @@ object Images {
 
   def playerStart(index: Int): String = s"/assets/player${index + 1}-start.svg"
 
-  def action(inst: Instruction): String = inst match {
+  def instructionIcon(inst: Instruction): String = inst match {
     case MoveForward      => "/assets/action-move-forward.svg"
     case MoveBackward     => "/assets/action-move-backward.svg"
     case StepRight        => ???

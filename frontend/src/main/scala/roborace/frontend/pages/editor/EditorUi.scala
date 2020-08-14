@@ -34,6 +34,7 @@ object EditorUi {
     def iconButton(icon: Node, action: => EditorState): Node =
       Node("button.button.is-light").child(icon).event("click", Snabbdom.event(_ => update(action)))
 
+    // todo: rework this. footer-group is removed
     Node("div.footer-group")
       .child(
         Node("div.text-panel")
@@ -49,7 +50,7 @@ object EditorUi {
             iconButton(icon(Images.trapStun), state.copy(clickAction = Some(ToggleStunTrap))),
             iconButton(icon(Images.target), state.copy(clickAction = Some(SetTarget))),
             iconButton(icon(Images.playerStart(0)), state.copy(clickAction = Some(ToggleInitialRobot))),
-            iconButton(icon(Images.action(TurnRight)), state.copy(clickAction = Some(RotateRobot)))
+            iconButton(icon(Images.instructionIcon(TurnRight)), state.copy(clickAction = Some(RotateRobot)))
           )
       )
       .child(
