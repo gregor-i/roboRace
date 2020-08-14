@@ -56,7 +56,7 @@ object LobbyUi {
       MediaObject(
         Some(RobotImage(gameResponse.id.hashCode().abs % 6, filled = true)),
         Node("div").children(
-          Node("div.tags.are-large")
+          Node("div.tags")
             .child(sizeTag)
             .childOptional(youTag)
             .childOptional(joinTag),

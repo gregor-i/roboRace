@@ -4,8 +4,8 @@ import snabbdom.Node
 
 object Column {
   def apply(nodes: Seq[Node]): Node =
-    Node("div.columns.is-centered.is-mobile")
-      .child(
-        Node("div.column.single-column").child(nodes)
-      )
+    Node("div")
+      .style("maxWidth", "600px")
+      .style("margin", "0 auto")
+      .child(nodes)
 }
