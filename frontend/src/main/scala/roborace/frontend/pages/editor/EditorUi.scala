@@ -16,6 +16,7 @@ object EditorUi {
       .child(Fab(Icons.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
       .child(RenderScenario(state.scenario, clickListener(state, update)))
       .child(actionbar(state, update))
+      .child(descriptionAndSave)
   }
 
   private def clickListener(state: EditorState, update: FrontendState => Unit): Option[(Position, Direction) => Unit] =
@@ -23,7 +24,7 @@ object EditorUi {
       update(EditorState.scenario.modify(action.apply(position, direction))(state))
     }
 
-  private def actionbar(state: EditorState, update: EditorState => Unit): Node = {
+  private def actionbar(implicit state: EditorPage.State, update: EditorPage.Update): Node = {
     def icon(url: String) = Node("img").style("height", "100%").attr("src", url)
 
     val scenario = state.scenario
@@ -34,47 +35,45 @@ object EditorUi {
     def iconButton(icon: Node, action: => EditorState): Node =
       Node("button.button.is-light").child(icon).event("click", Snabbdom.event(_ => update(action)))
 
-    // todo: rework this. footer-group is removed
-    Node("div.footer-group")
-      .child(
-        Node("div.text-panel")
-          .children(
-            textButton("W--", state.copy(scenario = scenario.copy(width = scenario.width - 1))),
-            textButton("W++", state.copy(scenario = scenario.copy(width = scenario.width + 1))),
-            textButton("H--", state.copy(scenario = scenario.copy(height = scenario.height - 1))),
-            textButton("H++", state.copy(scenario = scenario.copy(height = scenario.height + 1))),
-            textButton("Wall", state.copy(clickAction = Some(ToggleWall))),
-            textButton("Pit", state.copy(clickAction = Some(TogglePit))),
-            iconButton(icon(Images.trapTurnLeft), state.copy(clickAction = Some(ToggleTurnLeftTrap))),
-            iconButton(icon(Images.trapTurnRight), state.copy(clickAction = Some(ToggleTurnRightTrap))),
-            iconButton(icon(Images.trapStun), state.copy(clickAction = Some(ToggleStunTrap))),
-            iconButton(icon(Images.target), state.copy(clickAction = Some(SetTarget))),
-            iconButton(icon(Images.playerStart(0)), state.copy(clickAction = Some(ToggleInitialRobot))),
-            iconButton(icon(Images.instructionIcon(TurnRight)), state.copy(clickAction = Some(RotateRobot)))
-          )
-      )
-      .child(
-        Node("div.text-panel")
-          .child(
-            Node("div.field.has-addons")
-              .child(
-                Node("div.control is-expanded").child(
-                  Node("input.input")
-                    .attr("type", "text")
-                    .attr("placeholder", "description")
-                    .attr("value", state.description)
-                    .event("change", Snabbdom.event(e => update(state.copy(description = Untyped(e).target.value.asInstanceOf[String]))))
-                )
-              )
-              .child(
-                Node("div.control")
-                  .child(
-                    Node("button.button.is-primary")
-                      .event("click", Snabbdom.event(_ => Actions.saveScenario(ScenarioPost(state.description, state.scenario))))
-                      .text("Save Scenario")
-                  )
-              )
-          )
+    Node("div.nowrap-panel")
+      .style("margin", "8px")
+      .children(
+        textButton("W--", state.copy(scenario = scenario.copy(width = scenario.width - 1))),
+        textButton("W++", state.copy(scenario = scenario.copy(width = scenario.width + 1))),
+        textButton("H--", state.copy(scenario = scenario.copy(height = scenario.height - 1))),
+        textButton("H++", state.copy(scenario = scenario.copy(height = scenario.height + 1))),
+        textButton("Wall", state.copy(clickAction = Some(ToggleWall))),
+        textButton("Pit", state.copy(clickAction = Some(TogglePit))),
+        iconButton(icon(Images.trapTurnLeft), state.copy(clickAction = Some(ToggleTurnLeftTrap))),
+        iconButton(icon(Images.trapTurnRight), state.copy(clickAction = Some(ToggleTurnRightTrap))),
+        iconButton(icon(Images.trapStun), state.copy(clickAction = Some(ToggleStunTrap))),
+        iconButton(icon(Images.target), state.copy(clickAction = Some(SetTarget))),
+        iconButton(icon(Images.playerStart(0)), state.copy(clickAction = Some(ToggleInitialRobot))),
+        iconButton(icon(Images.instructionIcon(TurnRight)), state.copy(clickAction = Some(RotateRobot)))
       )
   }
+
+  private def descriptionAndSave(implicit state: EditorPage.State, update: EditorPage.Update) =
+    Node("div.nowrap-panel")
+      .style("margin", "8px")
+      .child(
+        Node("div.field.has-addons")
+          .child(
+            Node("div.control is-expanded").child(
+              Node("input.input")
+                .attr("type", "text")
+                .attr("placeholder", "description")
+                .attr("value", state.description)
+                .event("change", Snabbdom.event(e => update(state.copy(description = Untyped(e).target.value.asInstanceOf[String]))))
+            )
+          )
+          .child(
+            Node("div.control")
+              .child(
+                Node("button.button.is-primary")
+                  .event("click", Snabbdom.event(_ => Actions.saveScenario(ScenarioPost(state.description, state.scenario))))
+                  .text("Save Scenario")
+              )
+          )
+      )
 }

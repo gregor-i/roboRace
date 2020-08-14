@@ -73,7 +73,7 @@ case object RotateRobot extends ClickAction {
 private object Helper {
   def toggle[A](value: A)(seq: Seq[A]): Seq[A] =
     if (seq.contains(value))
-      seq :+ value
-    else
       seq.filter(_ != value)
+    else
+      seq :+ value
 }

@@ -37,15 +37,16 @@
     white-space: nowrap;
     flex: 0 0 auto;
   }
+
+  .text-panel {
+    flex: 0 0 auto;
+    text-align: center;
+    margin: 4px;
+    font-size: 30px;
+    color: white;
+  }
 }
 
-.text-panel {
-  text-align: center;
-  overflow-x: auto;
-  margin: 4px;
-  font-size: 30px;
-  color: white;
-}
 
 /*
  * Floating Action Buttons (= fab)
