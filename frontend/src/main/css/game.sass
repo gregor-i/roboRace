@@ -1,0 +1,175 @@
+/*
+ * Game Layout
+ */
+
+.game
+  display: flex
+  flex-direction: column
+  flex-wrap: nowrap
+  justify-content: flex-end
+  align-items: stretch
+  height: 100vh
+  width: 100vw
+
+  --highlight-color: #1d97e2
+
+  background: #4a4a4a
+
+  .game-board
+    flex-grow: 1
+    width: 100%
+    overflow: hidden
+
+    svg
+      width: 100%
+      height: 100%
+
+      g
+        pointer-events: none
+
+      g[name="tiles"]
+        pointer-events: all
+
+  .nowrap-panel
+    overflow-x: auto
+    overflow-y: hidden
+    text-align: center
+    white-space: nowrap
+    flex: 0 0 auto
+
+  .text-panel
+    flex: 0 0 auto
+    text-align: center
+    margin: 4px
+    font-size: 30px
+    color: white
+
+/*
+ * Floating Action Buttons (= fab)
+ */
+
+.fab
+  width: 48px
+  height: 48px
+  background-color: white
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.54)
+  border-radius: 50%
+  display: inline-flex
+  justify-content: center
+  align-items: center
+
+  img
+    width: 32px
+    height: 32px
+    object-fit: contain
+
+  &.fab-left-1
+    position: absolute
+    left: 8px
+    top: 8px
+
+  &.fab-left-2
+    position: absolute
+    left: 64px
+    top: 8px
+
+  &.fab-right-1
+    position: absolute
+    right: 8px
+    top: 8px
+
+
+/*
+ * Slots
+ */
+
+.slot
+  width: 48px
+  height: 64px
+  border-radius: 6px
+  border: solid 2px rgba(0, 0, 0, 0.54)
+  background-color: rgba(255, 255, 255, 0.37)
+  vertical-align: middle
+  margin: 8px 4px 4px 4px
+
+  font-size: 32px
+  color: white
+
+  display: inline-flex
+  justify-content: center
+  align-items: center
+
+  &.filled
+    background-color: #ffffff
+
+  &.filled img
+    width: 100%
+    object-fit: contain
+
+  &.focused
+    backdrop-filter: blur(10px)
+    box-shadow: 0 2px 9px 0 var(--highlight-color)
+    border: solid 2px var(--highlight-color)
+
+/*
+ * Instruction-Cards
+ */
+
+.instruction-card
+  width: 80px
+  height: 96px
+  border-radius: 4px
+  background-color: white
+  margin: 4px
+  position: relative
+  flex: 0 0 80px
+
+  display: inline-flex
+  justify-content: center
+  align-items: center
+
+  & img
+    width: 100%
+    object-fit: contain
+
+  & .badge
+    width: 20px
+    height: 20px
+
+    position: absolute
+    right: 5px
+    bottom: 5px
+
+    border-radius: 50%
+    font-weight: 700
+    font-size: 14px
+    line-height: 20px
+    color: white
+    background-color: var(--highlight-color)
+    text-align: center
+
+
+  $shadow-1:                                0px 1px 6px 0 rgba(0,0,0,.50)
+  $shadow-2: $shadow-1,  5px 1px 0 0 #eee,  5px 1px 6px 0 rgba(0,0,0,.50)
+  $shadow-3: $shadow-2, 10px 2px 0 0 #ddd, 10px 2px 6px 0 rgba(0,0,0,.50)
+  $shadow-4: $shadow-3, 15px 3px 0 0 #ccc, 15px 3px 6px 0 rgba(0,0,0,.50)
+  $shadow-5: $shadow-4, 20px 4px 0 0 #bbb, 20px 4px 6px 0 rgba(0,0,0,.50)
+
+  &.stacked-instruction-card-1
+    box-shadow: 0 1px 6px 0 rgba(0,0,0,.50)
+
+  &.stacked-instruction-card-2
+    box-shadow: $shadow-2
+    margin-right: 5px
+
+  &.stacked-instruction-card-3
+    box-shadow: $shadow-3
+    margin-right: 10px
+
+  &.stacked-instruction-card-4
+    box-shadow: $shadow-4
+    margin-right: 15px
+
+  &.stacked-instruction-card-5
+    box-shadow: $shadow-5
+    margin-right: 20px
