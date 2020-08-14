@@ -4,7 +4,7 @@ import gameEntities._
 import org.scalajs.dom
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.{Animation, RenderGame}
-import roborace.frontend.pages.components.{Body, Fab, Icons, Images}
+import roborace.frontend.pages.components.{Body, Fab, Icons, Images, RobotColor}
 import roborace.frontend.pages.lobby.LobbyPage
 import roborace.frontend.service.Actions
 import roborace.frontend.util.Untyped
@@ -63,8 +63,10 @@ object GameUi {
           )
 
       case Some(you: RunningPlayer) =>
+        val color = RobotColor.dark(you.index)
         Body
           .game()
+          .style("--highlight-color", color)
           .children(
             Fab(Icons.close)
               .classes("fab-right-1")
