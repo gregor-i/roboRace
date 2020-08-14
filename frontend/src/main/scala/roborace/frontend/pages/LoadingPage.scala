@@ -1,8 +1,6 @@
 package roborace.frontend.pages
 
-import roborace.frontend.Router.Location
-import roborace.frontend.components.Body
-import roborace.frontend.{FrontendState, Page}
+import roborace.frontend.pages.components.Body
 import snabbdom._
 
 import scala.concurrent.ExecutionContext.Implicits.global

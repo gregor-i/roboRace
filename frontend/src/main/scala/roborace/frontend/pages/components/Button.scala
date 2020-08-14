@@ -1,4 +1,4 @@
-package roborace.frontend.components
+package roborace.frontend.pages.components
 
 import snabbdom.{Node, SnabbdomFacade}
 

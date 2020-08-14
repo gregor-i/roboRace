@@ -1,11 +1,11 @@
-package roborace.frontend.pages.preview
+package roborace.frontend.pages
+package preview
 
 import api.User
 import gameEntities.ScenarioResponse
+import roborace.frontend.FrontendState
 import roborace.frontend.Router.{Path, QueryParameter}
-import roborace.frontend.pages.{ErrorState, LoadingState}
 import roborace.frontend.service.Service
-import roborace.frontend.{FrontendState, Page}
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global

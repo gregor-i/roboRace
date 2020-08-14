@@ -1,4 +1,4 @@
-package roborace.frontend.components
+package roborace.frontend.pages.components
 
 import gameEntities._
 
@@ -21,10 +21,10 @@ object Images {
   def playerStart(index: Int): String = s"/assets/player${index + 1}-start.svg"
 
   def action(inst: Instruction): String = inst match {
-    case MoveForward  => "/assets/action-move-forward.svg"
-    case MoveBackward => "/assets/action-move-backward.svg"
-    // StepRight : "/assets/action_StepRight.svg",
-    // StepLeft : "/assets/action_StepLeft.svg",
+    case MoveForward      => "/assets/action-move-forward.svg"
+    case MoveBackward     => "/assets/action-move-backward.svg"
+    case StepRight        => ???
+    case StepLeft         => ???
     case MoveTwiceForward => "/assets/action-move-forward-twice.svg"
     case TurnRight        => "/assets/action-turn-right-60.svg"
     case TurnLeft         => "/assets/action-turn-left-60.svg"
@@ -41,4 +41,6 @@ object Images {
     case _: TurnRightTrap => trapTurnRight
     case _: TurnLeftTrap  => trapTurnLeft
   }
+
+  val greetingBackground = "/assets/background.svg"
 }

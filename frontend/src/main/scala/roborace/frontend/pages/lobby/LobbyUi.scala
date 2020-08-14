@@ -2,7 +2,7 @@ package roborace.frontend.pages.lobby
 
 import gameEntities._
 import roborace.frontend.FrontendState
-import roborace.frontend.components._
+import roborace.frontend.pages.components._
 import roborace.frontend.pages.game.GameState
 import roborace.frontend.pages.preview.PreviewState
 import snabbdom.{Node, Snabbdom}

@@ -1,6 +1,6 @@
 package roborace.frontend
 
-import roborace.frontend.pages.{ErrorPage, LoadingPage}
+import roborace.frontend.pages.{ErrorPage, GreetingPage, LoadingPage, Page}
 import roborace.frontend.pages.editor.EditorPage
 import roborace.frontend.pages.game.GamePage
 import roborace.frontend.pages.lobby.LobbyPage
@@ -9,6 +9,7 @@ import snabbdom.Node
 
 object Pages {
   val all: Seq[Page[_ <: FrontendState]] = Seq(
+    GreetingPage,
     PreviewPage,
     LobbyPage,
     ErrorPage,

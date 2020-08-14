@@ -1,12 +1,12 @@
-package roborace.frontend.pages.lobby
+package roborace.frontend.pages
+package lobby
 
 import api.User
 import gameEntities.{GameResponse, ScenarioResponse}
 import monocle.macros.Lenses
 import roborace.frontend.Router.{Path, QueryParameter}
-import roborace.frontend.pages.LoadingState
 import roborace.frontend.service.Service
-import roborace.frontend.{FrontendState, Page, service}
+import roborace.frontend.{FrontendState, service}
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -23,10 +23,10 @@ object LobbyPage extends Page[LobbyState] {
   )
 
   override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
-    case (user, "/", _) => load()
+    case (user, "/lobby", _) => load()
   }
 
-  override def stateToUrl(state: State): Option[(Path, QueryParameter)] = Some("/" -> Map.empty)
+  override def stateToUrl(state: State): Option[(Path, QueryParameter)] = Some("/lobby" -> Map.empty)
 
   override def render(implicit state: State, update: FrontendState => Unit): Node = LobbyUi.render(state, update)
 }

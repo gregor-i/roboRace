@@ -1,4 +1,4 @@
-package roborace.frontend.components
+package roborace.frontend.pages.components
 
 object RobotColor {
   val robotLight1 = "#11b5e5"

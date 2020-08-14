@@ -1,8 +1,8 @@
-package roborace.frontend.components.gameBoard
+package roborace.frontend.pages.components.gameBoard
 
 import gameEntities._
 import org.scalajs.dom.raw.{HTMLElement, MouseEvent}
-import roborace.frontend.components.{Images, RobotColor}
+import roborace.frontend.pages.components.{Images, RobotColor}
 import snabbdom.{Node, Snabbdom}
 
 import scala.util.chaining._

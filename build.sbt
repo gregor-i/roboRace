@@ -1,5 +1,3 @@
-import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
-
 import scala.sys.process._
 
 name := "roboRace"
@@ -12,6 +10,11 @@ scalafmtOnCompile in ThisBuild := true
 lazy val root = project
   .in(file("."))
   .aggregate(core.js, core.jvm, frontend, `service-worker`, backend)
+
+lazy val macros = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
+  .in(file("macros"))
+  .settings(libraryDependencies += "org.scala-lang" % "scala-reflect" % scalaVersion.value)
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -35,7 +38,7 @@ lazy val backend = project.in(file("backend"))
 
 val frontend = project
   .in(file("frontend"))
-  .dependsOn(core.js)
+  .dependsOn(core.js, macros.js)
   .enablePlugins(ScalaJSPlugin)
   .settings(
     scalaJSUseMainModuleInitializer := true,

@@ -12,7 +12,7 @@ import scala.util.{Failure, Success}
 
 object Main {
   def main(args: Array[String]): Unit = {
-    installServiceWorker()
+//    installServiceWorker()
 
     dom.document.addEventListener[dom.Event](
       "DOMContentLoaded",

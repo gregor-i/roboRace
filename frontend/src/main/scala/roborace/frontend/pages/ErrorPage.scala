@@ -1,11 +1,8 @@
 package roborace.frontend.pages
 
-import roborace.frontend.Router.Location
-import roborace.frontend.components.Body
-import roborace.frontend.{FrontendState, Page}
+import roborace.frontend.pages.components.Body
 import snabbdom._
 
-//@Lenses
 case class ErrorState(message: String, navbarExpanded: Boolean = false) extends FrontendState
 
 object ErrorPage extends Page[ErrorState] {

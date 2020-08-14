@@ -2,15 +2,15 @@ package roborace.frontend.pages.editor
 
 import gameEntities._
 import roborace.frontend.FrontendState
-import roborace.frontend.components.gameBoard.RenderScenario
-import roborace.frontend.components.{Body, Fab, Icons, Images}
+import roborace.frontend.pages.components.gameBoard.RenderScenario
+import roborace.frontend.pages.components.{Body, Fab, Icons, Images}
 import roborace.frontend.pages.lobby.LobbyPage
 import roborace.frontend.service.{Actions, Service}
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}
 
 object EditorUi {
-  def apply(state: EditorState, update: FrontendState => Unit): Node = {
+  def apply(implicit state: EditorState, update: FrontendState => Unit): Node = {
     Body
       .game()
       .child(Fab(Icons.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))

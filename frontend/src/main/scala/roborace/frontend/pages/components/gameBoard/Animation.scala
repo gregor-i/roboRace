@@ -1,7 +1,7 @@
-package roborace.frontend.components.gameBoard
+package roborace.frontend.pages.components.gameBoard
 
 import gameEntities._
-import roborace.frontend.components.gameBoard.Svg._
+import roborace.frontend.pages.components.gameBoard.Svg._
 import snabbdom.Node
 
 object Animation {

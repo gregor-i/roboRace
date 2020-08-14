@@ -3,8 +3,8 @@ package roborace.frontend.pages.game
 import gameEntities._
 import org.scalajs.dom
 import roborace.frontend.FrontendState
-import roborace.frontend.components.gameBoard.{Animation, RenderGame}
-import roborace.frontend.components.{Body, Fab, Icons, Images}
+import roborace.frontend.pages.components.gameBoard.{Animation, RenderGame}
+import roborace.frontend.pages.components.{Body, Fab, Icons, Images}
 import roborace.frontend.pages.lobby.LobbyPage
 import roborace.frontend.service.Actions
 import roborace.frontend.util.Untyped
