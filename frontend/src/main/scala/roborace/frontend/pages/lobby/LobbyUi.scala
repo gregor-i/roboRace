@@ -15,7 +15,7 @@ object LobbyUi {
       .child(renderHeader())
       .child(
         Column(
-          lobbyState.games.map(gameCard(_, update)) ++ lobbyState.scenarios.map(scenarioCard(_))
+          lobbyState.games.map(gameCard(_)) ++ lobbyState.scenarios.map(scenarioCard(_))
         )
       )
 
@@ -38,7 +38,7 @@ object LobbyUi {
         )
       )
 
-  def gameCard(gameResponse: GameResponse, update: FrontendState => Unit): Node = {
+  def gameCard(gameResponse: GameResponse)(implicit state: LobbyPage.State, update: LobbyPage.Update): Node = {
     val youTag: Option[Node] = gameResponse.you match {
       case Some(_: QuittedPlayer)                                   => Some(Tag("Quitted", "is-danger"))
       case Some(you: FinishedPlayer)                                => Some(Tag(s"Finished as ${you.rank}", "is-primary"))
@@ -60,9 +60,16 @@ object LobbyUi {
             .child(sizeTag)
             .childOptional(youTag)
             .childOptional(joinTag),
-          ButtonList(
-            Button("Join Game", Snabbdom.event(_ => update(GameState(gameResponse)))).classes("is-primary")
-          )
+          ButtonList()
+            .childOptional(
+              if (gameResponse.ownedByYou)
+                Some(Button("Delete Game", Snabbdom.event(_ => Actions.deleteGame(gameResponse))))
+              else
+                None
+            )
+            .child(
+              Button("Join Game", Snabbdom.event(_ => update(GameState(gameResponse)))).classes("is-primary")
+            )
         )
       )
     )

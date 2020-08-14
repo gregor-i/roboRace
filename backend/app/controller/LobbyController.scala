@@ -47,7 +47,7 @@ class LobbyController @Inject() (sessionAction: SessionAction, gameRepo: GameRep
         )
         gameRepo.save(row)
         sendStateToClients()
-        Created(GameResponseFactory(game, row.id)(session).asJson)
+        Created(GameResponseFactory(row, game)(session).asJson)
     }
   }
 

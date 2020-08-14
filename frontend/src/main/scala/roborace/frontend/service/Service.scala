@@ -20,6 +20,11 @@ object Service extends ServiceTrait {
       .flatMap(check(201))
       .flatMap(parse[GameResponse])
 
+  def deleteGame(gameId: String): Future[Unit] =
+    delete(s"/api/games/${gameId}")
+      .flatMap(check(204))
+      .map(_ => ())
+
   def postCommand(gameId: String, command: Command): Future[GameResponse] =
     post(s"/api/games/$gameId/commands", command)
       .flatMap(check(200))

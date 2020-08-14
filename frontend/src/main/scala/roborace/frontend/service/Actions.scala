@@ -3,7 +3,7 @@ package roborace.frontend.service
 import gameEntities.{Command, Constants, GameResponse, Instruction, RunningPlayer, Scenario, ScenarioPost, ScenarioResponse, SetInstructions}
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.game.GameState
-import roborace.frontend.pages.lobby.LobbyState
+import roborace.frontend.pages.lobby.{LobbyPage, LobbyState}
 import roborace.frontend.toasts.Syntax.{withSuccessToast, withWarningToast}
 
 import scala.concurrent.Future
@@ -13,6 +13,13 @@ object Actions {
   def createGame(scenario: Scenario, index: Int): Future[GameResponse] =
     withSuccessToast("Starting Game", "Game started") {
       Service.postGame(scenario, index)
+    }
+
+  def deleteGame(gameResponse: GameResponse)(implicit state: LobbyState, update: FrontendState => Unit): Future[Unit] =
+    withWarningToast("Deleting Game", "Game deleted") {
+      Service.deleteGame(gameResponse.id)
+    }.map { _ =>
+      update(LobbyState.games.modify(_.filter(_.id != gameResponse.id))(state))
     }
 
   def sendCommand(command: Command)(implicit gameState: GameState, update: FrontendState => Unit): Unit =

@@ -31,8 +31,8 @@ class GameController @Inject() (sessionAction: SessionAction, lobbyController: L
 
   def state(id: String) = sessionAction { (session, _) =>
     repo.get(id) match {
-      case Some(GameRow(_, _, Some(game), _)) => Ok(GameResponseFactory(game, id)(session).asJson)
-      case _                                  => NotFound
+      case Some(row @ GameRow(_, _, Some(game), _)) => Ok(GameResponseFactory(row)(session).get.asJson)
+      case _                                        => NotFound
     }
   }
 
@@ -47,7 +47,7 @@ class GameController @Inject() (sessionAction: SessionAction, lobbyController: L
               Source.single(afterCycle).runWith(sseCache.sink(id))
             if (afterCycle.events != row.game.get.events && afterCycle.cycle == 0)
               lobbyController.sendStateToClients()
-            Ok(GameResponseFactory(afterCycle, id)(session).asJson)
+            Ok(GameResponseFactory(row, afterCycle)(session).asJson)
           case CommandRejected(reason) =>
             BadRequest(reason.asJson)
         }
@@ -57,13 +57,18 @@ class GameController @Inject() (sessionAction: SessionAction, lobbyController: L
   }
 
   def sse(id: String) = sessionAction { (session, _) =>
-    Ok.chunked(
-        sseCache
-          .source(id)
-          .map(game => GameResponseFactory(game, id)(session))
-          .map(_.asJson.noSpaces)
-          .via(EventSource.flow)
-      )
-      .as(ContentTypes.EVENT_STREAM)
+    repo.get(id) match {
+      case Some(row) =>
+        Ok.chunked(
+            sseCache
+              .source(id)
+              .map(game => GameResponseFactory(row, game)(session))
+              .map(_.asJson.noSpaces)
+              .via(EventSource.flow)
+          )
+          .as(ContentTypes.EVENT_STREAM)
+
+      case None => NotFound
+    }
   }
 }
