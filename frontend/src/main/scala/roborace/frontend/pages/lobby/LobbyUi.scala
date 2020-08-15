@@ -94,7 +94,7 @@ object LobbyUi {
                 None
             )
             .children(
-              Button("Edit Scenario", Snabbdom.event(_ => update(EditorState(scenarioResponse.scenario, scenarioResponse.description)))),
+              Button("Edit Scenario", Snabbdom.event(_ => update(EditorState(scenarioResponse)))),
               Button("Start Game", Snabbdom.event(_ => update(PreviewState(scenarioResponse)))).classes("is-primary")
             )
         )

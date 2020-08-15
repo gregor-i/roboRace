@@ -30,6 +30,11 @@ object Service extends ServiceTrait {
       .flatMap(check(200))
       .flatMap(parse[GameResponse])
 
+  def getScenario(scenarioId: String): Future[ScenarioResponse] =
+    get(s"/api/scenarios/${scenarioId}")
+      .flatMap(check(200))
+      .flatMap(parse[ScenarioResponse])
+
   def getAllScenarios(): Future[Seq[ScenarioResponse]] =
     get("/api/scenarios")
       .flatMap(check(200))

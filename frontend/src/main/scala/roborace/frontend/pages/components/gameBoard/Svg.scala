@@ -78,9 +78,13 @@ object Svg {
       .pipe { node =>
         click match {
           case Some(f) =>
-            node.event("click", Snabbdom.specificEvent[MouseEvent] { clickEvent =>
-              f(p, event2direction(clickEvent))
-            })
+            node.event(
+              "click",
+              Snabbdom.specificEvent[MouseEvent] { clickEvent =>
+                // todo: this is not correct. it needs a check, if the event is actually inside of the hex.
+                f(p, event2direction(clickEvent))
+              }
+            )
           case None => node
         }
       }
