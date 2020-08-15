@@ -32,14 +32,26 @@ object Images {
     case Sleep            => "/assets/action-sleep.svg"
   }
 
-  def trapStun      = "/assets/trap-stun.svg"
-  def trapTurnRight = "/assets/trap-turn-right.svg"
-  def trapTurnLeft  = "/assets/trap-turn-left.svg"
+  def trapStun          = "/assets/trap-stun.svg"
+  def trapTurnRight     = "/assets/trap-turn-right.svg"
+  def trapTurnLeft      = "/assets/trap-turn-left.svg"
+  def trapPushUp        = "/assets/trap-push-up.svg"
+  def trapPushUpRight   = "/assets/trap-push-up-right.svg"
+  def trapPushDownRight = "/assets/trap-push-down-right.svg"
+  def trapPushDown      = "/assets/trap-push-down.svg"
+  def trapPushDownLeft  = "/assets/trap-push-down-left.svg"
+  def trapPushUpLeft    = "/assets/trap-push-up-left.svg"
 
   def trap(t: Trap): String = t match {
-    case _: StunTrap      => trapStun
-    case _: TurnRightTrap => trapTurnRight
-    case _: TurnLeftTrap  => trapTurnLeft
+    case _: StunTrap            => trapStun
+    case _: TurnRightTrap       => trapTurnRight
+    case _: TurnLeftTrap        => trapTurnLeft
+    case PushTrap(_, Up)        => trapPushUp
+    case PushTrap(_, UpRight)   => trapPushUpRight
+    case PushTrap(_, DownRight) => trapPushDownRight
+    case PushTrap(_, Down)      => trapPushDown
+    case PushTrap(_, DownLeft)  => trapPushDownLeft
+    case PushTrap(_, UpLeft)    => trapPushUpLeft
   }
 
   val greetingBackground = "/assets/background.svg"

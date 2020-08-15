@@ -48,6 +48,7 @@ object EditorUi {
         iconButton(icon(Images.trapTurnLeft), state.copy(clickAction = Some(ToggleTurnLeftTrap))),
         iconButton(icon(Images.trapTurnRight), state.copy(clickAction = Some(ToggleTurnRightTrap))),
         iconButton(icon(Images.trapStun), state.copy(clickAction = Some(ToggleStunTrap))),
+        iconButton(icon(Images.trapPushUp), state.copy(clickAction = Some(TogglePushTrap))),
         iconButton(icon(Images.target), state.copy(clickAction = Some(SetTarget))),
         iconButton(icon(Images.playerStart(0)), state.copy(clickAction = Some(ToggleInitialRobot))),
         iconButton(icon(Images.instructionIcon(TurnRight)), state.copy(clickAction = Some(RotateRobot)))

@@ -42,6 +42,16 @@ case object ToggleStunTrap extends ClickAction {
         traps :+ StunTrap(position)
     }
 }
+case object TogglePushTrap extends ClickAction {
+  def apply(position: Position, direction: Direction): Scenario => Scenario =
+    Scenario.traps.modify { traps =>
+      if (traps.exists(_.position == position))
+        traps.filter(_.position != position)
+      else
+        traps :+ PushTrap(position, direction)
+    }
+}
+
 case object SetTarget extends ClickAction {
   def apply(position: Position, direction: Direction): Scenario => Scenario =
     Scenario.targets.modify(toggle(position))

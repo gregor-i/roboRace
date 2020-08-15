@@ -11,3 +11,7 @@ The current development state is playable at [Heroku](https://roborace.herokuapp
   - do some research about rendering engines ...
   - more user-feedback (ie. toasts)
   - greeting
+
+
+### references:
+ - https://www.redblobgames.com/grids/hexagons/
