@@ -15,7 +15,7 @@ private[macros] class StaticContentMacro(val c: blackbox.Context) {
   def staticFileContent(file: c.Expr[String]): c.universe.Tree = file.tree match {
     case Literal(Constant(s: String)) =>
       val res = Using(Source.fromFile(s, "UTF-8")) { source =>
-        source.getLines.mkString("\n")
+        source.getLines().mkString("\n")
       }
       q"${res.get}"
   }

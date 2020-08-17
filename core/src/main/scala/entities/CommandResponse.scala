@@ -9,6 +9,12 @@ sealed trait CommandResponse {
       case CommandAccepted(game)      => f(game)
     }
 
+  def map(f: Game => Game): CommandResponse =
+    this match {
+      case rejection: CommandRejected => rejection
+      case CommandAccepted(game)      => CommandAccepted(f(game))
+    }
+
   def toTry: Try[Game] =
     this match {
       case CommandRejected(reason)   => Failure(new Exception(s"command was rejected: ${reason}"))

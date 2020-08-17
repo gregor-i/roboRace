@@ -7,23 +7,19 @@ import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}
 
 object RenderGame {
-  def apply(game: Game, click: Option[(Position, Direction) => Unit]): Node = {
-    apply(game.scenario, game.events, game.players.head.)
-  }
+  def apply(game: Game, click: Option[(Position, Direction) => Unit]): Node =
+    // fixme: the None is wrong
+    apply(game.scenario, game.events, None, click)
 
-  def apply(game: GameResponse, click: Option[(Position, Direction) => Unit]): Node = {
+  def apply(game: GameResponse, click: Option[(Position, Direction) => Unit]): Node =
     apply(
       game.scenario,
       game.events,
-        game.you.collect { case p: RunningPlayer => p.currentTarget },
+      game.you.collectFirst { case p: RunningPlayer => p.currentTarget },
       click
     )
-  }
 
-
-
-
-  private def apply(scenario: Scenario, events: List[EventLog], activeTarget: Option[Int], click: Option[(Position, Direction) => Unit]): Node = {
+  private def apply(scenario: Scenario, events: Seq[EventLog], activeTarget: Option[Int], click: Option[(Position, Direction) => Unit]): Node = {
     var oldDuration, oldTime = 0d
 
     Node("div.game-board")

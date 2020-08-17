@@ -5,7 +5,7 @@ import roborace.frontend.pages.editor.EditorPage
 import roborace.frontend.pages.multiplayer.game.GamePage
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.pages.multiplayer.preview.PreviewPage
-import roborace.frontend.pages.singleplayer.SelectLevelPage
+import roborace.frontend.pages.singleplayer.{SelectLevelPage, SinglePlayerGamePage}
 import snabbdom.Node
 
 object Pages {
@@ -21,7 +21,8 @@ object Pages {
     PreviewPage,
     GamePage,
     // singleplayer:
-    SelectLevelPage
+    SelectLevelPage,
+    SinglePlayerGamePage
   )
 
   def selectPage[S <: FrontendState](nutriaState: S): Page[S] =

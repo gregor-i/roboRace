@@ -46,10 +46,7 @@ object Actions {
   }
 
   def unsetInstruction(slot: Int)(implicit state: GameState, update: FrontendState => Unit): Unit = {
-    println("unsetInstruction")
-    println(state.slots)
     val newState = GameState.slots.modify(_ - slot)(state)
-    println(newState.slots)
     newState.game.you match {
       case Some(you: RunningPlayer) if you.instructionSlots.nonEmpty =>
         sendCommand(entities.ResetInstruction)

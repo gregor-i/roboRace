@@ -2,9 +2,10 @@ package roborace.frontend.pages
 package singleplayer
 
 import api.User
+import entities.{Levels, Scenario}
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components._
-import snabbdom.Node
+import snabbdom.{Node, Snabbdom}
 
 object SelectLevelState extends FrontendState
 
@@ -20,15 +21,17 @@ object SelectLevelPage extends Page[SelectLevelState.type] {
       .child(Header())
       .child(
         Column(
-          Seq(levels())
+          Levels.all.map(levelCard(_))
         )
       )
 
-  private def levels() =
+  private def levelCard(scenario: Scenario)(implicit update: Update) =
     Card(
       MediaObject(
         Some(RobotImage.apply(1, filled = true)),
-        Node("div").text("todo")
+        Node("button.button.is-primary")
+          .text("Start Game")
+          .event("click", Snabbdom.event(_ => update(SinglePlayerGameState.start(scenario))))
       )
     ).classes("has-background-light")
 }

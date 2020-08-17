@@ -14,4 +14,6 @@ object Levels {
       .getOrElse(throw new Exception("json scenario could not be parsed"))
 
   val level1 = StaticContent("core/src/main/json/level1.json").pipe(parse)
+
+  val all = Seq(level1)
 }
