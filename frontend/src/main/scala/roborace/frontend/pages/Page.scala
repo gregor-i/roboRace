@@ -3,7 +3,6 @@ package roborace.frontend.pages
 import api.User
 import snabbdom.Node
 
-import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 abstract class Page[S <: FrontendState: ClassTag] {

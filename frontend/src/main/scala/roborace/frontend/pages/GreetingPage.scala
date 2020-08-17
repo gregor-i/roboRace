@@ -3,9 +3,11 @@ package roborace.frontend.pages
 import api.User
 import logic.DefaultScenario
 import org.scalajs.dom
+import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.RenderScenario
 import roborace.frontend.pages.components.{Body, Button, ButtonList, Images, Modal}
-import roborace.frontend.pages.lobby.{LobbyPage, LobbyState}
+import roborace.frontend.pages.multiplayer.lobby.LobbyPage
+import roborace.frontend.pages.singleplayer.SelectLevelState
 import roborace.macros.StaticContent
 import snabbdom.{Node, Snabbdom}
 
@@ -44,9 +46,8 @@ object GreetingPage extends Page[GreetingState] {
 
   private def buttons(implicit update: Update) =
     ButtonList.fullWidth(
-      Button("Singleplayer", Snabbdom.event(_ => dom.window.alert("in Progress")))
-        .classes("button", "is-link", "is-outlined")
-        .boolAttr("disabled", true),
+      Button("Singleplayer", Snabbdom.event(_ => update(SelectLevelState)))
+        .classes("button", "is-link", "is-outlined"),
       Button("Multiplayer", Snabbdom.event(_ => update(LobbyPage.load())))
         .classes("button", "is-link", "is-outlined")
     )

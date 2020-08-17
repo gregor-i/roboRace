@@ -3,8 +3,8 @@ package roborace.frontend.service
 import api.{GameResponse, ScenarioPost, ScenarioResponse}
 import entities.{Command, Constants, Instruction, RunningPlayer, Scenario, SetInstructions}
 import roborace.frontend.FrontendState
-import roborace.frontend.pages.game.GameState
-import roborace.frontend.pages.lobby.{LobbyPage, LobbyState}
+import roborace.frontend.pages.multiplayer.game.GameState
+import roborace.frontend.pages.multiplayer.lobby.{LobbyPage, LobbyState}
 import roborace.frontend.toasts.Syntax.{withSuccessToast, withWarningToast}
 
 import scala.concurrent.Future

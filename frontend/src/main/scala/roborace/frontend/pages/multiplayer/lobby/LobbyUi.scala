@@ -1,11 +1,11 @@
-package roborace.frontend.pages.lobby
+package roborace.frontend.pages.multiplayer.lobby
 
 import api.{GameResponse, ScenarioResponse}
 import entities._
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components._
-import roborace.frontend.pages.game.GameState
-import roborace.frontend.pages.preview.PreviewState
+import roborace.frontend.pages.multiplayer.game.GameState
+import roborace.frontend.pages.multiplayer.preview.PreviewState
 import snabbdom.{Node, Snabbdom}
 import roborace.frontend.pages.editor.EditorState
 import roborace.frontend.service.Actions
@@ -13,29 +13,10 @@ import roborace.frontend.service.Actions
 object LobbyUi {
   def render(implicit lobbyState: LobbyState, update: FrontendState => Unit): Node =
     Body()
-      .child(renderHeader())
+      .child(Header())
       .child(
         Column(
           lobbyState.games.map(gameCard(_)) ++ lobbyState.scenarios.map(scenarioCard(_))
-        )
-      )
-
-  def renderHeader(): Node =
-    Node("nav.navbar.is-light")
-      .child(
-        Node("div.navbar-brand")
-          .child(
-            Node("a")
-              .classes("navbar-item")
-              .attr("href", "/")
-              .child(Node("img").attr("src", Images.logo))
-          )
-      )
-      .child(
-        Node("div.navbar-menu").child(
-          Node("a.navbar-item")
-            .attr("href", "#")
-            .text("Tutorial")
         )
       )
 
@@ -73,7 +54,7 @@ object LobbyUi {
             )
         )
       )
-    )
+    ).classes("has-background-light")
   }
 
   def scenarioCard(scenarioResponse: ScenarioResponse)(implicit state: LobbyState, update: FrontendState => Unit): Node =
@@ -99,6 +80,6 @@ object LobbyUi {
             )
         )
       )
-    )
+    ).classes("has-background-light")
 
 }

@@ -1,11 +1,11 @@
-package roborace.frontend.pages.preview
+package roborace.frontend.pages.multiplayer.preview
 
 import entities.{Direction, Position, Scenario}
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.RenderScenario
 import roborace.frontend.pages.components.{Body, Fab, Icons}
-import roborace.frontend.pages.game.GameState
-import roborace.frontend.pages.lobby.LobbyPage
+import roborace.frontend.pages.multiplayer.game.GameState
+import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.service.{Actions, Service}
 import snabbdom.{Node, Snabbdom}
 

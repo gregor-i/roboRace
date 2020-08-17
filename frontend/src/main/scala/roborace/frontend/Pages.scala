@@ -1,21 +1,27 @@
 package roborace.frontend
 
-import roborace.frontend.pages.{ErrorPage, GreetingPage, LoadingPage, Page}
+import roborace.frontend.pages._
 import roborace.frontend.pages.editor.EditorPage
-import roborace.frontend.pages.game.GamePage
-import roborace.frontend.pages.lobby.LobbyPage
-import roborace.frontend.pages.preview.PreviewPage
+import roborace.frontend.pages.multiplayer.game.GamePage
+import roborace.frontend.pages.multiplayer.lobby.LobbyPage
+import roborace.frontend.pages.multiplayer.preview.PreviewPage
+import roborace.frontend.pages.singleplayer.SelectLevelPage
 import snabbdom.Node
 
 object Pages {
   val all: Seq[Page[_ <: FrontendState]] = Seq(
+    // global:
     GreetingPage,
-    PreviewPage,
-    LobbyPage,
     ErrorPage,
     LoadingPage,
+    // tools:
+    EditorPage,
+    // multiplayer:
+    LobbyPage,
+    PreviewPage,
     GamePage,
-    EditorPage
+    // singleplayer:
+    SelectLevelPage
   )
 
   def selectPage[S <: FrontendState](nutriaState: S): Page[S] =

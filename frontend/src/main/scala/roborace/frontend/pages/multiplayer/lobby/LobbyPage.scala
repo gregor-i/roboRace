@@ -1,5 +1,5 @@
 package roborace.frontend.pages
-package lobby
+package multiplayer.lobby
 
 import api.{GameResponse, ScenarioResponse, User}
 import monocle.macros.Lenses
@@ -22,7 +22,7 @@ object LobbyPage extends Page[LobbyState] {
   )
 
   override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
-    case (user, "/lobby", _) => load()
+    case (_, "/lobby", _) => load()
   }
 
   override def stateToUrl(state: State): Option[(Path, QueryParameter)] = Some("/lobby" -> Map.empty)

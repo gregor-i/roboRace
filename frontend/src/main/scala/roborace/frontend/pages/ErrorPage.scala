@@ -1,6 +1,7 @@
 package roborace.frontend.pages
 
-import roborace.frontend.pages.components.Body
+import roborace.frontend.FrontendState
+import roborace.frontend.pages.components.{Body, Header}
 import snabbdom._
 
 case class ErrorState(message: String, navbarExpanded: Boolean = false) extends FrontendState
@@ -12,7 +13,7 @@ object ErrorPage extends Page[ErrorState] {
 
   def render(implicit state: ErrorState, update: FrontendState => Unit): Node =
     Body()
-    //          .child(Header(ErrorState.navbarExpanded))
+      .child(Header())
       .child(
         Node("div.section")
           .child(

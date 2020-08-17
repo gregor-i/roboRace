@@ -19,6 +19,7 @@ lazy val macros = crossProject(JSPlatform, JVMPlatform)
 lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("core"))
+  .dependsOn(macros)
   .settings(circe, monocle, scalaTest)
 
 lazy val backend = project.in(file("backend"))
