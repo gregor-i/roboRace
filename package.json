@@ -6,17 +6,21 @@
     "snabbdom": "^0.7.2"
   },
   "devDependencies": {
+    "nodemon": "^2.0.4",
     "browserify": "^16.2.3",
     "sass": "^1.26.10",
     "svgo": "^1.1.1"
   },
   "scripts": {
-    "watch": "nodemon --watch frontend -e css,svg --exec \"npm run build\"",
     "build": "npm run make-dirs && run-p build-*",
     "make-dirs": "mkdir -p backend/public",
     "build-img": "svgo -f frontend/src/main/img -o backend/public",
     "build-fonts": "cp -r node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid* backend/public/.",
     "build-css": "sass frontend/src/main/css/roborace.sass backend/public/robo-race.css --no-source-map --style compressed",
-    "build-static": "cp frontend/src/main/static/* backend/public/."
+    "build-static": "cp frontend/src/main/static/* backend/public/.",
+    "watch": "run-p watch-*",
+    "watch-css": "nodemon --watch frontend/src/main/css -e '*' --exec 'npm run build-css'",
+    "watch-img": "nodemon --watch frontend/src/main/img -e svg --exec 'npm run build-img'",
+    "watch-static": "nodemon --watch frontend/src/main/static -e '*' --exec 'npm run build-static'"
   }
 }
