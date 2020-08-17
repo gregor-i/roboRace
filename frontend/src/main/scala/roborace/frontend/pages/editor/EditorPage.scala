@@ -11,7 +11,6 @@ import roborace.frontend.service.Service
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global
-
 import scala.util.{Failure, Success}
 
 @Lenses

@@ -1,5 +1,5 @@
 package roborace.frontend.pages
-package game
+package multiplayer.game
 
 import api.{GameResponse, User}
 import entities.Instruction

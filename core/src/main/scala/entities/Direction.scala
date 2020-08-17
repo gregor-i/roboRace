@@ -2,7 +2,7 @@ package entities
 
 sealed trait Direction
 
-sealed trait WallDirection
+sealed trait WallDirection extends Direction
 
 case object Up        extends Direction
 case object UpRight   extends Direction with WallDirection

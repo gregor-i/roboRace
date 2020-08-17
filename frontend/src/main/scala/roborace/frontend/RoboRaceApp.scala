@@ -7,8 +7,8 @@ import org.scalajs.dom
 import org.scalajs.dom.raw.HTMLElement
 import org.scalajs.dom.{EventSource, MessageEvent}
 import roborace.frontend.pages.ErrorState
-import roborace.frontend.pages.game.GameState
-import roborace.frontend.pages.lobby.LobbyState
+import roborace.frontend.pages.multiplayer.game.GameState
+import roborace.frontend.pages.multiplayer.lobby.LobbyState
 import roborace.frontend.service.Service
 import snabbdom.{Snabbdom, SnabbdomFacade, VNode}
 

@@ -1,13 +1,25 @@
 package roborace.frontend.pages.components.gameBoard
 
 import api.GameResponse
-import entities.{Direction, Position, RunningPlayer}
+import entities.{Direction, EventLog, Game, Position, RunningPlayer, Scenario}
 import org.scalajs.dom.raw.HTMLElement
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}
 
 object RenderGame {
-  def apply(game: GameResponse, click: Option[(Position, Direction) => Unit]): Node = {
+  def apply(game: Game, click: Option[(Position, Direction) => Unit]): Node =
+    // fixme: the None is wrong
+    apply(game.scenario, game.events, None, click)
+
+  def apply(game: GameResponse, click: Option[(Position, Direction) => Unit]): Node =
+    apply(
+      game.scenario,
+      game.events,
+      game.you.collectFirst { case p: RunningPlayer => p.currentTarget },
+      click
+    )
+
+  private def apply(scenario: Scenario, events: Seq[EventLog], activeTarget: Option[Int], click: Option[(Position, Direction) => Unit]): Node = {
     var oldDuration, oldTime = 0d
 
     Node("div.game-board")
@@ -15,7 +27,7 @@ object RenderGame {
         "insert",
         Snabbdom.hook { node =>
           val svg = node.elm.get.getElementsByTagName("svg").item(0).asInstanceOf[HTMLElement]
-          svg.dataset.update("duration", Animation.eventSequenceDuration(game.events).toString)
+          svg.dataset.update("duration", Animation.eventSequenceDuration(events).toString)
         }
       )
       .hook(
@@ -30,7 +42,7 @@ object RenderGame {
         "postpatch",
         Snabbdom.hook { (oldNode, newNode) =>
           val newSvg      = newNode.elm.get.firstChild.asInstanceOf[HTMLElement]
-          val newDuration = Animation.eventSequenceDuration(game.events)
+          val newDuration = Animation.eventSequenceDuration(events)
           if (oldDuration != newDuration) {
             newSvg.dataset.update("duration", newDuration.toString)
             Untyped(newSvg).setCurrentTime(Math.min(oldTime, oldDuration))
@@ -39,15 +51,15 @@ object RenderGame {
       )
       .child(
         Node("svg")
-          .attr("viewBox", s"0 0 ${Svg.width(game.scenario)} ${Svg.height(game.scenario)}")
+          .attr("viewBox", s"0 0 ${Svg.width(scenario)} ${Svg.height(scenario)}")
           .children(
-            group("tiles", Svg.tiles(game.scenario, click)),
-            group("walls", Svg.walls(game.scenario)),
-            group("targets", Svg.targets(game.scenario, game.you.collect { case p: RunningPlayer => p.currentTarget })),
-            group("traps", Svg.traps(game.scenario)),
-            group("startPoints", Svg.startPoints(game.scenario)),
-            group("robots", Svg.robots(game.scenario.initialRobots)),
-            group("animations", Animation.animations(game))
+            group("tiles", Svg.tiles(scenario, click)),
+            group("walls", Svg.walls(scenario)),
+            group("targets", Svg.targets(scenario, activeTarget)),
+            group("traps", Svg.traps(scenario)),
+            group("startPoints", Svg.startPoints(scenario)),
+            group("robots", Svg.robots(scenario.initialRobots)),
+            group("animations", Animation.animations(events))
           )
       )
   }

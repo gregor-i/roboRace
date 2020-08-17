@@ -2,10 +2,11 @@ package roborace.frontend.pages.editor
 
 import api.ScenarioPost
 import entities._
+import logic.Direction
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.RenderScenario
 import roborace.frontend.pages.components.{Body, Fab, Icons, Images}
-import roborace.frontend.pages.lobby.LobbyPage
+import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.service.{Actions, Service}
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}
@@ -39,9 +40,9 @@ object EditorUi {
     Node("div.nowrap-panel")
       .style("margin", "8px")
       .children(
-        textButton("W--", state.copy(scenario = scenario.copy(width = scenario.width - 1))),
+        textButton("W--", state.copy(scenario = removeOutsideObjects(scenario.copy(width = (scenario.width - 1).max(1))))),
         textButton("W++", state.copy(scenario = scenario.copy(width = scenario.width + 1))),
-        textButton("H--", state.copy(scenario = scenario.copy(height = scenario.height - 1))),
+        textButton("H--", state.copy(scenario = removeOutsideObjects(scenario.copy(height = (scenario.height - 1).max(1))))),
         textButton("H++", state.copy(scenario = scenario.copy(height = scenario.height + 1))),
         textButton("Wall", state.copy(clickAction = Some(ToggleWall))),
         textButton("Pit", state.copy(clickAction = Some(TogglePit))),
@@ -78,4 +79,19 @@ object EditorUi {
               )
           )
       )
+
+  private def removeOutsideObjects(scenario: Scenario): Scenario = {
+    def inside(position: Position): Boolean =
+      position.x < scenario.width && position.y < scenario.height
+
+    scenario.copy(
+      traps = scenario.traps.filter(t => inside(t.position)),
+      pits = scenario.pits.filter(inside),
+      initialRobots = scenario.initialRobots.filter(r => inside(r.position)).zipWithIndex.map { case (robot, index) => robot.copy(index = index) },
+      targets = scenario.targets.filter(inside),
+      walls = scenario.walls.filter { w =>
+        inside(w.position) || inside(Direction.move(w.direction, w.position))
+      }
+    )
+  }
 }

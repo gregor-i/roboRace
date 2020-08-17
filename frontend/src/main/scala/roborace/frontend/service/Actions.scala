@@ -3,8 +3,8 @@ package roborace.frontend.service
 import api.{GameResponse, ScenarioPost, ScenarioResponse}
 import entities.{Command, Constants, Instruction, RunningPlayer, Scenario, SetInstructions}
 import roborace.frontend.FrontendState
-import roborace.frontend.pages.game.GameState
-import roborace.frontend.pages.lobby.{LobbyPage, LobbyState}
+import roborace.frontend.pages.multiplayer.game.GameState
+import roborace.frontend.pages.multiplayer.lobby.{LobbyPage, LobbyState}
 import roborace.frontend.toasts.Syntax.{withSuccessToast, withWarningToast}
 
 import scala.concurrent.Future
@@ -46,10 +46,7 @@ object Actions {
   }
 
   def unsetInstruction(slot: Int)(implicit state: GameState, update: FrontendState => Unit): Unit = {
-    println("unsetInstruction")
-    println(state.slots)
     val newState = GameState.slots.modify(_ - slot)(state)
-    println(newState.slots)
     newState.game.you match {
       case Some(you: RunningPlayer) if you.instructionSlots.nonEmpty =>
         sendCommand(entities.ResetInstruction)

@@ -39,15 +39,14 @@ class GameController @Inject() (sessionAction: SessionAction, lobbyController: L
   def sendCommand(id: String) = sessionAction(circe.tolerantJson[Command]) { (session, request) =>
     repo.get(id) match {
       case Some(row) if row.game.isDefined =>
-        Command(request.body, session.playerId)(row.game.get) match {
+        Command(request.body, session.playerId)(row.game.get)
+          .map(Cycle.apply) match {
           case CommandAccepted(afterCommand) =>
-            val afterCycle = Cycle(afterCommand)
-            repo.save(row.copy(game = Some(afterCycle)))
-            if (afterCycle.events != row.game.get.events)
-              Source.single(afterCycle).runWith(sseCache.sink(id))
-            if (afterCycle.events != row.game.get.events && afterCycle.cycle == 0)
+            repo.save(row.copy(game = Some(afterCommand)))
+            Source.single(afterCommand).runWith(sseCache.sink(id))
+            if (afterCommand.events != row.game.get.events && afterCommand.cycle == 0)
               lobbyController.sendStateToClients()
-            Ok(GameResponseFactory(row, afterCycle)(session).asJson)
+            Ok(GameResponseFactory(row, afterCommand)(session).asJson)
           case CommandRejected(reason) =>
             BadRequest(reason.asJson)
         }

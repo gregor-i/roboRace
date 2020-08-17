@@ -1,9 +1,7 @@
 package roborace.frontend.pages
-package preview
+package multiplayer.preview
 
 import api.{ScenarioResponse, User}
-import roborace.frontend.FrontendState
-import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.service.Service
 import snabbdom.Node
 

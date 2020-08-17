@@ -89,8 +89,8 @@ object Animation {
     animateScale(playerIndex, 1, 0, begin, duration)
   )
 
-  def animations(game: GameResponse): Seq[Node] =
-    game.events
+  def animations(events: Seq[EventLog]): Seq[Node] =
+    events
       .foldLeft((Seq.empty[Node], 0d)) { (t, event) =>
         val (acc, startTime) = t
         val duration         = eventDuration(event)

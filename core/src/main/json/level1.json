@@ -1,0 +1,25 @@
+{
+  "width": 5,
+  "height": 5,
+  "targets": [
+    {
+      "x": 2,
+      "y": 1
+    }
+  ],
+  "initialRobots": [
+    {
+      "index": 0,
+      "position": {
+        "x": 2,
+        "y": 4
+      },
+      "direction": {
+        "Up": {}
+      }
+    }
+  ],
+  "walls": [],
+  "pits": [],
+  "traps": []
+}

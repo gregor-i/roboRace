@@ -9,7 +9,7 @@ object Lenses {
   val eachPlayer = Game.players.composeTraversal(Each.each(Each.listEach[Player]))
 
   val runningPlayers  = eachPlayer.composeOptional(PlayerLenses.running)
-  val finishedPlayers = eachPlayer.composeOptional(PlayerLenses.running)
+  val finishedPlayers = eachPlayer.composeOptional(PlayerLenses.finished)
 
   def player(id: String) =
     eachPlayer
