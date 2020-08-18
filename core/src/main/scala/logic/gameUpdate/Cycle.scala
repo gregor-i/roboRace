@@ -11,15 +11,15 @@ object Cycle extends (Game => Game) {
     State.conditional(readyForCycle)(
       State.sequence(
         removeUsedOptions,
-        g => Lenses.log(StartCycleEvaluation(g.cycle))(g),
+        g => g.log(StartCycleEvaluation(g.cycle)),
         ScenarioEffects.beforeCycle,
         execAllActions,
         ScenarioEffects.afterCycle,
-        g => Lenses.log(FinishedCycleEvaluation(g.cycle))(g),
+        g => g.log(FinishedCycleEvaluation(g.cycle)),
         Lenses.runningPlayers composeLens RunningPlayer.instructionOptions modify DealOptions.apply,
         Game.cycle.modify(_ + 1),
         State.conditional(Lenses.runningPlayers.isEmpty)(
-          Lenses.log(AllPlayersFinished)
+          _.log(AllPlayersFinished)
         )
       )
     )(game)
@@ -59,18 +59,21 @@ object Cycle extends (Game => Game) {
     }
   }
 
-  private def applyAction(_game: Game, player: RunningPlayer): Game = {
+  private def applyAction(game: Game, player: RunningPlayer): Game = {
     val instruction = player.instructionSlots.head
-    val game        = Lenses.log(RobotAction(player.index, instruction))(_game)
-    val afterInstruction = instruction match {
-      case TurnRight => Events.turn(player, Direction.turnRight(player.robot.direction))(game)
-      case TurnLeft  => Events.turn(player, Direction.turnLeft(player.robot.direction))(game)
-      case UTurn     => Events.turn(player, Direction.back(player.robot.direction))(game)
+    State.sequence(
+      _.log(RobotAction(player.index, instruction)),
+      game =>
+        instruction match {
+          case TurnRight => Events.turn(player, Direction.turnRight(player.robot.direction))(game)
+          case TurnLeft  => Events.turn(player, Direction.turnLeft(player.robot.direction))(game)
+          case UTurn     => Events.turn(player, Direction.back(player.robot.direction))(game)
 
-      case move: MoveInstruction => MoveRobots(player, move, game)
+          case move: MoveInstruction => MoveRobots(player, move, game)
 
-      case Sleep => game
-    }
-    Lenses.instructionSlots(player.id).modify(_.drop(1))(afterInstruction)
+          case Sleep => game
+        },
+      Lenses.instructionSlots(player.id).modify(_.drop(1))
+    )(game)
   }
 }

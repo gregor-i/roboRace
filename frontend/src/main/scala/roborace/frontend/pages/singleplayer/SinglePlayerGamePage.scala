@@ -2,31 +2,14 @@ package roborace.frontend.pages
 package singleplayer
 
 import api.User
-import entities.{
-  CommandAccepted,
-  CommandRejected,
-  Constants,
-  DeregisterForGame,
-  FinishedPlayer,
-  Game,
-  Instruction,
-  QuittedPlayer,
-  RegisterForGame,
-  RunningPlayer,
-  Scenario
-}
-import logic.Lenses
+import entities._
 import logic.command.{Command, CreateGame}
 import logic.gameUpdate.Cycle
 import monocle.Lens
 import monocle.macros.Lenses
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.RenderGame
-import roborace.frontend.pages.components.{Body, Fab, Icons, Images, RobotColor}
-import roborace.frontend.pages.multiplayer.game.GameState
-import roborace.frontend.pages.multiplayer.game.GameUi.{cardsBar, instructionSlots, replayFab, returnToLobbyFab}
-import roborace.frontend.pages.singleplayer.SinglePlayerGameState.placedInstructionSlots
-import roborace.frontend.service.Actions
+import roborace.frontend.pages.components.{Body, Images, RobotColor}
 import snabbdom.{Node, Snabbdom}
 
 @Lenses
@@ -38,8 +21,8 @@ case class SinglePlayerGameState(game: Game, focusedSlot: Int, instructionSlots:
     Command
       .setInstructions(newSlots.flatten)("singleplayer")(game)
       .map(Cycle.apply) match {
-      case CommandAccepted(game) => this.copy(game = game, focusedSlot = 0, instructionSlots = Seq.fill(Constants.instructionsPerCycle)(None))
-      case CommandRejected(reason) =>
+      case Right(game) => this.copy(game = game, focusedSlot = 0, instructionSlots = Seq.fill(Constants.instructionsPerCycle)(None))
+      case Left(_) =>
         this.copy(game = game, focusedSlot = (focusedSlot + 1) % Constants.instructionsPerCycle, instructionSlots = newSlots)
     }
   }
@@ -53,7 +36,7 @@ case class SinglePlayerGameState(game: Game, focusedSlot: Int, instructionSlots:
 
 object SinglePlayerGameState {
   def start(scenario: Scenario): SinglePlayerGameState = {
-    val game = CreateGame(scenario, 0)("singleplayer").toTry.get
+    val game = CreateGame(scenario, 0)("singleplayer").getOrElse(throw new Exception())
 
     new SinglePlayerGameState(
       game = game,
@@ -85,52 +68,15 @@ object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
 
   override def render(implicit state: State, update: Update): Node = {
     state.game.players.headOption match {
-//      case None if state.game.cycle == 0 =>
-//        Body
-//          .game()
-//          .child(returnToLobbyFab(state, update))
-//          .child(replayFab(state, update))
-//          .child(
-//            RenderGame(
-//              state.game,
-//              Some { (p, _) =>
-//                state.game.scenario.initialRobots
-//                  .find(r => r.position == p && !state.game.robots.contains(r))
-//                  .foreach(r => Actions.sendCommand(RegisterForGame(r.index)))
-//              }
-//            )
-//          )
-//          .child(
-//            Node("div").classes("text-panel").text("tap a start position to join the game")
-//          )
-
-//      case None =>
-//        Body
-//          .game()
-//          .child(returnToLobbyFab(state, update))
-//          .child(replayFab(state, update))
-//          .child(RenderGame(state.game, None))
-//          .child(Node("div.text-panel").text("observer mode"))
-
-//      case Some(you: QuittedPlayer) =>
-//        Body
-//          .game()
-//          .children(
+      case Some(you: FinishedPlayer) =>
+        Body
+          .game()
+          .children(
 //            returnToLobbyFab(state, update),
 //            replayFab(state, update),
-//            RenderGame(state.game, None),
-//            Node("div.text-panel").text("game quitted")
-//          )
-
-//      case Some(you: FinishedPlayer) =>
-//        Body
-//          .game()
-//          .children(
-//            returnToLobbyFab(state, update),
-//            replayFab(state, update),
-//            RenderGame(state.game, None),
-//            Node("div.text-panel").text("target reached as " + you.rank)
-//          )
+            RenderGame(state.game, None),
+            Node("div.text-panel").text(s"Level finished after ${state.game.cycle} Turns!")
+          )
 
       case Some(you: RunningPlayer) =>
         val color = RobotColor.dark(you.index)
@@ -146,6 +92,10 @@ object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
             instructionSlots(you),
             cardsBar(you)
           )
+
+      case None | Some(_: QuittedPlayer) =>
+        update(ErrorState("This should not have happened"))
+        Node("div")
     }
   }
 

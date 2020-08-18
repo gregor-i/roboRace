@@ -1,14 +1,14 @@
 package logic.command
 
 import entities._
-import logic.ValidateScenario
+import logic.{ValidateScenario, command}
 
 object CreateGame {
   def apply(scenario: Scenario, index: Int)(player: String): CommandResponse = {
     if (!ValidateScenario.apply(scenario))
-      CommandRejected(InvalidScenario)
+      Left(InvalidScenario)
     else if (!scenario.initialRobots.indices.contains(index))
-      CommandRejected(InvalidIndex)
+      Left(InvalidIndex)
     else {
       val game = Game(
         cycle = 0,

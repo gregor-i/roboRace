@@ -5,11 +5,11 @@ import java.time.ZonedDateTime
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import entities.{CommandAccepted, CommandRejected, Scenario}
-import logic.command.CreateGame
+import entities.Scenario
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
+import logic.command.CreateGame
 import model.GameResponseFactory
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
@@ -36,9 +36,9 @@ class LobbyController @Inject() (sessionAction: SessionAction, gameRepo: GameRep
 
   def create(index: Int) = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>
     CreateGame(request.body, index)(session.playerId) match {
-      case CommandRejected(reason) =>
+      case Left(reason) =>
         BadRequest(reason.asJson)
-      case CommandAccepted(game) =>
+      case Right(game) =>
         val row = GameRow(
           id = Utils.newId(),
           owner = session.playerId,

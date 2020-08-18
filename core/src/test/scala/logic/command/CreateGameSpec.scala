@@ -1,6 +1,6 @@
 package logic.command
 
-import entities.{CommandRejected, PlayerJoinedGame}
+import entities.PlayerJoinedGame
 import logic.DefaultScenario
 import helper.GameUpdateHelper
 import org.scalatest.funsuite.AnyFunSuite
@@ -15,6 +15,7 @@ class CreateGameSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
   }
 
   test("reject invalid scenarios") {
-    CreateGame(DefaultScenario.default.copy(initialRobots = List.empty), 0)(p0) shouldBe a[CommandRejected]
+    val createdGame = CreateGame(DefaultScenario.default.copy(initialRobots = List.empty), 0)(p0)
+    assert(createdGame.isLeft)
   }
 }

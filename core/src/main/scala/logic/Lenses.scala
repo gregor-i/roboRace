@@ -1,15 +1,14 @@
 package logic
 
 import entities._
-import monocle.Optional
+import monocle.{Optional, Prism}
 import monocle.function.Each
 import monocle.unsafe.UnsafeSelect
 
 object Lenses {
   val eachPlayer = Game.players.composeTraversal(Each.each(Each.listEach[Player]))
 
-  val runningPlayers  = eachPlayer.composeOptional(PlayerLenses.running)
-  val finishedPlayers = eachPlayer.composeOptional(PlayerLenses.finished)
+  val runningPlayers = eachPlayer.composePrism(PlayerLenses.running)
 
   def player(id: String) =
     eachPlayer
@@ -25,18 +24,11 @@ object Lenses {
 
   def direction(playerName: String) = robot(playerName) composeLens Robot.direction
   def position(playerName: String)  = robot(playerName) composeLens Robot.position
-
-  def log(entry: EventLog) = Game.events.modify(_ :+ entry)
 }
 
 object PlayerLenses {
-  val running = Optional[Player, RunningPlayer] {
+  val running = Prism[Player, RunningPlayer] {
     case r: RunningPlayer => Some(r)
     case _                => None
-  }(s => _ => s)
-
-  val finished = Optional[Player, FinishedPlayer] {
-    case r: FinishedPlayer => Some(r)
-    case _                 => None
-  }(s => _ => s)
+  }(s => s)
 }

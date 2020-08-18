@@ -2,7 +2,15 @@ package logic
 package command
 
 import entities._
+import logic.command
 import logic.gameUpdate.DealOptions
+
+sealed trait Command
+
+case class RegisterForGame(index: Int)                     extends Command
+case object DeregisterForGame                              extends Command
+case class SetInstructions(instructions: Seq[Instruction]) extends Command
+case object ResetInstruction                               extends Command
 
 object Command {
   def apply(command: Command, player: String)(game: Game): CommandResponse = command match {
@@ -14,13 +22,13 @@ object Command {
 
   def registerForGame(index: Int)(playerId: String): Game => CommandResponse = {
     case game if game.cycle != 0 =>
-      CommandRejected(WrongCycle)
+      Left(WrongCycle)
     case game if game.players.exists(_.id == playerId) =>
-      CommandRejected(PlayerAlreadyRegistered)
+      Left(PlayerAlreadyRegistered)
     case game if !game.scenario.initialRobots.indices.contains(index) =>
-      CommandRejected(InvalidIndex)
+      Left(InvalidIndex)
     case game if game.players.exists(_.index == index) =>
-      CommandRejected(RobotAlreadyTaken)
+      Left(RobotAlreadyTaken)
     case game =>
       val newPlayer = RunningPlayer(
         index = index,
@@ -30,10 +38,10 @@ object Command {
         instructionSlots = Seq.empty,
         instructionOptions = DealOptions.initial
       )
-      CommandAccepted(
+      Right(
         State.sequence(
           Game.players.modify(players => players :+ newPlayer),
-          Lenses.log(PlayerJoinedGame(newPlayer.index, newPlayer.robot))
+          _.log(PlayerJoinedGame(newPlayer.index, newPlayer.robot))
         )(game)
       )
   }
@@ -41,25 +49,25 @@ object Command {
   def deregisterForGame(playerId: String)(game: Game): CommandResponse =
     Lenses.player(playerId).headOption(game) match {
       case None =>
-        CommandRejected(PlayerNotFound)
+        Left(PlayerNotFound)
       case Some(_: QuittedPlayer) =>
-        CommandRejected(PlayerAlreadyQuitted)
+        Left(PlayerAlreadyQuitted)
       case Some(_: FinishedPlayer) =>
-        CommandRejected(PlayerAlreadyFinished)
+        Left(PlayerAlreadyFinished)
 
       case Some(player: RunningPlayer) if game.cycle == 0 =>
-        CommandAccepted(
+        Right(
           State.sequence(
             Game.players.modify(_.filter(_ != player)),
-            Lenses.log(PlayerQuitted(player.index, player.robot))
+            _.log(PlayerQuitted(player.index, player.robot))
           )(game)
         )
 
       case Some(player: RunningPlayer) =>
-        CommandAccepted(
+        Right(
           State.sequence(
             Lenses.player(playerId).modify(p => QuittedPlayer(p.index, p.id)),
-            Lenses.log(PlayerQuitted(player.index, player.robot))
+            _.log(PlayerQuitted(player.index, player.robot))
           )(game)
         )
     }
@@ -67,29 +75,29 @@ object Command {
   def setInstructions(instructions: Seq[Instruction])(playerId: String)(game: Game): CommandResponse =
     Lenses.player(playerId).headOption(game) match {
       case None =>
-        CommandRejected(PlayerNotFound)
+        Left(PlayerNotFound)
       case Some(_: FinishedPlayer) =>
-        CommandRejected(PlayerAlreadyFinished)
+        Left(PlayerAlreadyFinished)
       case _ if instructions.size != Constants.instructionsPerCycle =>
-        CommandRejected(InvalidActionChoice)
+        Left(InvalidActionChoice)
       case Some(player: RunningPlayer)
           if !Instruction.instructions.forall(
             instr => instructions.count(_ == instr) <= player.instructionOptions.find(_.instruction == instr).fold(0)(_.count)
           ) =>
-        CommandRejected(InvalidActionChoice)
+        Left(InvalidActionChoice)
       case _ =>
-        CommandAccepted(Lenses.instructionSlots(playerId).set(instructions)(game))
+        Right(Lenses.instructionSlots(playerId).set(instructions)(game))
     }
 
   def resetInstruction(playerId: String)(game: Game): CommandResponse =
     Lenses.player(playerId).headOption(game) match {
       case None =>
-        CommandRejected(PlayerNotFound)
+        Left(PlayerNotFound)
       case Some(_: QuittedPlayer) =>
-        CommandRejected(PlayerAlreadyFinished)
+        Left(PlayerAlreadyFinished)
       case Some(_: FinishedPlayer) =>
-        CommandRejected(PlayerAlreadyFinished)
+        Left(PlayerAlreadyFinished)
       case Some(_: RunningPlayer) =>
-        CommandAccepted(Lenses.instructionSlots(playerId).set(Seq.empty)(game))
+        Right(Lenses.instructionSlots(playerId).set(Seq.empty)(game))
     }
 }

@@ -1,14 +1,15 @@
 package roborace.frontend.service
 
 import api.{GameResponse, ScenarioPost, ScenarioResponse}
-import entities.{Command, Constants, Instruction, RunningPlayer, Scenario, SetInstructions}
+import entities.{Constants, Instruction, RunningPlayer, Scenario}
+import logic.command.{Command, ResetInstruction, SetInstructions}
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.multiplayer.game.GameState
-import roborace.frontend.pages.multiplayer.lobby.{LobbyPage, LobbyState}
+import roborace.frontend.pages.multiplayer.lobby.LobbyState
 import roborace.frontend.toasts.Syntax.{withSuccessToast, withWarningToast}
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 object Actions {
   def createGame(scenario: Scenario, index: Int): Future[GameResponse] =
@@ -49,7 +50,7 @@ object Actions {
     val newState = GameState.slots.modify(_ - slot)(state)
     newState.game.you match {
       case Some(you: RunningPlayer) if you.instructionSlots.nonEmpty =>
-        sendCommand(entities.ResetInstruction)
+        sendCommand(ResetInstruction)
       case _ =>
         update(newState)
     }

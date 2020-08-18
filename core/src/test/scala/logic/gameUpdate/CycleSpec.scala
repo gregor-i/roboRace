@@ -1,6 +1,7 @@
 package logic
 package gameUpdate
 
+import command._
 import entities._
 import helper.GameUpdateHelper
 import org.scalatest.funsuite.AnyFunSuite
@@ -43,7 +44,7 @@ class CycleSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
   test("should create logs for all actions in the right order") {
     val scenario = Scenario(10, 10, Seq(Position(0, 9)), List(Robot(0, Position(0, 0), Down)), List.empty, List.empty)
 
-    val initialGame = sequenceWithAutoCycle(createGame(scenario)(p0))(
+    sequenceWithAutoCycle(createGame(scenario)(p0))(
       clearHistory,
       forcedInstructions(p0)(MoveForward, MoveForward, MoveForward, MoveForward, MoveForward),
       assertRunningPlayer(p0)(_.robot shouldBe Robot(0, Position(0, 5), Down)),
@@ -51,15 +52,15 @@ class CycleSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
         _ shouldBe Seq(
           StartCycleEvaluation(0),
           RobotAction(0, MoveForward),
-          RobotMoves(List(RobotPositionTransition(0, Down, Position(0, 0), Position(0, 1)))),
+          RobotMoves(List(RobotPositionTransition(0, Position(0, 0), Position(0, 1)))),
           RobotAction(0, MoveForward),
-          RobotMoves(List(RobotPositionTransition(0, Down, Position(0, 1), Position(0, 2)))),
+          RobotMoves(List(RobotPositionTransition(0, Position(0, 1), Position(0, 2)))),
           RobotAction(0, MoveForward),
-          RobotMoves(List(RobotPositionTransition(0, Down, Position(0, 2), Position(0, 3)))),
+          RobotMoves(List(RobotPositionTransition(0, Position(0, 2), Position(0, 3)))),
           RobotAction(0, MoveForward),
-          RobotMoves(List(RobotPositionTransition(0, Down, Position(0, 3), Position(0, 4)))),
+          RobotMoves(List(RobotPositionTransition(0, Position(0, 3), Position(0, 4)))),
           RobotAction(0, MoveForward),
-          RobotMoves(List(RobotPositionTransition(0, Down, Position(0, 4), Position(0, 5)))),
+          RobotMoves(List(RobotPositionTransition(0, Position(0, 4), Position(0, 5)))),
           FinishedCycleEvaluation(0)
         )
       ),
@@ -69,13 +70,13 @@ class CycleSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
         _ shouldBe Seq(
           StartCycleEvaluation(1),
           RobotAction(0, MoveForward),
-          RobotMoves(List(RobotPositionTransition(0, Down, Position(0, 5), Position(0, 6)))),
+          RobotMoves(List(RobotPositionTransition(0, Position(0, 5), Position(0, 6)))),
           RobotAction(0, MoveForward),
-          RobotMoves(List(RobotPositionTransition(0, Down, Position(0, 6), Position(0, 7)))),
+          RobotMoves(List(RobotPositionTransition(0, Position(0, 6), Position(0, 7)))),
           RobotAction(0, MoveForward),
-          RobotMoves(List(RobotPositionTransition(0, Down, Position(0, 7), Position(0, 8)))),
+          RobotMoves(List(RobotPositionTransition(0, Position(0, 7), Position(0, 8)))),
           RobotAction(0, MoveForward),
-          RobotMoves(List(RobotPositionTransition(0, Down, Position(0, 8), Position(0, 9)))),
+          RobotMoves(List(RobotPositionTransition(0, Position(0, 8), Position(0, 9)))),
           RobotAction(0, Sleep),
           PlayerFinished(0, Robot(0, Position(0, 9), Down)),
           FinishedCycleEvaluation(1),
