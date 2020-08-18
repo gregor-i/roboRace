@@ -14,7 +14,7 @@ class TrapEffectsSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
       assertCycle(1),
       assertLog(_ should contain(TrapEffect(0, TurnRightTrap(Position(1, 8))))),
       assertLog(_ should contain(RobotTurns(0, Position(1, 8), Up, UpRight))),
-      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, UpRight, Position(1, 8), Position(2, 8))))))
+      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Position(1, 8), Position(2, 8))))))
     )
   }
 
@@ -25,7 +25,7 @@ class TrapEffectsSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
       assertCycle(1),
       assertLog(_ should contain(TrapEffect(0, TurnLeftTrap(Position(1, 8))))),
       assertLog(_ should contain(RobotTurns(0, Position(1, 8), Up, UpLeft))),
-      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, UpLeft, Position(1, 8), Position(0, 8))))))
+      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Position(1, 8), Position(0, 8))))))
     )
   }
 
@@ -34,10 +34,10 @@ class TrapEffectsSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
       addTrap(TurnRightTrap(Position(1, 7))),
       forcedInstructions(p0)(MoveForward, MoveForward),
       assertCycle(1),
-      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Up, Position(1, 8), Position(1, 7)))))),
+      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Position(1, 8), Position(1, 7)))))),
       assertLog(_ should contain(TrapEffect(0, TurnRightTrap(Position(1, 7))))),
       assertLog(_ should contain(RobotTurns(0, Position(1, 7), Up, UpRight))),
-      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, UpRight, Position(1, 7), Position(2, 7))))))
+      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Position(1, 7), Position(2, 7))))))
     )
   }
 
@@ -47,8 +47,8 @@ class TrapEffectsSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
       forcedInstructions(p0)(MoveForward, MoveForward),
       assertCycle(1),
       assertLog(_ should contain(TrapEffect(0, StunTrap(Position(1, 8))))),
-      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Up, Position(1, 8), Position(1, 7)))))),
-      assertLog(_ should not contain RobotMoves(Seq(RobotPositionTransition(0, Up, Position(1, 7), Position(1, 6)))))
+      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Position(1, 8), Position(1, 7)))))),
+      assertLog(_ should not contain RobotMoves(Seq(RobotPositionTransition(0, Position(1, 7), Position(1, 6)))))
     )
   }
 
@@ -57,9 +57,9 @@ class TrapEffectsSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
       addTrap(StunTrap(Position(1, 7))),
       forcedInstructions(p0)(MoveForward, MoveForward),
       assertCycle(1),
-      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Up, Position(1, 8), Position(1, 7)))))),
+      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Position(1, 8), Position(1, 7)))))),
       assertLog(_ should contain(TrapEffect(0, StunTrap(Position(1, 7))))),
-      assertLog(_ should not contain RobotMoves(Seq(RobotPositionTransition(0, Up, Position(1, 7), Position(1, 6)))))
+      assertLog(_ should not contain RobotMoves(Seq(RobotPositionTransition(0, Position(1, 7), Position(1, 6)))))
     )
   }
 
@@ -68,7 +68,7 @@ class TrapEffectsSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
       addTrap(StunTrap(Position(1, 7))),
       forcedInstructions(p0)(Sleep, Sleep, Sleep, Sleep, MoveForward),
       assertCycle(1),
-      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Up, Position(1, 8), Position(1, 7)))))),
+      assertLog(_ should contain(RobotMoves(Seq(RobotPositionTransition(0, Position(1, 8), Position(1, 7)))))),
       assertLog(_ should contain(TrapEffect(0, StunTrap(Position(1, 7)))))
     )
   }

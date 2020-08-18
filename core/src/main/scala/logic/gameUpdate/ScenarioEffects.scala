@@ -22,14 +22,14 @@ object ScenarioEffects {
             rank = game.players.count(_.isInstanceOf[FinishedPlayer]) + 1,
             cycle = game.cycle
           )
-          Seq(
+          Seq[Game => Game](
             Lenses.player(player.id).set(p),
-            Lenses.log(PlayerFinished(player.index, player.robot))
+            _.log(PlayerFinished(player.index, player.robot))
           )
         } else {
-          Seq(
+          Seq[Game => Game](
             Lenses.player(player.id).set(player.copy(currentTarget = player.currentTarget + 1)),
-            Lenses.log(PlayerReachedTarget(player.index))
+            _.log(PlayerReachedTarget(player.index))
           )
         }
       } else {

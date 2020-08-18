@@ -35,6 +35,6 @@ object TrapEffects {
         case _: StunTrap =>
           Events.stun(player)
       },
-      Lenses.log(TrapEffect(player.index, trap))
+      _.log(TrapEffect(player.index, trap))
     )
 }

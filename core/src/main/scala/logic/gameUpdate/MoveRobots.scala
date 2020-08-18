@@ -3,6 +3,8 @@ package gameUpdate
 
 import entities._
 
+import scala.annotation.tailrec
+
 object MoveRobots {
   def apply(player: RunningPlayer, instruction: MoveInstruction, game: Game): Game = {
     def move(direction: Direction): Game =
@@ -10,7 +12,7 @@ object MoveRobots {
         case Some(robotPushed) =>
           val afterPush = Events.move(robotPushed)(game)
           ScenarioEffects.afterMoveAction(afterPush)
-        case None => Lenses.log(MovementBlocked(player.index, player.robot))(game)
+        case None => game.log(MovementBlocked(player.index, player.robot))
       }
 
     instruction match {
@@ -38,6 +40,7 @@ object MoveRobots {
       case _ => None
     }
 
+  @tailrec
   private def movementIsAllowed(game: Game, position: Position, direction: Direction): Boolean = {
     val blockedByWall = game.scenario.walls.contains(Wall(position, direction))
     if (blockedByWall)

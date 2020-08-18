@@ -8,8 +8,9 @@ case class RobotPushed(player: RunningPlayer, to: Position, push: Option[RobotPu
 object Events {
   private def asEvent(pushed: RobotPushed): RobotMoves = {
     def loop(event: RobotPushed): List[RobotPositionTransition] = {
-      val head = RobotPositionTransition(event.player.index, event.player.robot.direction, event.player.robot.position, event.to)
-      event.push.fold(head :: Nil)(head :: loop(_))
+      val head =
+        RobotPositionTransition(event.player.index, event.player.robot.position, event.to)
+      head :: event.push.fold[List[RobotPositionTransition]](Nil)(loop)
     }
 
     RobotMoves(loop(pushed))
@@ -29,14 +30,14 @@ object Events {
   def turn(player: RunningPlayer, nextDirection: Direction): Game => Game =
     State.sequence(
       Lenses.direction(player.id).set(nextDirection),
-      Lenses.log(RobotTurns(player.index, player.robot.position, player.robot.direction, nextDirection))
+      _.log(RobotTurns(player.index, player.robot.position, player.robot.direction, nextDirection))
     )
 
   def reset(player: RunningPlayer, initialRobot: Robot): Game => Game =
     State.sequence(
       Lenses.robot(player.id).set(initialRobot),
       Lenses.instructionSlots(player.id).set(Seq.empty),
-      Lenses.log(RobotReset(player.index, player.robot, initialRobot))
+      _.log(RobotReset(player.index, player.robot, initialRobot))
     )
 
   def stun(player: RunningPlayer): Game => Game = game => {

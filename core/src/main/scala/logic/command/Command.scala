@@ -41,7 +41,7 @@ object Command {
       Right(
         State.sequence(
           Game.players.modify(players => players :+ newPlayer),
-          Lenses.log(PlayerJoinedGame(newPlayer.index, newPlayer.robot))
+          _.log(PlayerJoinedGame(newPlayer.index, newPlayer.robot))
         )(game)
       )
   }
@@ -59,7 +59,7 @@ object Command {
         Right(
           State.sequence(
             Game.players.modify(_.filter(_ != player)),
-            Lenses.log(PlayerQuitted(player.index, player.robot))
+            _.log(PlayerQuitted(player.index, player.robot))
           )(game)
         )
 
@@ -67,7 +67,7 @@ object Command {
         Right(
           State.sequence(
             Lenses.player(playerId).modify(p => QuittedPlayer(p.index, p.id)),
-            Lenses.log(PlayerQuitted(player.index, player.robot))
+            _.log(PlayerQuitted(player.index, player.robot))
           )(game)
         )
     }
