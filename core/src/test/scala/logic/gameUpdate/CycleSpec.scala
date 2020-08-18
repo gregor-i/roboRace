@@ -1,6 +1,7 @@
 package logic
 package gameUpdate
 
+import command._
 import entities._
 import helper.GameUpdateHelper
 import org.scalatest.funsuite.AnyFunSuite
@@ -43,7 +44,7 @@ class CycleSpec extends AnyFunSuite with Matchers with GameUpdateHelper {
   test("should create logs for all actions in the right order") {
     val scenario = Scenario(10, 10, Seq(Position(0, 9)), List(Robot(0, Position(0, 0), Down)), List.empty, List.empty)
 
-    val initialGame = sequenceWithAutoCycle(createGame(scenario)(p0))(
+    sequenceWithAutoCycle(createGame(scenario)(p0))(
       clearHistory,
       forcedInstructions(p0)(MoveForward, MoveForward, MoveForward, MoveForward, MoveForward),
       assertRunningPlayer(p0)(_.robot shouldBe Robot(0, Position(0, 5), Down)),

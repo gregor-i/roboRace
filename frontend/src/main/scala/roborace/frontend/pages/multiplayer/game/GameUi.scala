@@ -1,16 +1,15 @@
 package roborace.frontend.pages.multiplayer.game
 
 import entities._
+import logic.command.{DeregisterForGame, RegisterForGame}
 import org.scalajs.dom
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.{Animation, RenderGame}
-import roborace.frontend.pages.components.{Body, Fab, Icons, Images, RobotColor}
+import roborace.frontend.pages.components._
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.service.Actions
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object GameUi {
   def apply(implicit state: GameState, update: FrontendState => Unit): Node = {

@@ -1,8 +1,8 @@
 package logic.command
 
-import entities.{SetInstructions, _}
-import logic._
+import entities._
 import helper.GameUpdateHelper
+import logic._
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 

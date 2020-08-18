@@ -1,8 +1,8 @@
 package logic.command
 
-import entities.{InvalidIndex, PlayerAlreadyRegistered, RegisterForGame}
-import logic.DefaultScenario
+import entities.{InvalidIndex, PlayerAlreadyRegistered}
 import helper.GameUpdateHelper
+import logic.DefaultScenario
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 

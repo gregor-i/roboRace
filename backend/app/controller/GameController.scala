@@ -3,12 +3,12 @@ package controller
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import entities.{Command, CommandAccepted, CommandRejected, Game}
-import logic.command.Command
-import logic.gameUpdate._
+import entities.Game
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
+import logic.command.Command
+import logic.gameUpdate._
 import model.GameResponseFactory
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
@@ -41,13 +41,13 @@ class GameController @Inject() (sessionAction: SessionAction, lobbyController: L
       case Some(row) if row.game.isDefined =>
         Command(request.body, session.playerId)(row.game.get)
           .map(Cycle.apply) match {
-          case CommandAccepted(afterCommand) =>
+          case Right(afterCommand) =>
             repo.save(row.copy(game = Some(afterCommand)))
             Source.single(afterCommand).runWith(sseCache.sink(id))
             if (afterCommand.events != row.game.get.events && afterCommand.cycle == 0)
               lobbyController.sendStateToClients()
             Ok(GameResponseFactory(row, afterCommand)(session).asJson)
-          case CommandRejected(reason) =>
+          case Left(reason) =>
             BadRequest(reason.asJson)
         }
       case None                          => NotFound

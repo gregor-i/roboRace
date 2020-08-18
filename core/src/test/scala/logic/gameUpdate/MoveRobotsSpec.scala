@@ -3,6 +3,7 @@ package gameUpdate
 
 import entities._
 import helper.GameUpdateHelper
+import logic.command.RegisterForGame
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.should.Matchers
 

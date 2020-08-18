@@ -15,8 +15,8 @@ trait TestDataHelper {
 
   def createGame(scenario: Scenario = DefaultScenario.default, index: Int = 0)(player: String): Game = {
     CreateGame(scenario, index)(player) match {
-      case CommandRejected(reason)   => fail(s"command was rejected with $reason")
-      case CommandAccepted(newState) => newState
+      case Left(reason)    => fail(s"command was rejected with $reason")
+      case Right(newState) => newState
     }
   }
 

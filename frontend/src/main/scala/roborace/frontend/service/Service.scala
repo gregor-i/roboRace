@@ -3,6 +3,7 @@ package roborace.frontend.service
 import api.{GameResponse, ScenarioPost, ScenarioResponse, User}
 import entities._
 import io.circe.generic.auto._
+import logic.command.Command
 import org.scalajs.dom.EventSource
 
 import scala.concurrent.ExecutionContext.Implicits.global
