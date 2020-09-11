@@ -18,9 +18,12 @@
     "build-fonts": "cp -r node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid* backend/public/.",
     "build-css": "sass frontend/src/main/css/roborace.sass backend/public/robo-race.css --no-source-map --style compressed",
     "build-static": "cp frontend/src/main/static/* backend/public/.",
+    "develop": "run-p server watch",
     "watch": "run-p watch-*",
+    "server": "sbt backend/run",
     "watch-css": "nodemon --watch frontend/src/main/css -e '*' --exec 'npm run build-css'",
     "watch-img": "nodemon --watch frontend/src/main/img -e svg --exec 'npm run build-img'",
-    "watch-static": "nodemon --watch frontend/src/main/static -e '*' --exec 'npm run build-static'"
+    "watch-static": "nodemon --watch frontend/src/main/static -e '*' --exec 'npm run build-static'",
+    "watch-frontend": "sbt ~frontend/compile"
   }
 }
