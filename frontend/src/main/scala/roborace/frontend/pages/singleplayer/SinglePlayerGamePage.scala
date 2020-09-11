@@ -62,9 +62,16 @@ object SinglePlayerGameState {
 }
 
 object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
-  override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = PartialFunction.empty
+  override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
+    case (_, s"/singleplayer/${hash}", _) if Levels.map.contains(hash) =>
+      val level = Levels.map(hash)
+      SinglePlayerGameState.start(level)
+  }
 
-  override def stateToUrl(state: State): Option[(Path, QueryParameter)] = None
+  override def stateToUrl(state: State): Option[(Path, QueryParameter)] = {
+    val hash = state.game.scenario.hashCode.toHexString
+    Some(s"/singleplayer/$hash" -> Map.empty)
+  }
 
   override def render(implicit state: State, update: Update): Node = {
     state.game.players.headOption match {
@@ -74,7 +81,8 @@ object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
           .children(
 //            returnToLobbyFab(state, update),
 //            replayFab(state, update),
-            RenderGame(state.game, None),
+            RenderGame(state.game, None)
+              .event("click", Snabbdom.event(_ => update(SelectLevelState))),
             Node("div.text-panel").text(s"Level finished after ${state.game.cycle} Turns!")
           )
 
