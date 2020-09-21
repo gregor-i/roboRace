@@ -37,12 +37,11 @@ object Actions {
     if (newState.slots.size == Constants.instructionsPerCycle) {
       sendCommand(SetInstructions(newState.slots.toSeq.sortBy(_._1).map(_._2)))
     } else {
-      val slot = (for {
-        i <- 0 until Constants.instructionsPerCycle
-        s = (i + newState.focusedSlot) % Constants.instructionsPerCycle
-        if newState.slots.get(s).isEmpty // intellij lies here!!!
-      } yield s).headOption.getOrElse(0)
-      update(GameState.focusedSlot.set(slot)(newState))
+      val nextFreeSlot = (0 until Constants.instructionsPerCycle)
+        .map(i => (i + newState.focusedSlot) % Constants.instructionsPerCycle)
+        .find(i => !newState.slots.contains(i))
+        .getOrElse(0)
+      update(GameState.focusedSlot.set(nextFreeSlot)(newState))
     }
   }
 
