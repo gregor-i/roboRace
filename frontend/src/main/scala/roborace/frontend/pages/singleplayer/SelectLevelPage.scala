@@ -7,11 +7,11 @@ import roborace.frontend.FrontendState
 import roborace.frontend.pages.components._
 import snabbdom.{Node, Snabbdom}
 
-object SelectLevelState extends FrontendState
+case class SelectLevelState() extends FrontendState
 
-object SelectLevelPage extends Page[SelectLevelState.type] {
+object SelectLevelPage extends Page[SelectLevelState] {
   override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
-    case (_, "/singleplayer", _) => SelectLevelState
+    case (_, "/singleplayer", _) => SelectLevelState()
   }
   override def stateToUrl(state: State): Option[(Path, QueryParameter)] =
     Some("/singleplayer" -> Map.empty)

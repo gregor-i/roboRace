@@ -46,7 +46,7 @@ object GreetingPage extends Page[GreetingState] {
 
   private def buttons(implicit update: Update) =
     ButtonList.fullWidth(
-      Button("Singleplayer", Snabbdom.event(_ => update(SelectLevelState)))
+      Button("Singleplayer", Snabbdom.event(_ => update(SelectLevelState())))
         .classes("button", "is-link", "is-outlined"),
       Button("Multiplayer", Snabbdom.event(_ => update(LobbyPage.load())))
         .classes("button", "is-link", "is-outlined")

@@ -82,7 +82,7 @@ object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
 //            returnToLobbyFab(state, update),
 //            replayFab(state, update),
             RenderGame(state.game, None)
-              .event("click", Snabbdom.event(_ => update(SelectLevelState))),
+              .event("click", Snabbdom.event(_ => update(SelectLevelState()))),
             Node("div.text-panel").text(s"Level finished after ${state.game.cycle} Turns!")
           )
 
