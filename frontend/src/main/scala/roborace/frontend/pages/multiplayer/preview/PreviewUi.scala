@@ -7,6 +7,7 @@ import roborace.frontend.pages.components.{Body, Fab, Icons}
 import roborace.frontend.pages.multiplayer.game.GameState
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.service.{Actions, Service}
+import roborace.frontend.util.SnabbdomEventListener
 import snabbdom.{Node, Snabbdom}
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -15,7 +16,7 @@ object PreviewUi {
   def render(implicit state: PreviewState, update: FrontendState => Unit): Node =
     Body
       .game()
-      .child(Fab(Icons.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
+      .child(Fab(Icons.close).classes("fab-right-1").event("click", SnabbdomEventListener.set(LobbyPage.load())))
       .child(RenderScenario(state.scenario.scenario, Some(createGame(state.scenario.scenario, update))))
       .child(bottomLine)
 

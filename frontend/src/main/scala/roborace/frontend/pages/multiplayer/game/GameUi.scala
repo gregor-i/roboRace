@@ -8,7 +8,7 @@ import roborace.frontend.pages.components.gameBoard.{Animation, RenderGame}
 import roborace.frontend.pages.components._
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.service.Actions
-import roborace.frontend.util.Untyped
+import roborace.frontend.util.{SnabbdomEventListener, Untyped}
 import snabbdom.{Node, Snabbdom}
 
 object GameUi {
@@ -69,7 +69,7 @@ object GameUi {
           .children(
             Fab(Icons.close)
               .classes("fab-right-1")
-              .event("click", Snabbdom.event(_ => Actions.sendCommand(DeregisterForGame))),
+              .event("click", SnabbdomEventListener.sideeffect(() => Actions.sendCommand(DeregisterForGame))),
             replayFab(state, update),
             RenderGame(state.game, None),
             instructionSlots(you),
@@ -95,18 +95,18 @@ object GameUi {
           )
         }
       )
-      .event("dblclick", Snabbdom.event(_ => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
+      .event("dblclick", SnabbdomEventListener.sideeffect(() => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
 
   private def returnToLobbyFab(implicit state: GameState, update: FrontendState => Unit) =
-    Fab(Icons.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load())))
+    Fab(Icons.close).classes("fab-right-1").event("click", SnabbdomEventListener.set(LobbyPage.load()))
 
   def instructionSlots(player: RunningPlayer)(implicit state: GameState, update: FrontendState => Unit) = {
     def instructionSlot(index: Int): Node = {
       val instruction = state.slots.get(index)
       val focused     = state.focusedSlot == index
 
-      val setFocus  = Snabbdom.event(_ => update(state.copy(focusedSlot = index)))
-      val resetSlot = Snabbdom.event(_ => Actions.unsetInstruction(index))
+      val setFocus  = SnabbdomEventListener.modify(GameState.focusedSlot.set(index))
+      val resetSlot = SnabbdomEventListener.sideeffect(() => Actions.unsetInstruction(index))
 
       instruction match {
         case Some(instr) =>
@@ -141,7 +141,7 @@ object GameUi {
               if (free != 1) Some(Node("div.badge").text(free.toString))
               else None
             )
-            .event("click", Snabbdom.event(_ => Actions.placeInstruction(instruction, state.focusedSlot)))
+            .event("click", SnabbdomEventListener.sideeffect(() => Actions.placeInstruction(instruction, state.focusedSlot)))
         )
       } else {
         None

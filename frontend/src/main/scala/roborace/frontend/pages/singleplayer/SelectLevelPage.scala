@@ -5,6 +5,7 @@ import api.User
 import entities.{Levels, Scenario}
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components._
+import roborace.frontend.util.SnabbdomEventListener
 import snabbdom.{Node, Snabbdom}
 
 case class SelectLevelState() extends FrontendState
@@ -31,7 +32,7 @@ object SelectLevelPage extends Page[SelectLevelState] {
         Some(RobotImage.apply(1, filled = true)),
         Node("button.button.is-primary")
           .text("Start Game")
-          .event("click", Snabbdom.event(_ => update(SinglePlayerGameState.start(scenario))))
+          .event("click", SnabbdomEventListener.set(SinglePlayerGameState.start(scenario)))
       )
     ).classes("has-background-light")
 }

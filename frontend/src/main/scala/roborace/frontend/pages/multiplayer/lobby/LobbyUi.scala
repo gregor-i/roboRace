@@ -9,6 +9,7 @@ import roborace.frontend.pages.multiplayer.preview.PreviewState
 import snabbdom.{Node, Snabbdom}
 import roborace.frontend.pages.editor.EditorState
 import roborace.frontend.service.Actions
+import roborace.frontend.util.SnabbdomEventListener
 
 object LobbyUi {
   def render(implicit lobbyState: LobbyState, update: FrontendState => Unit): Node =
@@ -45,12 +46,12 @@ object LobbyUi {
           ButtonList()
             .childOptional(
               if (gameResponse.ownedByYou)
-                Some(Button("Delete Game", Snabbdom.event(_ => Actions.deleteGame(gameResponse))))
+                Some(Button("Delete Game", SnabbdomEventListener.sideeffect(() => Actions.deleteGame(gameResponse))))
               else
                 None
             )
             .child(
-              Button("Join Game", Snabbdom.event(_ => update(GameState(gameResponse)))).classes("is-primary")
+              Button("Join Game", SnabbdomEventListener.sideeffect(() => update(GameState(gameResponse)))).classes("is-primary")
             )
         )
       )
@@ -70,13 +71,13 @@ object LobbyUi {
           ButtonList()
             .childOptional(
               if (scenarioResponse.ownedByYou)
-                Some(Button("Delete Scenario", Snabbdom.event(_ => Actions.deleteScenario(scenarioResponse))))
+                Some(Button("Delete Scenario", SnabbdomEventListener.sideeffect(() => Actions.deleteScenario(scenarioResponse))))
               else
                 None
             )
             .children(
-              Button("Edit Scenario", Snabbdom.event(_ => update(EditorState(scenarioResponse)))),
-              Button("Start Game", Snabbdom.event(_ => update(PreviewState(scenarioResponse)))).classes("is-primary")
+              Button("Edit Scenario", SnabbdomEventListener.set(EditorState(scenarioResponse))),
+              Button("Start Game", SnabbdomEventListener.set(update(PreviewState(scenarioResponse)))).classes("is-primary")
             )
         )
       )

@@ -8,6 +8,7 @@ import roborace.frontend.pages.components.gameBoard.RenderScenario
 import roborace.frontend.pages.components.{Body, Button, ButtonList, Images, Modal}
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.pages.singleplayer.SelectLevelState
+import roborace.frontend.util.SnabbdomEventListener
 import roborace.macros.StaticContent
 import snabbdom.{Node, Snabbdom}
 
@@ -26,7 +27,7 @@ object GreetingPage extends Page[GreetingState] {
       .child(content)
 
   private def content(implicit state: GreetingState, update: Update) = {
-    Modal(closeAction = Snabbdom.event(_ => ()), background = background)(
+    Modal(closeAction = SnabbdomEventListener.noop, background = background)(
       text,
       buttons
     )
@@ -46,9 +47,9 @@ object GreetingPage extends Page[GreetingState] {
 
   private def buttons(implicit update: Update) =
     ButtonList.fullWidth(
-      Button("Singleplayer", Snabbdom.event(_ => update(SelectLevelState())))
+      Button("Singleplayer", SnabbdomEventListener.set(SelectLevelState()))
         .classes("button", "is-link", "is-outlined"),
-      Button("Multiplayer", Snabbdom.event(_ => update(LobbyPage.load())))
+      Button("Multiplayer", SnabbdomEventListener.set(LobbyPage.load()))
         .classes("button", "is-link", "is-outlined")
     )
 }

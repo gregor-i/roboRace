@@ -8,14 +8,14 @@ import roborace.frontend.pages.components.gameBoard.RenderScenario
 import roborace.frontend.pages.components.{Body, Fab, Icons, Images}
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.service.{Actions, Service}
-import roborace.frontend.util.Untyped
+import roborace.frontend.util.{SnabbdomEventListener, Untyped}
 import snabbdom.{Node, Snabbdom}
 
 object EditorUi {
   def apply(implicit state: EditorState, update: FrontendState => Unit): Node = {
     Body
       .game()
-      .child(Fab(Icons.close).classes("fab-right-1").event("click", Snabbdom.event(_ => update(LobbyPage.load()))))
+      .child(Fab(Icons.close).classes("fab-right-1").event("click", SnabbdomEventListener.set(LobbyPage.load())))
       .child(RenderScenario(state.scenario, clickListener(state, update)))
       .child(actionbar(state, update))
       .child(descriptionAndSave)
@@ -32,10 +32,10 @@ object EditorUi {
     val scenario = state.scenario
 
     def textButton(text: String, action: => EditorState): Node =
-      Node("button.button.is-light").text(text).event("click", Snabbdom.event(_ => update(action)))
+      Node("button.button.is-light").text(text).event("click", SnabbdomEventListener.set(action))
 
     def iconButton(icon: Node, action: => EditorState): Node =
-      Node("button.button.is-light").child(icon).event("click", Snabbdom.event(_ => update(action)))
+      Node("button.button.is-light").child(icon).event("click", SnabbdomEventListener.set(action))
 
     Node("div.nowrap-panel")
       .style("margin", "8px")
@@ -74,7 +74,7 @@ object EditorUi {
             Node("div.control")
               .child(
                 Node("button.button.is-primary")
-                  .event("click", Snabbdom.event(_ => Actions.saveScenario(ScenarioPost(state.description, state.scenario))))
+                  .event("click", SnabbdomEventListener.sideeffect(() => Actions.saveScenario(ScenarioPost(state.description, state.scenario))))
                   .text("Save Scenario")
               )
           )

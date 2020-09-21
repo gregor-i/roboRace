@@ -10,6 +10,7 @@ import monocle.macros.Lenses
 import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.RenderGame
 import roborace.frontend.pages.components.{Body, Images, RobotColor}
+import roborace.frontend.util.SnabbdomEventListener
 import snabbdom.{Node, Snabbdom}
 
 @Lenses
@@ -81,8 +82,7 @@ object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
           .children(
 //            returnToLobbyFab(state, update),
 //            replayFab(state, update),
-            RenderGame(state.game, None)
-              .event("click", Snabbdom.event(_ => update(SelectLevelState()))),
+            RenderGame(state.game, None).event("click", SnabbdomEventListener.set(SelectLevelState())),
             Node("div.text-panel").text(s"Level finished after ${state.game.cycle} Turns!")
           )
 
@@ -113,8 +113,8 @@ object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
       val instruction = state.instructionSlots(index)
       val focused     = state.focusedSlot == index
 
-      val setFocus  = Snabbdom.event(_ => update(state.copy(focusedSlot = index)))
-      val resetSlot = Snabbdom.event(_ => update(state.resetInstruction(index)))
+      val setFocus  = SnabbdomEventListener.modify(SinglePlayerGameState.focusedSlot.set(index))
+      val resetSlot = SnabbdomEventListener.modify[State](_.resetInstruction(index))
 
       instruction match {
         case Some(instr) =>
