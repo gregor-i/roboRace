@@ -2,14 +2,10 @@ package roborace.frontend
 
 import roborace.frontend.pages._
 import roborace.frontend.pages.editor.EditorPage
-import roborace.frontend.pages.multiplayer.game.GamePage
-import roborace.frontend.pages.multiplayer.lobby.LobbyPage
-import roborace.frontend.pages.multiplayer.preview.PreviewPage
-import roborace.frontend.pages.singleplayer.{SelectLevelPage, SinglePlayerGamePage}
 import snabbdom.Node
 
 object Pages {
-  val all: Seq[Page[_ <: FrontendState]] = Seq(
+  val all: Seq[Page[_ <: PageState]] = Seq(
     // global:
     GreetingPage,
     ErrorPage,
@@ -17,20 +13,20 @@ object Pages {
     // tools:
     EditorPage,
     // multiplayer:
-    LobbyPage,
-    PreviewPage,
-    GamePage,
+    multiplayer.lobby.LobbyPage,
+    multiplayer.preview.PreviewPage,
+    multiplayer.game.GamePage,
     // singleplayer:
-    SelectLevelPage,
-    SinglePlayerGamePage
+    singleplayer.SelectLevelPage,
+    singleplayer.GamePage
   )
 
-  def selectPage[S <: FrontendState](nutriaState: S): Page[S] =
+  def selectPage[S <: PageState](nutriaState: S): Page[S] =
     all
       .find(_.acceptState(nutriaState))
       .map(_.asInstanceOf[Page[S]])
       .getOrElse(throw new Exception(s"No Page defined for '${nutriaState.getClass.getSimpleName}'"))
 
-  def ui(nutriaState: FrontendState, update: FrontendState => Unit): Node =
-    selectPage(nutriaState).render(nutriaState, update)
+  def ui(context: Context[PageState]): Node =
+    selectPage(context.local).render(context)
 }

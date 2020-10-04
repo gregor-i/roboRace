@@ -1,13 +1,13 @@
 package roborace.frontend.pages
 package editor
 
-import api.{ScenarioResponse, User}
+import api.ScenarioResponse
 import entities.Scenario
 import logic.DefaultScenario
 import monocle.macros.Lenses
-import roborace.frontend.FrontendState
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.service.Service
+import roborace.frontend.{GlobalState, PageState}
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -19,7 +19,7 @@ case class EditorState(
     scenario: Scenario,
     description: String = "",
     clickAction: Option[ClickAction] = None
-) extends FrontendState {
+) extends PageState {
   def dirty: Boolean = remoteScenario match {
     case Some(remoteScenario) => remoteScenario.scenario != scenario || remoteScenario.description != description
     case None                 => true
@@ -37,7 +37,7 @@ object EditorState {
 }
 
 object EditorPage extends Page[EditorState] {
-  override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
+  override def stateFromUrl: PartialFunction[(GlobalState, Path, QueryParameter), PageState] = {
     case (_, s"/editor/${scenarioId}", _) =>
       LoadingState {
         Service
@@ -58,6 +58,5 @@ object EditorPage extends Page[EditorState] {
       case None                 => Some("/editor"                       -> Map.empty)
     }
 
-  override def render(implicit state: EditorState, update: FrontendState => Unit): Node =
-    EditorUi(state, update)
+  override def render(implicit context: Context): Node = EditorUi(context)
 }

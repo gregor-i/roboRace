@@ -1,5 +1,6 @@
 package roborace.frontend.pages
 
+import roborace.frontend.PageState
 import roborace.frontend.pages.components.Body
 import snabbdom._
 
@@ -7,14 +8,14 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-case class LoadingState(loading: Future[FrontendState], navbarExpanded: Boolean = false) extends FrontendState
+case class LoadingState(loading: Future[PageState], navbarExpanded: Boolean = false) extends PageState
 
 object LoadingPage extends Page[LoadingState] {
   def stateFromUrl = PartialFunction.empty
 
   def stateToUrl(state: State): Option[Location] = None
 
-  def render(implicit state: LoadingState, update: FrontendState => Unit) =
+  override def render(implicit context: Context) =
     Body()
       .child(
         Node("i.fa.fa-spinner.fa-pulse.has-text-primary")
@@ -28,13 +29,14 @@ object LoadingPage extends Page[LoadingState] {
             )
           )
       )
+      .key(context.local.loading.hashCode())
       .hook(
         "insert",
         Snabbdom.hook { _ =>
-          state.loading.onComplete {
-            case Success(newState) => update(newState)
+          context.local.loading.onComplete {
+            case Success(newState) => context.update(newState)
             case Failure(exception) =>
-              update(
+              context.update(
                 ErrorState(s"unexpected problem while initializing app: ${exception.getMessage}")
               )
           }

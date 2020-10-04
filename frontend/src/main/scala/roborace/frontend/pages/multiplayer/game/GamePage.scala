@@ -1,18 +1,18 @@
 package roborace.frontend.pages
 package multiplayer.game
 
-import api.{GameResponse, User}
+import api.GameResponse
 import entities.Instruction
 import monocle.macros.Lenses
-import roborace.frontend.FrontendState
 import roborace.frontend.Router.{Path, QueryParameter}
 import roborace.frontend.service.Service
+import roborace.frontend.{GlobalState, PageState}
 import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Lenses
-case class GameState(game: GameResponse, focusedSlot: Int = 0, slots: Map[Int, Instruction] = Map.empty) extends FrontendState
+case class GameState(game: GameResponse, focusedSlot: Int = 0, slots: Map[Int, Instruction] = Map.empty) extends PageState
 
 object GameState {
   def clearSlots(oldState: GameState, newState: GameState): GameState =
@@ -24,7 +24,7 @@ object GameState {
 }
 
 object GamePage extends Page[GameState] {
-  override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
+  override def stateFromUrl: PartialFunction[(GlobalState, Path, QueryParameter), PageState] = {
     case (_, s"/games/${gameId}", _) =>
       LoadingState {
         for {
@@ -41,6 +41,6 @@ object GamePage extends Page[GameState] {
   override def stateToUrl(state: State): Option[(Path, QueryParameter)] =
     Some(s"/games/${state.game.id}" -> Map.empty)
 
-  override def render(implicit state: State, update: FrontendState => Unit): Node =
-    GameUi(state, update)
+  override def render(implicit context: Context): Node =
+    GameUi(context)
 }

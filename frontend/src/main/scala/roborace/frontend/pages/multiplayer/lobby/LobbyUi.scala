@@ -1,27 +1,28 @@
-package roborace.frontend.pages.multiplayer.lobby
+package roborace.frontend.pages
+package multiplayer.lobby
 
 import api.{GameResponse, ScenarioResponse}
 import entities._
-import roborace.frontend.FrontendState
 import roborace.frontend.pages.components._
-import roborace.frontend.pages.multiplayer.game.GameState
-import roborace.frontend.pages.multiplayer.preview.PreviewState
-import snabbdom.{Node, Snabbdom}
 import roborace.frontend.pages.editor.EditorState
+import roborace.frontend.pages.multiplayer.game.GameState
+import roborace.frontend.pages.multiplayer.lobby.LobbyPage.Context
+import roborace.frontend.pages.multiplayer.preview.PreviewState
 import roborace.frontend.service.Actions
 import roborace.frontend.util.SnabbdomEventListener
+import snabbdom.Node
 
 object LobbyUi {
-  def render(implicit lobbyState: LobbyState, update: FrontendState => Unit): Node =
+  def render(implicit context: Context): Node =
     Body()
       .child(Header())
       .child(
         Column(
-          lobbyState.games.map(gameCard(_)) ++ lobbyState.scenarios.map(scenarioCard(_))
+          context.local.games.map(gameCard(_)) ++ context.local.scenarios.map(scenarioCard(_))
         )
       )
 
-  def gameCard(gameResponse: GameResponse)(implicit state: LobbyPage.State, update: LobbyPage.Update): Node = {
+  def gameCard(gameResponse: GameResponse)(implicit context: Context): Node = {
     val youTag: Option[Node] = gameResponse.you match {
       case Some(_: QuittedPlayer)                                   => Some(Tag("Quitted", "is-danger"))
       case Some(you: FinishedPlayer)                                => Some(Tag(s"Finished as ${you.rank}", "is-primary"))
@@ -51,14 +52,14 @@ object LobbyUi {
                 None
             )
             .child(
-              Button("Join Game", SnabbdomEventListener.sideeffect(() => update(GameState(gameResponse)))).classes("is-primary")
+              Button("Join Game", SnabbdomEventListener.sideeffect(() => context.update(GameState(gameResponse)))).classes("is-primary")
             )
         )
       )
     ).classes("has-background-light")
   }
 
-  def scenarioCard(scenarioResponse: ScenarioResponse)(implicit state: LobbyState, update: FrontendState => Unit): Node =
+  def scenarioCard(scenarioResponse: ScenarioResponse)(implicit context: Context): Node =
     Card(
       MediaObject(
         Some(RobotImage(scenarioResponse.id.hashCode().abs % 6, filled = true)),
@@ -77,7 +78,7 @@ object LobbyUi {
             )
             .children(
               Button("Edit Scenario", SnabbdomEventListener.set(EditorState(scenarioResponse))),
-              Button("Start Game", SnabbdomEventListener.set(update(PreviewState(scenarioResponse)))).classes("is-primary")
+              Button("Start Game", SnabbdomEventListener.set(PreviewState(scenarioResponse))).classes("is-primary")
             )
         )
       )

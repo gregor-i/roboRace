@@ -1,53 +1,53 @@
 package roborace.frontend.pages
 package singleplayer
 
-import api.User
 import entities._
 import logic.command.{Command, CreateGame}
 import logic.gameUpdate.Cycle
 import monocle.Lens
 import monocle.macros.Lenses
-import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.RenderGame
 import roborace.frontend.pages.components.{Body, Images, RobotColor}
 import roborace.frontend.util.SnabbdomEventListener
+import roborace.frontend.{GlobalState, PageState}
 import snabbdom.{Node, Snabbdom}
 
 @Lenses
-case class SinglePlayerGameState(game: Game, focusedSlot: Int, instructionSlots: Seq[Option[Instruction]]) extends FrontendState {
+case class GameState(game: Game, focusedSlot: Int, instructionSlots: Seq[Option[Instruction]]) extends PageState {
 
-  def setInstruction(slot: Int, instruction: Instruction): SinglePlayerGameState = {
+  def setInstruction(slot: Int, instruction: Instruction): GameState = {
     val newSlots = instructionSlots.updated(slot, Some(instruction))
 
     Command
       .setInstructions(newSlots.flatten)("singleplayer")(game)
       .map(Cycle.apply) match {
-      case Right(game) => this.copy(game = game, focusedSlot = 0, instructionSlots = Seq.fill(Constants.instructionsPerCycle)(None))
+      case Right(game) =>
+        this.copy(game = game, focusedSlot = 0, instructionSlots = Seq.fill(Constants.instructionsPerCycle)(None))
       case Left(_) =>
         this.copy(game = game, focusedSlot = (focusedSlot + 1) % Constants.instructionsPerCycle, instructionSlots = newSlots)
     }
   }
 
-  def resetInstruction(slot: Int): SinglePlayerGameState = {
+  def resetInstruction(slot: Int): GameState = {
     val newSlots = instructionSlots.updated(slot, None)
-    SinglePlayerGameState.instructionSlots.set(newSlots)(this)
+    GameState.instructionSlots.set(newSlots)(this)
   }
 
 }
 
-object SinglePlayerGameState {
-  def start(scenario: Scenario): SinglePlayerGameState = {
+object GameState {
+  def start(scenario: Scenario): GameState = {
     val game = CreateGame(scenario, 0)("singleplayer").getOrElse(throw new Exception())
 
-    new SinglePlayerGameState(
+    new GameState(
       game = game,
       focusedSlot = 0,
       instructionSlots = Seq.fill(Constants.instructionsPerCycle)(None)
     )
   }
 
-  val playerLens: Lens[SinglePlayerGameState, RunningPlayer] =
-    Lens[SinglePlayerGameState, RunningPlayer](
+  val playerLens: Lens[GameState, RunningPlayer] =
+    Lens[GameState, RunningPlayer](
       get = state => state.game.players.find(_.id == "singleplayer").get.asInstanceOf[RunningPlayer]
     )(
       set = newPlayer =>
@@ -62,11 +62,11 @@ object SinglePlayerGameState {
     playerLens.composeLens(RunningPlayer.instructionSlots)
 }
 
-object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
-  override def stateFromUrl: PartialFunction[(Option[User], Path, QueryParameter), FrontendState] = {
+object GamePage extends Page[GameState] {
+  override def stateFromUrl: PartialFunction[(GlobalState, Path, QueryParameter), PageState] = {
     case (_, s"/singleplayer/${hash}", _) if Levels.map.contains(hash) =>
       val level = Levels.map(hash)
-      SinglePlayerGameState.start(level)
+      GameState.start(level)
   }
 
   override def stateToUrl(state: State): Option[(Path, QueryParameter)] = {
@@ -74,16 +74,16 @@ object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
     Some(s"/singleplayer/$hash" -> Map.empty)
   }
 
-  override def render(implicit state: State, update: Update): Node = {
-    state.game.players.headOption match {
+  override def render(implicit context: Context): Node = {
+    context.local.game.players.headOption match {
       case Some(you: FinishedPlayer) =>
         Body
           .game()
           .children(
-//            returnToLobbyFab(state, update),
-//            replayFab(state, update),
-            RenderGame(state.game, None).event("click", SnabbdomEventListener.set(SelectLevelState())),
-            Node("div.text-panel").text(s"Level finished after ${state.game.cycle} Turns!")
+//            returnToLobbyFab(context.local, update),
+//            replayFab(context.local, update),
+            RenderGame(context.local.game, None).event("click", SnabbdomEventListener.set(SelectLevelState())),
+            Node("div.text-panel").text(s"Level finished after ${context.local.game.cycle} Turns!")
           )
 
       case Some(you: RunningPlayer) =>
@@ -96,24 +96,24 @@ object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
 //              .classes("fab-right-1")
 //              .event("click", Snabbdom.event(_ => Actions.sendCommand(DeregisterForGame))),
 //            replayFab(state, update),
-            RenderGame(state.game, None),
+            RenderGame(context.local.game, None),
             instructionSlots(you),
             cardsBar(you)
           )
 
       case None | Some(_: QuittedPlayer) =>
-        update(ErrorState("This should not have happened"))
+        context.update(ErrorState("This should not have happened"))
         Node("div")
     }
   }
 
   // todo: make generic and unify with GamePage
-  private def instructionSlots(player: RunningPlayer)(implicit state: State, update: Update): Node = {
+  private def instructionSlots(player: RunningPlayer)(implicit context: Context): Node = {
     def instructionSlot(index: Int): Node = {
-      val instruction = state.instructionSlots(index)
-      val focused     = state.focusedSlot == index
+      val instruction = context.local.instructionSlots(index)
+      val focused     = context.local.focusedSlot == index
 
-      val setFocus  = SnabbdomEventListener.modify(SinglePlayerGameState.focusedSlot.set(index))
+      val setFocus  = SnabbdomEventListener.modify(GameState.focusedSlot.set(index))
       val resetSlot = SnabbdomEventListener.modify[State](_.resetInstruction(index))
 
       instruction match {
@@ -132,10 +132,10 @@ object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
   }
 
   // todo: make generic and unify with GamePage
-  private def cardsBar(player: RunningPlayer)(implicit state: State, update: Update): Node = {
+  private def cardsBar(player: RunningPlayer)(implicit context: Context): Node = {
     def instructionCard(instruction: Instruction): Option[Node] = {
       val allowed = player.instructionOptions.find(_.instruction == instruction).fold(0)(_.count)
-      val used    = state.instructionSlots.count(_.contains(instruction))
+      val used    = context.local.instructionSlots.count(_.contains(instruction))
       val free    = allowed - used
 
       if (free > 0) {
@@ -153,7 +153,17 @@ object SinglePlayerGamePage extends Page[SinglePlayerGameState] {
             .event(
               "click",
               Snabbdom.event(
-                _ => update(state.setInstruction(state.focusedSlot, instruction))
+                _ => {
+                  val newLocal = context.local.setInstruction(context.local.focusedSlot, instruction)
+                  val newGlobal =
+                    if (newLocal.game.players.exists(p => p.id == "singleplayer" && p.isInstanceOf[FinishedPlayer])) {
+                      context.global.copy(
+                        finishedSinglePlayerLevels = context.global.finishedSinglePlayerLevels + context.local.game.scenario.hashCode.toHexString
+                      )
+                    } else context.global
+
+                  context.update(newGlobal, newLocal)
+                }
               )
             )
         )

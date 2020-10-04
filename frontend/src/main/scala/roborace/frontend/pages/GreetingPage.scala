@@ -1,32 +1,30 @@
 package roborace.frontend.pages
 
-import api.User
 import logic.DefaultScenario
-import org.scalajs.dom
-import roborace.frontend.FrontendState
+import roborace.frontend.PageState
 import roborace.frontend.pages.components.gameBoard.RenderScenario
-import roborace.frontend.pages.components.{Body, Button, ButtonList, Images, Modal}
+import roborace.frontend.pages.components.{Body, Button, ButtonList, Modal}
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.pages.singleplayer.SelectLevelState
 import roborace.frontend.util.SnabbdomEventListener
 import roborace.macros.StaticContent
-import snabbdom.{Node, Snabbdom}
+import snabbdom.Node
 
-case class GreetingState(user: Option[User]) extends FrontendState
+case class GreetingState() extends PageState
 
 object GreetingPage extends Page[GreetingState] {
   override def stateFromUrl = {
-    case (user, "/", _) => GreetingState(user)
+    case (_, "/", _) => GreetingState()
   }
 
   override def stateToUrl(state: GreetingState): Option[(Path, QueryParameter)] =
     Some("/" -> Map.empty)
 
-  def render(implicit state: GreetingState, update: Update) =
+  override def render(implicit context: Context) =
     Body()
       .child(content)
 
-  private def content(implicit state: GreetingState, update: Update) = {
+  private def content(implicit context: Context) = {
     Modal(closeAction = SnabbdomEventListener.noop, background = background)(
       text,
       buttons
@@ -45,7 +43,7 @@ object GreetingPage extends Page[GreetingState] {
   private def text =
     Node("div.content").prop("innerHTML", StaticContent("frontend/src/main/html/greeting.html"))
 
-  private def buttons(implicit update: Update) =
+  private def buttons(implicit context: Context) =
     ButtonList.fullWidth(
       Button("Singleplayer", SnabbdomEventListener.set(SelectLevelState()))
         .classes("button", "is-link", "is-outlined"),

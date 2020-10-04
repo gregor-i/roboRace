@@ -1,6 +1,6 @@
 package roborace.frontend
 
-import api.{GameResponse, User}
+import api.GameResponse
 import io.circe.generic.auto._
 import io.circe.parser.decode
 import org.scalajs.dom
@@ -12,9 +12,9 @@ import roborace.frontend.pages.multiplayer.lobby.LobbyState
 import roborace.frontend.service.Service
 import snabbdom.{Snabbdom, SnabbdomFacade, VNode}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
 import scala.scalajs.js.|
-import scala.concurrent.ExecutionContext.Implicits.global
 
 class RoboRaceApp(container: HTMLElement) {
   var node: HTMLElement | VNode = container
@@ -28,7 +28,7 @@ class RoboRaceApp(container: HTMLElement) {
     eventlistenersModule = true
   )
 
-  private def saveStateToHistory(state: FrontendState): Unit = {
+  private def saveStateToHistory(state: PageState): Unit = {
     Router.stateToUrl(state) match {
       case Some((currentPath, currentSearch)) =>
         val stringSearch = Router.queryParamsToUrl(currentSearch)
@@ -43,11 +43,11 @@ class RoboRaceApp(container: HTMLElement) {
   }
 
   var gameEventSource: Option[EventSource] = None
-  def gameUpdates(state: FrontendState): Unit = {
+  def gameUpdates(globalState: GlobalState, state: PageState): Unit = {
     def eventListener(gameState: GameState): js.Function1[MessageEvent, Unit] = message => {
       decode[GameResponse](message.data.asInstanceOf[String]) match {
-        case Right(newGame) => renderState(GameState.clearSlots(gameState, gameState.copy(game = newGame)))
-        case Left(_)        => renderState(ErrorState("unexpected Message received on SSE"))
+        case Right(newGame) => renderState(globalState, GameState.clearSlots(gameState, gameState.copy(game = newGame)))
+        case Left(_)        => renderState(globalState, ErrorState("unexpected Message received on SSE"))
       }
     }
 
@@ -69,11 +69,11 @@ class RoboRaceApp(container: HTMLElement) {
   }
 
   var lobbyEventSource: Option[EventSource] = None
-  def lobbyUpdates(state: FrontendState): Unit = {
+  def lobbyUpdates(globalState: GlobalState, state: PageState): Unit = {
     def eventListener(lobbyState: LobbyState): js.Function1[MessageEvent, Unit] = message => {
       decode[Seq[GameResponse]](message.data.asInstanceOf[String]) match {
-        case Right(newGames) => renderState(lobbyState.copy(games = newGames))
-        case Left(_)         => renderState(ErrorState("unexpected Message received on SSE"))
+        case Right(newGames) => renderState(globalState, lobbyState.copy(games = newGames))
+        case Left(_)         => renderState(globalState, ErrorState("unexpected Message received on SSE"))
       }
     }
 
@@ -94,18 +94,18 @@ class RoboRaceApp(container: HTMLElement) {
     }
   }
 
-  def renderState(state: FrontendState): Unit = {
+  def renderState(globalState: GlobalState, state: PageState): Unit = {
     saveStateToHistory(state)
-    gameUpdates(state)
-    lobbyUpdates(state)
+    gameUpdates(globalState, state)
+    lobbyUpdates(globalState, state)
 
-    node = patch(node, Pages.ui(state, renderState).toVNode)
+    val context = Context(state, globalState, renderState)
+
+    node = patch(node, Pages.ui(context).toVNode)
   }
 
   private def loadUserAndRenderFromLocation(): Unit =
-    for (user <- Service.whoAmI()) yield {
-      renderState(Router.stateFromUrl(dom.window.location, Some(user)))
-    }
+    for (user <- Service.whoAmI()) yield renderState(GlobalState.initial, Router.stateFromUrl(GlobalState.initial, dom.window.location))
 
   dom.window.onpopstate = _ => loadUserAndRenderFromLocation()
 

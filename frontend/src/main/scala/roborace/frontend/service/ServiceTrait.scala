@@ -4,10 +4,9 @@ import io.circe.syntax._
 import io.circe.{Decoder, Encoder, parser}
 import org.scalajs.dom.experimental.{Fetch, RequestInit, Response}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.scalajs.js.Dynamic
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 private[service] trait ServiceTrait {
 

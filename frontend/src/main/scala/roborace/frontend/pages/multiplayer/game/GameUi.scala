@@ -1,30 +1,30 @@
-package roborace.frontend.pages.multiplayer.game
+package roborace.frontend.pages
+package multiplayer.game
 
 import entities._
 import logic.command.{DeregisterForGame, RegisterForGame}
 import org.scalajs.dom
-import roborace.frontend.FrontendState
-import roborace.frontend.pages.components.gameBoard.{Animation, RenderGame}
 import roborace.frontend.pages.components._
+import roborace.frontend.pages.components.gameBoard.{Animation, RenderGame}
+import roborace.frontend.pages.multiplayer.game.GamePage.Context
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.service.Actions
 import roborace.frontend.util.{SnabbdomEventListener, Untyped}
 import snabbdom.{Node, Snabbdom}
-
 object GameUi {
-  def apply(implicit state: GameState, update: FrontendState => Unit): Node = {
-    state.game.you match {
-      case None if state.game.cycle == 0 =>
+  def apply(implicit context: Context): Node = {
+    context.local.game.you match {
+      case None if context.local.game.cycle == 0 =>
         Body
           .game()
-          .child(returnToLobbyFab(state, update))
-          .child(replayFab(state, update))
+          .child(returnToLobbyFab())
+          .child(replayFab())
           .child(
             RenderGame(
-              state.game,
+              context.local.game,
               Some { (p, _) =>
-                state.game.scenario.initialRobots
-                  .find(r => r.position == p && !state.game.robots.contains(r))
+                context.local.game.scenario.initialRobots
+                  .find(r => r.position == p && !context.local.game.robots.contains(r))
                   .foreach(r => Actions.sendCommand(RegisterForGame(r.index)))
               }
             )
@@ -36,18 +36,18 @@ object GameUi {
       case None =>
         Body
           .game()
-          .child(returnToLobbyFab(state, update))
-          .child(replayFab(state, update))
-          .child(RenderGame(state.game, None))
+          .child(returnToLobbyFab())
+          .child(replayFab())
+          .child(RenderGame(context.local.game, None))
           .child(Node("div.text-panel").text("observer mode"))
 
       case Some(you: QuittedPlayer) =>
         Body
           .game()
           .children(
-            returnToLobbyFab(state, update),
-            replayFab(state, update),
-            RenderGame(state.game, None),
+            returnToLobbyFab(),
+            replayFab(),
+            RenderGame(context.local.game, None),
             Node("div.text-panel").text("game quitted")
           )
 
@@ -55,9 +55,9 @@ object GameUi {
         Body
           .game()
           .children(
-            returnToLobbyFab(state, update),
-            replayFab(state, update),
-            RenderGame(state.game, None),
+            returnToLobbyFab(),
+            replayFab(),
+            RenderGame(context.local.game, None),
             Node("div.text-panel").text("target reached as " + you.rank)
           )
 
@@ -70,26 +70,26 @@ object GameUi {
             Fab(Icons.close)
               .classes("fab-right-1")
               .event("click", SnabbdomEventListener.sideeffect(() => Actions.sendCommand(DeregisterForGame))),
-            replayFab(state, update),
-            RenderGame(state.game, None),
+            replayFab(),
+            RenderGame(context.local.game, None),
             instructionSlots(you),
             cardsBar(you)
           )
     }
   }
 
-  private def replayFab(state: GameState, update: FrontendState => Unit) =
+  private def replayFab()(implicit context: Context) =
     Fab(Icons.replay)
       .classes("fab-left-1")
       .event(
         "click",
         Snabbdom.event { _ =>
           Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(
-            if (state.game.cycle == 0)
+            if (context.local.game.cycle == 0)
               0
             else
-              Animation.eventSequenceDuration(state.game.events.takeWhile {
-                case s: StartCycleEvaluation => s.cycle != state.game.cycle - 1
+              Animation.eventSequenceDuration(context.local.game.events.takeWhile {
+                case s: StartCycleEvaluation => s.cycle != context.local.game.cycle - 1
                 case _                       => true
               })
           )
@@ -97,13 +97,13 @@ object GameUi {
       )
       .event("dblclick", SnabbdomEventListener.sideeffect(() => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
 
-  private def returnToLobbyFab(implicit state: GameState, update: FrontendState => Unit) =
+  private def returnToLobbyFab()(implicit context: Context) =
     Fab(Icons.close).classes("fab-right-1").event("click", SnabbdomEventListener.set(LobbyPage.load()))
 
-  def instructionSlots(player: RunningPlayer)(implicit state: GameState, update: FrontendState => Unit) = {
+  def instructionSlots(player: RunningPlayer)(implicit context: Context) = {
     def instructionSlot(index: Int): Node = {
-      val instruction = state.slots.get(index)
-      val focused     = state.focusedSlot == index
+      val instruction = context.local.slots.get(index)
+      val focused     = context.local.focusedSlot == index
 
       val setFocus  = SnabbdomEventListener.modify(GameState.focusedSlot.set(index))
       val resetSlot = SnabbdomEventListener.sideeffect(() => Actions.unsetInstruction(index))
@@ -123,10 +123,10 @@ object GameUi {
     Node("div.nowrap-panel").child((0 until Constants.instructionsPerCycle).map(instructionSlot))
   }
 
-  private def cardsBar(player: RunningPlayer)(implicit state: GameState, update: FrontendState => Unit): Node = {
+  private def cardsBar(player: RunningPlayer)(implicit context: Context): Node = {
     def instructionCard(instruction: Instruction): Option[Node] = {
       val allowed = player.instructionOptions.find(_.instruction == instruction).fold(0)(_.count)
-      val used    = state.slots.values.count(_ == instruction)
+      val used    = context.local.slots.values.count(_ == instruction)
       val free    = allowed - used
 
       if (free > 0) {
@@ -141,7 +141,7 @@ object GameUi {
               if (free != 1) Some(Node("div.badge").text(free.toString))
               else None
             )
-            .event("click", SnabbdomEventListener.sideeffect(() => Actions.placeInstruction(instruction, state.focusedSlot)))
+            .event("click", SnabbdomEventListener.sideeffect(() => Actions.placeInstruction(instruction, context.local.focusedSlot)))
         )
       } else {
         None

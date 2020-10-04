@@ -1,6 +1,5 @@
 package roborace.frontend
 
-import api.User
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder}
 import org.scalajs.dom
@@ -14,19 +13,19 @@ object Router {
   type QueryParameter = Map[String, String]
   type Location       = (Path, QueryParameter)
 
-  def stateFromUrl(location: dom.Location, user: Option[User]): FrontendState =
-    stateFromUrl((location.pathname, queryParamsFromUrl(location.search)): Location, user)
+  def stateFromUrl(globalState: GlobalState, location: dom.Location): PageState =
+    stateFromUrl(globalState, (location.pathname, queryParamsFromUrl(location.search)): Location)
 
-  private val stateFromUrlPF: ((Option[User], Path, QueryParameter)) => Option[FrontendState] =
+  private val stateFromUrlPF: ((GlobalState, Path, QueryParameter)) => Option[PageState] =
     Pages.all
       .map(_.stateFromUrl)
       .reduce(_ orElse _)
       .lift
 
-  def stateFromUrl(location: Location, user: Option[User]): FrontendState =
-    stateFromUrlPF((user, location._1, location._2)).getOrElse(ErrorState("unknown url"))
+  def stateFromUrl(globalState: GlobalState, location: Location): PageState =
+    stateFromUrlPF((globalState, location._1, location._2)).getOrElse(ErrorState("unknown url"))
 
-  def stateToUrl(state: FrontendState): Option[Location] =
+  def stateToUrl(state: PageState): Option[Location] =
     Pages.selectPage(state).stateToUrl(state)
 
   def queryParamsToUrl(search: QueryParameter): String = {

@@ -1,35 +1,36 @@
-package roborace.frontend.pages.editor
+package roborace.frontend.pages
+package editor
 
 import api.ScenarioPost
 import entities._
 import logic.Direction
-import roborace.frontend.FrontendState
 import roborace.frontend.pages.components.gameBoard.RenderScenario
 import roborace.frontend.pages.components.{Body, Fab, Icons, Images}
+import roborace.frontend.pages.editor.EditorPage.Context
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
-import roborace.frontend.service.{Actions, Service}
+import roborace.frontend.service.Actions
 import roborace.frontend.util.{SnabbdomEventListener, Untyped}
 import snabbdom.{Node, Snabbdom}
 
 object EditorUi {
-  def apply(implicit state: EditorState, update: FrontendState => Unit): Node = {
+  def apply(implicit context: Context): Node = {
     Body
       .game()
       .child(Fab(Icons.close).classes("fab-right-1").event("click", SnabbdomEventListener.set(LobbyPage.load())))
-      .child(RenderScenario(state.scenario, clickListener(state, update)))
-      .child(actionbar(state, update))
+      .child(RenderScenario(context.local.scenario, clickListener()))
+      .child(actionbar())
       .child(descriptionAndSave)
   }
 
-  private def clickListener(state: EditorState, update: FrontendState => Unit): Option[(Position, Direction) => Unit] =
-    state.clickAction.map { action => (position: Position, direction: Direction) =>
-      update(EditorState.scenario.modify(action.apply(position, direction))(state))
+  private def clickListener()(implicit context: Context): Option[(Position, Direction) => Unit] =
+    context.local.clickAction.map { action => (position: Position, direction: Direction) =>
+      context.update(EditorState.scenario.modify(action.apply(position, direction))(context.local))
     }
 
-  private def actionbar(implicit state: EditorPage.State, update: EditorPage.Update): Node = {
+  private def actionbar()(implicit context: Context): Node = {
     def icon(url: String) = Node("img").style("height", "100%").attr("src", url)
 
-    val scenario = state.scenario
+    val scenario = context.local.scenario
 
     def textButton(text: String, action: => EditorState): Node =
       Node("button.button.is-light").text(text).event("click", SnabbdomEventListener.set(action))
@@ -40,23 +41,23 @@ object EditorUi {
     Node("div.nowrap-panel")
       .style("margin", "8px")
       .children(
-        textButton("W--", state.copy(scenario = removeOutsideObjects(scenario.copy(width = (scenario.width - 1).max(1))))),
-        textButton("W++", state.copy(scenario = scenario.copy(width = scenario.width + 1))),
-        textButton("H--", state.copy(scenario = removeOutsideObjects(scenario.copy(height = (scenario.height - 1).max(1))))),
-        textButton("H++", state.copy(scenario = scenario.copy(height = scenario.height + 1))),
-        textButton("Wall", state.copy(clickAction = Some(ToggleWall))),
-        textButton("Pit", state.copy(clickAction = Some(TogglePit))),
-        iconButton(icon(Images.trapTurnLeft), state.copy(clickAction = Some(ToggleTurnLeftTrap))),
-        iconButton(icon(Images.trapTurnRight), state.copy(clickAction = Some(ToggleTurnRightTrap))),
-        iconButton(icon(Images.trapStun), state.copy(clickAction = Some(ToggleStunTrap))),
-        iconButton(icon(Images.trapPushUp), state.copy(clickAction = Some(TogglePushTrap))),
-        iconButton(icon(Images.target), state.copy(clickAction = Some(SetTarget))),
-        iconButton(icon(Images.playerStart(0)), state.copy(clickAction = Some(ToggleInitialRobot))),
-        iconButton(icon(Images.instructionIcon(TurnRight)), state.copy(clickAction = Some(RotateRobot)))
+        textButton("W--", context.local.copy(scenario = removeOutsideObjects(scenario.copy(width = (scenario.width - 1).max(1))))),
+        textButton("W++", context.local.copy(scenario = scenario.copy(width = scenario.width + 1))),
+        textButton("H--", context.local.copy(scenario = removeOutsideObjects(scenario.copy(height = (scenario.height - 1).max(1))))),
+        textButton("H++", context.local.copy(scenario = scenario.copy(height = scenario.height + 1))),
+        textButton("Wall", context.local.copy(clickAction = Some(ToggleWall))),
+        textButton("Pit", context.local.copy(clickAction = Some(TogglePit))),
+        iconButton(icon(Images.trapTurnLeft), context.local.copy(clickAction = Some(ToggleTurnLeftTrap))),
+        iconButton(icon(Images.trapTurnRight), context.local.copy(clickAction = Some(ToggleTurnRightTrap))),
+        iconButton(icon(Images.trapStun), context.local.copy(clickAction = Some(ToggleStunTrap))),
+        iconButton(icon(Images.trapPushUp), context.local.copy(clickAction = Some(TogglePushTrap))),
+        iconButton(icon(Images.target), context.local.copy(clickAction = Some(SetTarget))),
+        iconButton(icon(Images.playerStart(0)), context.local.copy(clickAction = Some(ToggleInitialRobot))),
+        iconButton(icon(Images.instructionIcon(TurnRight)), context.local.copy(clickAction = Some(RotateRobot)))
       )
   }
 
-  private def descriptionAndSave(implicit state: EditorPage.State, update: EditorPage.Update) =
+  private def descriptionAndSave(implicit context: Context) =
     Node("div.nowrap-panel")
       .style("margin", "8px")
       .child(
@@ -66,15 +67,18 @@ object EditorUi {
               Node("input.input")
                 .attr("type", "text")
                 .attr("placeholder", "description")
-                .attr("value", state.description)
-                .event("change", Snabbdom.event(e => update(state.copy(description = Untyped(e).target.value.asInstanceOf[String]))))
+                .attr("value", context.local.description)
+                .event("change", Snabbdom.event(e => context.update(context.local.copy(description = Untyped(e).target.value.asInstanceOf[String]))))
             )
           )
           .child(
             Node("div.control")
               .child(
                 Node("button.button.is-primary")
-                  .event("click", SnabbdomEventListener.sideeffect(() => Actions.saveScenario(ScenarioPost(state.description, state.scenario))))
+                  .event(
+                    "click",
+                    SnabbdomEventListener.sideeffect(() => Actions.saveScenario(ScenarioPost(context.local.description, context.local.scenario)))
+                  )
                   .text("Save Scenario")
               )
           )
