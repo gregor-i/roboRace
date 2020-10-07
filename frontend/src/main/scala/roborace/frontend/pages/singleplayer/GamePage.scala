@@ -64,15 +64,13 @@ object GameState {
 
 object GamePage extends Page[GameState] {
   override def stateFromUrl: PartialFunction[(GlobalState, Path, QueryParameter), PageState] = {
-    case (_, s"/singleplayer/${hash}", _) if Levels.map.contains(hash) =>
-      val level = Levels.map(hash)
+    case (_, s"/singleplayer/${id}", _) if Levels.map.contains(id) =>
+      val level = Levels.map(id)
       GameState.start(level)
   }
 
-  override def stateToUrl(state: State): Option[(Path, QueryParameter)] = {
-    val hash = state.game.scenario.hashCode.toHexString
-    Some(s"/singleplayer/$hash" -> Map.empty)
-  }
+  override def stateToUrl(state: State): Option[(Path, QueryParameter)] =
+    Some(s"/singleplayer/${Levels.id(state.game.scenario)}" -> Map.empty)
 
   override def render(implicit context: Context): Node = {
     context.local.game.players.headOption match {

@@ -2,7 +2,9 @@ package roborace.frontend
 
 import api.GameResponse
 import io.circe.generic.auto._
+import io.circe.parser
 import io.circe.parser.decode
+import io.circe.syntax.EncoderOps
 import org.scalajs.dom
 import org.scalajs.dom.raw.HTMLElement
 import org.scalajs.dom.{EventSource, MessageEvent}
@@ -14,7 +16,7 @@ import snabbdom.{Snabbdom, SnabbdomFacade, VNode}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
-import scala.scalajs.js.|
+import scala.scalajs.js.{UndefOr, |}
 
 class RoboRaceApp(container: HTMLElement) {
   var node: HTMLElement | VNode = container
@@ -28,7 +30,7 @@ class RoboRaceApp(container: HTMLElement) {
     eventlistenersModule = true
   )
 
-  private def saveStateToHistory(state: PageState): Unit = {
+  private def saveLocalStateToHistory(state: PageState): Unit = {
     Router.stateToUrl(state) match {
       case Some((currentPath, currentSearch)) =>
         val stringSearch = Router.queryParamsToUrl(currentSearch)
@@ -41,6 +43,16 @@ class RoboRaceApp(container: HTMLElement) {
       case None => ()
     }
   }
+
+  private def saveGlobalState(globalState: GlobalState): Unit =
+    dom.window.localStorage.setItem("globalState", globalState.asJson.noSpaces)
+
+  private def loadGlobalState(): Option[GlobalState] =
+    dom.window.localStorage
+      .getItem("globalState")
+      .asInstanceOf[UndefOr[String]]
+      .toOption
+      .flatMap(parser.decode[GlobalState](_).toOption)
 
   var gameEventSource: Option[EventSource] = None
   def gameUpdates(globalState: GlobalState, state: PageState): Unit = {
@@ -95,7 +107,8 @@ class RoboRaceApp(container: HTMLElement) {
   }
 
   def renderState(globalState: GlobalState, state: PageState): Unit = {
-    saveStateToHistory(state)
+    saveLocalStateToHistory(state)
+    saveGlobalState(globalState)
     gameUpdates(globalState, state)
     lobbyUpdates(globalState, state)
 
@@ -105,7 +118,13 @@ class RoboRaceApp(container: HTMLElement) {
   }
 
   private def loadUserAndRenderFromLocation(): Unit =
-    for (user <- Service.whoAmI()) yield renderState(GlobalState.initial, Router.stateFromUrl(GlobalState.initial, dom.window.location))
+    for {
+      user <- Service.whoAmI()
+      globalState = loadGlobalState().getOrElse(GlobalState.initial)
+    } yield renderState(
+      globalState,
+      Router.stateFromUrl(globalState, dom.window.location)
+    )
 
   dom.window.onpopstate = _ => loadUserAndRenderFromLocation()
 

@@ -15,6 +15,8 @@ object Levels {
 
   val level1: Scenario = StaticContent("core/src/main/json/level1.json").pipe(parse)
 
+  def id(scenario: Scenario): String = scenario.hashCode().toHexString
+
   val all: Seq[Scenario]         = Seq(level1)
-  val map: Map[String, Scenario] = all.map(sc => (sc.hashCode().toHexString, sc)).toMap
+  val map: Map[String, Scenario] = all.map(sc => id(sc) -> sc).toMap
 }
