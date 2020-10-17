@@ -35,7 +35,9 @@ object Actions {
   def placeInstruction(instruction: Instruction, slot: Int)(implicit context: Context[GameState]): Unit = {
     val newState = GameState.slots.modify(_ + (slot -> instruction))(context.local)
     if (newState.slots.size == Constants.instructionsPerCycle) {
-      sendCommand(SetInstructions(newState.slots.toSeq.sortBy(_._1).map(_._2)))
+      // todo: this is hacky
+      val newContext = Context(newState, context.global, context.update).asInstanceOf[Context[GameState]]
+      sendCommand(SetInstructions(newState.slots.toSeq.sortBy(_._1).map(_._2)))(newContext)
     } else {
       val nextFreeSlot = (0 until Constants.instructionsPerCycle)
         .map(i => (i + newState.focusedSlot) % Constants.instructionsPerCycle)
