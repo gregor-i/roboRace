@@ -17,8 +17,8 @@ object GameResponseFactory {
       scenario = game.scenario,
       robots = Lenses.runningPlayers.composeLens(RunningPlayer.robot).getAll(game),
       events = game.events,
-      you = game.players.find(_.id == session.playerId),
-      ownedByYou = gameRow.owner == session.playerId
+      you = game.players.find(_.id == session.id),
+      ownedByYou = gameRow.owner == session.id
     )
 
 }

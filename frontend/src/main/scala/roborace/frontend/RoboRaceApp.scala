@@ -118,13 +118,17 @@ class RoboRaceApp(container: HTMLElement) {
   }
 
   private def loadUserAndRenderFromLocation(): Unit =
-    for {
-      user <- Service.whoAmI()
-      globalState = loadGlobalState().getOrElse(GlobalState.initial)
-    } yield renderState(
-      globalState,
-      Router.stateFromUrl(globalState, dom.window.location)
-    )
+    loadGlobalState() match {
+      case Some(globalState) =>
+        renderState(globalState, Router.stateFromUrl(globalState, dom.window.location))
+      case None =>
+        Service
+          .whoAmI()
+          .map(user => GlobalState.initial(user))
+          .foreach { globalState =>
+            renderState(globalState, Router.stateFromUrl(globalState, dom.window.location))
+          }
+    }
 
   dom.window.onpopstate = _ => loadUserAndRenderFromLocation()
 

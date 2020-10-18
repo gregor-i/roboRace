@@ -35,7 +35,7 @@ class ScenarioController @Inject() (sessionAction: SessionAction, repo: Scenario
 
   def post() = sessionAction(circe.tolerantJson[Entity[Scenario]]) { (session, request) =>
     if (ValidateScenario(request.body.value)) {
-      val withId = repo.save(id = Utils.newId(), owner = session.playerId, entity = request.body)
+      val withId = repo.save(id = Utils.newId(), owner = session.id, entity = request.body)
       Created(withId.asJson)
     } else {
       BadRequest
@@ -44,18 +44,18 @@ class ScenarioController @Inject() (sessionAction: SessionAction, repo: Scenario
 
   def put(id: String) = sessionAction(circe.tolerantJson[Entity[Scenario]]) { (session, request) =>
     repo.get(id) match {
-      case _ if !ValidateScenario(request.body.value)                 => BadRequest
-      case Some(scenarioRow) if scenarioRow.owner != session.playerId => Forbidden
+      case _ if !ValidateScenario(request.body.value)           => BadRequest
+      case Some(scenarioRow) if scenarioRow.owner != session.id => Forbidden
       case _ =>
-        val withId = repo.save(id = id, owner = session.playerId, entity = request.body)
+        val withId = repo.save(id = id, owner = session.id, entity = request.body)
         Ok(withId.asJson)
     }
   }
 
   def delete(id: String) = sessionAction { (session, request) =>
     repo.get(id) match {
-      case None                                       => NotFound
-      case Some(row) if row.owner != session.playerId => Unauthorized
+      case None                                 => NotFound
+      case Some(row) if row.owner != session.id => Unauthorized
       case Some(_) =>
         repo.delete(id)
         NoContent

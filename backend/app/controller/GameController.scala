@@ -39,7 +39,7 @@ class GameController @Inject() (sessionAction: SessionAction, lobbyController: L
   def sendCommand(id: String) = sessionAction(circe.tolerantJson[Command]) { (session, request) =>
     repo.get(id) match {
       case Some(row) if row.game.isDefined =>
-        Command(request.body, session.playerId)(row.game.get)
+        Command(request.body, session.id)(row.game.get)
           .map(Cycle.apply) match {
           case Right(afterCommand) =>
             repo.save(row.copy(game = Some(afterCommand)))

@@ -35,13 +35,13 @@ class LobbyController @Inject() (sessionAction: SessionAction, gameRepo: GameRep
   }
 
   def create(index: Int) = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>
-    CreateGame(request.body, index)(session.playerId) match {
+    CreateGame(request.body, index)(session.id) match {
       case Left(reason) =>
         BadRequest(reason.asJson)
       case Right(game) =>
         val row = GameRow(
           id = Utils.newId(),
-          owner = session.playerId,
+          owner = session.id,
           game = Some(game),
           creationTime = ZonedDateTime.now()
         )
@@ -53,8 +53,8 @@ class LobbyController @Inject() (sessionAction: SessionAction, gameRepo: GameRep
 
   def delete(id: String) = sessionAction { (session, request) =>
     gameRepo.get(id) match {
-      case None                                       => NotFound
-      case Some(row) if row.owner != session.playerId => Unauthorized
+      case None                                 => NotFound
+      case Some(row) if row.owner != session.id => Unauthorized
       case Some(_) =>
         gameRepo.delete(id)
         sendStateToClients()

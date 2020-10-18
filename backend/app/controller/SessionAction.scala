@@ -13,7 +13,6 @@ class SessionAction @Inject() (sessionRepo: SessionRepo, controllerComponents: C
 
   def createNewSession(): Session = Session(
     id = Utils.newId(),
-    playerId = Utils.newId(),
     startedAt = ZonedDateTime.now(),
     lastActivityAt = ZonedDateTime.now()
   )

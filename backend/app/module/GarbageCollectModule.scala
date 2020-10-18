@@ -50,7 +50,7 @@ class GarbageCollectorThread @Inject() (gameRepository: GameRepository, scenario
         .map(sessionRepo.delete)
         .size
 
-      val activePlayers = sessionRepo.list().map(_.playerId)
+      val activePlayers = sessionRepo.list().map(_.id)
       val deletedGames = gameRepository
         .list()
         .filter(gameDeletePredicate(activePlayers))

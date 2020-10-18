@@ -69,11 +69,11 @@ object LobbyUi {
             .child(Tag(s"Size: ${scenarioResponse.entity.value.initialRobots.size} players", "is-info"))
             .childOptional(if (scenarioResponse.entity.value.traps.nonEmpty) Some(Tag(s"Contains traps", "is-warning")) else None)
             .childOptional(
-              if (context.global.user.map(_.sessionId).contains(scenarioResponse.owner)) Some(Tag(s"Created by you", "is-info")) else None
+              if (context.global.user.sessionId == scenarioResponse.owner) Some(Tag(s"Created by you", "is-info")) else None
             ),
           ButtonList()
             .childOptional(
-              if (context.global.user.map(_.sessionId).contains(scenarioResponse.owner))
+              if (context.global.user.sessionId == scenarioResponse.owner)
                 Some(Button("Delete Scenario", SnabbdomEventListener.sideeffect(() => Actions.deleteScenario(scenarioResponse))))
               else
                 None
