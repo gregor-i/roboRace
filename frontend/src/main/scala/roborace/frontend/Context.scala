@@ -1,10 +1,15 @@
 package roborace.frontend
 
+import api.User
 import monocle.macros.Lenses
 import roborace.frontend.util.Updatable
 
 @Lenses
-case class GlobalState(navbarExpanded: Boolean = false, finishedSinglePlayerLevels: Set[String] = Set.empty)
+case class GlobalState(
+    user: Option[User] = None, // todo: placeholder value
+    navbarExpanded: Boolean = false,
+    finishedSinglePlayerLevels: Set[String] = Set.empty
+)
 
 object GlobalState {
   val initial: GlobalState = GlobalState()

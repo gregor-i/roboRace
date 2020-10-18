@@ -1,7 +1,7 @@
 package roborace.frontend.pages
 package multiplayer.lobby
 
-import api.{GameResponse, ScenarioResponse}
+import api.{Entity, GameResponse, WithId}
 import entities._
 import roborace.frontend.pages.components._
 import roborace.frontend.pages.editor.EditorState
@@ -59,19 +59,21 @@ object LobbyUi {
     ).classes("has-background-light")
   }
 
-  def scenarioCard(scenarioResponse: ScenarioResponse)(implicit context: Context): Node =
+  def scenarioCard(scenarioResponse: WithId[Entity[Scenario]])(implicit context: Context): Node =
     Card(
       MediaObject(
         Some(RobotImage(scenarioResponse.id.hashCode().abs % 6, filled = true)),
         Node("div").children(
-          Node("h4.title").text(scenarioResponse.description),
+          Node("h4.title").text(scenarioResponse.entity.description),
           Node("div.tags")
-            .child(Tag(s"Size: ${scenarioResponse.scenario.initialRobots.size} players", "is-info"))
-            .childOptional(if (scenarioResponse.scenario.traps.nonEmpty) Some(Tag(s"Contains traps", "is-warning")) else None)
-            .childOptional(if (scenarioResponse.ownedByYou) Some(Tag(s"Created by you", "is-info")) else None),
+            .child(Tag(s"Size: ${scenarioResponse.entity.value.initialRobots.size} players", "is-info"))
+            .childOptional(if (scenarioResponse.entity.value.traps.nonEmpty) Some(Tag(s"Contains traps", "is-warning")) else None)
+            .childOptional(
+              if (context.global.user.map(_.sessionId).contains(scenarioResponse.owner)) Some(Tag(s"Created by you", "is-info")) else None
+            ),
           ButtonList()
             .childOptional(
-              if (scenarioResponse.ownedByYou)
+              if (context.global.user.map(_.sessionId).contains(scenarioResponse.owner))
                 Some(Button("Delete Scenario", SnabbdomEventListener.sideeffect(() => Actions.deleteScenario(scenarioResponse))))
               else
                 None

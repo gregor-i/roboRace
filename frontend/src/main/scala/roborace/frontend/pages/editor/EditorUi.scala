@@ -1,7 +1,7 @@
 package roborace.frontend.pages
 package editor
 
-import api.ScenarioPost
+import api.Entity
 import entities._
 import logic.Direction
 import roborace.frontend.pages.components.gameBoard.RenderScenario
@@ -77,7 +77,8 @@ object EditorUi {
                 Node("button.button.is-primary")
                   .event(
                     "click",
-                    SnabbdomEventListener.sideeffect(() => Actions.saveScenario(ScenarioPost(context.local.description, context.local.scenario)))
+                    SnabbdomEventListener
+                      .sideeffect(() => Actions.saveScenario(Entity(description = context.local.description, value = context.local.scenario)))
                   )
                   .text("Save Scenario")
               )

@@ -1,6 +1,6 @@
 package roborace.frontend.service
 
-import api.{GameResponse, ScenarioPost, ScenarioResponse, User}
+import api.{Entity, GameResponse, User, WithId}
 import entities._
 import io.circe.generic.auto._
 import logic.command.Command
@@ -31,22 +31,22 @@ object Service extends ServiceTrait {
       .flatMap(check(200))
       .flatMap(parse[GameResponse])
 
-  def getScenario(scenarioId: String): Future[ScenarioResponse] =
+  def getScenario(scenarioId: String): Future[WithId[Entity[Scenario]]] =
     get(s"/api/scenarios/${scenarioId}")
       .flatMap(check(200))
-      .flatMap(parse[ScenarioResponse])
+      .flatMap(parse[WithId[Entity[Scenario]]])
 
-  def getAllScenarios(): Future[Seq[ScenarioResponse]] =
+  def getAllScenarios(): Future[Seq[WithId[Entity[Scenario]]]] =
     get("/api/scenarios")
       .flatMap(check(200))
-      .flatMap(parse[Seq[ScenarioResponse]])
+      .flatMap(parse[Seq[WithId[Entity[Scenario]]]])
 
-  def postScenario(scenario: ScenarioPost): Future[ScenarioResponse] =
+  def postScenario(scenario: Entity[Scenario]): Future[WithId[Entity[Scenario]]] =
     post("/api/scenarios", scenario)
       .flatMap(check(201))
-      .flatMap(parse[ScenarioResponse])
+      .flatMap(parse[WithId[Entity[Scenario]]])
 
-  def deleteScenario(scenario: ScenarioResponse): Future[Unit] =
+  def deleteScenario(scenario: WithId[Entity[Scenario]]): Future[Unit] =
     delete(s"/api/scenarios/${scenario.id}")
       .flatMap(check(204))
       .map(_ => ())

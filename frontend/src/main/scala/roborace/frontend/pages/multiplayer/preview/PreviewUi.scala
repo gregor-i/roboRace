@@ -18,7 +18,7 @@ object PreviewUi {
     Body
       .game()
       .child(Fab(Icons.close).classes("fab-right-1").event("click", SnabbdomEventListener.set(LobbyPage.load())))
-      .child(RenderScenario(context.local.scenario.scenario, Some(createGame(context.local.scenario.scenario))))
+      .child(RenderScenario(context.local.scenario.entity.value, Some(createGame(context.local.scenario.entity.value))))
       .child(bottomLine)
 
   private def createGame(scenario: Scenario)(pos: Position, dir: Direction)(implicit context: Context): Unit =
