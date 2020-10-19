@@ -1,7 +1,7 @@
 package roborace.frontend.pages
 package multiplayer.lobby
 
-import api.{GameResponse, WithId}
+import api.WithId
 import entities._
 import roborace.frontend.pages.components._
 import roborace.frontend.pages.editor.EditorState
@@ -22,8 +22,8 @@ object LobbyUi {
         )
       )
 
-  def gameCard(gameResponse: GameResponse)(implicit context: Context): Node = {
-    val youTag: Option[Node] = gameResponse.you match {
+  def gameCard(gameResponse: WithId[Game])(implicit context: Context): Node = {
+    val youTag: Option[Node] = gameResponse.entity.players.find(_.id == context.global.sessionId) match {
       case Some(_: QuittedPlayer)                                   => Some(Tag("Quitted", "is-danger"))
       case Some(you: FinishedPlayer)                                => Some(Tag(s"Finished as ${you.rank}", "is-primary"))
       case Some(you: RunningPlayer) if you.instructionSlots.isEmpty => Some(Tag("Awaits your instructions", "is-warning"))
@@ -31,10 +31,10 @@ object LobbyUi {
       case _                                                        => None
     }
 
-    val sizeTag = Tag(s"Size: ${gameResponse.robots.size} / ${gameResponse.scenario.initialRobots.size} players", "is-info")
+    val sizeTag = Tag(s"Size: ${gameResponse.entity.players.size} / ${gameResponse.entity.scenario.initialRobots.size} players", "is-info")
 
     val joinTag = Some(Tag("Open for new player", "is-primary"))
-      .filter(_ => gameResponse.robots.size < gameResponse.scenario.initialRobots.size && gameResponse.cycle == 0)
+      .filter(_ => gameResponse.entity.players.size < gameResponse.entity.scenario.initialRobots.size && gameResponse.entity.cycle == 0)
 
     Card(
       MediaObject(
@@ -46,7 +46,7 @@ object LobbyUi {
             .childOptional(joinTag),
           ButtonList()
             .childOptional(
-              if (gameResponse.ownedByYou)
+              if (gameResponse.owner == context.global.sessionId)
                 Some(Button("Delete Game", SnabbdomEventListener.sideeffect(() => Actions.deleteGame(gameResponse))))
               else
                 None
@@ -69,11 +69,11 @@ object LobbyUi {
             .child(Tag(s"Size: ${scenarioResponse.entity.initialRobots.size} players", "is-info"))
             .childOptional(if (scenarioResponse.entity.traps.nonEmpty) Some(Tag(s"Contains traps", "is-warning")) else None)
             .childOptional(
-              if (context.global.user.sessionId == scenarioResponse.owner) Some(Tag(s"Created by you", "is-info")) else None
+              if (context.global.sessionId == scenarioResponse.owner) Some(Tag(s"Created by you", "is-info")) else None
             ),
           ButtonList()
             .childOptional(
-              if (context.global.user.sessionId == scenarioResponse.owner)
+              if (context.global.sessionId == scenarioResponse.owner)
                 Some(Button("Delete Scenario", SnabbdomEventListener.sideeffect(() => Actions.deleteScenario(scenarioResponse))))
               else
                 None

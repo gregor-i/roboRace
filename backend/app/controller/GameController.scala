@@ -3,18 +3,18 @@ package controller
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
+import api.WithId
 import entities.Game
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
 import logic.command.Command
 import logic.gameUpdate._
-import model.GameResponseFactory
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
-import repo.{GameRepository, GameRow}
+import repo.GameRepository
 
 import scala.concurrent.ExecutionContext
 
@@ -27,41 +27,39 @@ class GameController @Inject() (sessionAction: SessionAction, lobbyController: L
     with Circe
     with JsonUtil {
 
-  val sseCache = new SinkSourceCache[Game]
+  val sseCache = new SinkSourceCache[WithId[Game]]
 
   def state(id: String) = sessionAction { (session, _) =>
-    repo.get(id) match {
-      case Some(row @ GameRow(_, _, Some(game), _)) => Ok(GameResponseFactory(row)(session).get.asJson)
-      case _                                        => NotFound
+    repo.get(id).collect(repo.rowToEntity) match {
+      case Some(game) => Ok(game.asJson)
+      case _          => NotFound
     }
   }
 
   def sendCommand(id: String) = sessionAction(circe.tolerantJson[Command]) { (session, request) =>
-    repo.get(id) match {
-      case Some(row) if row.game.isDefined =>
-        Command(request.body, session.id)(row.game.get)
+    repo.get(id).collect(repo.rowToEntity) match {
+      case Some(row) =>
+        Command(request.body, session.id)(row.entity)
           .map(Cycle.apply) match {
           case Right(afterCommand) =>
-            repo.save(row.copy(game = Some(afterCommand)))
-            Source.single(afterCommand).runWith(sseCache.sink(id))
-            if (afterCommand.events != row.game.get.events && afterCommand.cycle == 0)
-              lobbyController.sendStateToClients()
-            Ok(GameResponseFactory(row, afterCommand)(session).asJson)
+            val withId = WithId(id = id, owner = row.owner, entity = afterCommand)
+            repo.save(id = id, owner = row.owner, entity = afterCommand)
+            Source.single(withId).runWith(sseCache.sink(id))
+            lobbyController.sendStateToClients()
+            Ok(withId.asJson)
           case Left(reason) =>
             BadRequest(reason.asJson)
         }
-      case None                          => NotFound
-      case Some(row) if row.game.isEmpty => NotFound
+      case None => NotFound
     }
   }
 
   def sse(id: String) = sessionAction { (session, _) =>
-    repo.get(id) match {
+    repo.get(id).collect(repo.rowToEntity) match {
       case Some(row) =>
         Ok.chunked(
             sseCache
               .source(id)
-              .map(game => GameResponseFactory(row, game)(session))
               .map(_.asJson.noSpaces)
               .via(EventSource.flow)
           )

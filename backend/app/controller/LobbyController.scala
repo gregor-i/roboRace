@@ -1,21 +1,19 @@
 package controller
 
-import java.time.ZonedDateTime
-
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
-import entities.Scenario
+import api.WithId
+import entities.{Game, Scenario}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import javax.inject.{Inject, Singleton}
 import logic.command.CreateGame
-import model.GameResponseFactory
 import play.api.http.ContentTypes
 import play.api.libs.EventSource
 import play.api.libs.circe.Circe
 import play.api.mvc.InjectedController
-import repo.{GameRepository, GameRow}
+import repo.GameRepository
 
 import scala.concurrent.ExecutionContext
 
@@ -28,10 +26,10 @@ class LobbyController @Inject() (sessionAction: SessionAction, gameRepo: GameRep
     with Circe
     with JsonUtil {
 
-  private val (sink, source) = new SinkSourceCache[Seq[GameRow]].createPair()
+  private val (sink, source) = new SinkSourceCache[Seq[WithId[Game]]].createPair()
 
   def list() = sessionAction { (session, _) =>
-    Ok(gameList().flatMap(GameResponseFactory(_)(session)).asJson)
+    Ok(gameList().asJson)
   }
 
   def create(index: Int) = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>
@@ -39,15 +37,11 @@ class LobbyController @Inject() (sessionAction: SessionAction, gameRepo: GameRep
       case Left(reason) =>
         BadRequest(reason.asJson)
       case Right(game) =>
-        val row = GameRow(
-          id = Utils.newId(),
-          owner = session.id,
-          game = Some(game),
-          creationTime = ZonedDateTime.now()
-        )
-        gameRepo.save(row)
+        val id    = Utils.newId()
+        val owner = session.id
+        gameRepo.save(id = id, owner = owner, entity = game)
         sendStateToClients()
-        Created(GameResponseFactory(row, game)(session).asJson)
+        Created(WithId(id = id, owner = owner, entity = game).asJson)
     }
   }
 
@@ -68,12 +62,11 @@ class LobbyController @Inject() (sessionAction: SessionAction, gameRepo: GameRep
   def sse() = sessionAction { (session, _) =>
     Ok.chunked(
         source
-          .map(games => games.flatMap(GameResponseFactory(_)(session)))
           .map(_.asJson.noSpaces)
           .via(EventSource.flow)
       )
       .as(ContentTypes.EVENT_STREAM)
   }
 
-  private def gameList(): Seq[GameRow] = gameRepo.list()
+  private def gameList(): Seq[WithId[Game]] = gameRepo.list().collect(gameRepo.rowToEntity)
 }

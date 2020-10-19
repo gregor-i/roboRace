@@ -1,8 +1,9 @@
 package roborace.frontend.pages.components.gameBoard
 
-import api.GameResponse
+import api.WithId
 import entities._
 import org.scalajs.dom.raw.HTMLElement
+import roborace.frontend.Context
 import roborace.frontend.util.Untyped
 import snabbdom.{Node, Snabbdom}
 
@@ -11,11 +12,11 @@ object RenderGame {
     // fixme: the None is wrong
     apply(game.scenario, game.events, None, click)
 
-  def apply(game: GameResponse, click: Option[(Position, Direction) => Unit]): Node =
+  def apply(game: WithId[Game], click: Option[(Position, Direction) => Unit])(implicit context: Context[_]): Node =
     apply(
-      game.scenario,
-      game.events,
-      game.you.collectFirst { case p: RunningPlayer => p.currentTarget },
+      game.entity.scenario,
+      game.entity.events,
+      game.entity.players.filter(_.id == context.global.sessionId).collectFirst { case p: RunningPlayer => p.currentTarget },
       click
     )
 

@@ -6,7 +6,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import api.WithId
 import com.google.inject.AbstractModule
-import entities.Scenario
+import entities.{Game, Scenario}
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import repo._
@@ -30,9 +30,9 @@ class GarbageCollectorThread @Inject() (gameRepository: GameRepository, scenario
   val tickInterval: FiniteDuration          = 10.minute
   val sessionInactivityTime: FiniteDuration = 1.day
 
-  def gameDeletePredicate(activePlayers: Seq[String])(gameRow: GameRow): Boolean =
-    gameRow.game.isEmpty ||
-      !gameRow.game.get.players.map(_.id).exists(activePlayers.contains)
+  def gameDeletePredicate(activePlayers: Seq[String])(gameRow: WithId[Option[Game]]): Boolean =
+    gameRow.entity.isEmpty ||
+      !gameRow.entity.get.players.map(_.id).exists(activePlayers.contains)
 
   def scenarioDeletePredicate(scenarioRow: WithId[Option[Scenario]]): Boolean =
     scenarioRow.entity.isEmpty

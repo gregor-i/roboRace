@@ -13,8 +13,8 @@ import roborace.frontend.util.{SnabbdomEventListener, Untyped}
 import snabbdom.{Node, Snabbdom}
 object GameUi {
   def apply(implicit context: Context): Node = {
-    context.local.game.you match {
-      case None if context.local.game.cycle == 0 =>
+    context.local.game.entity.players.find(_.id == context.global.sessionId) match {
+      case None if context.local.game.entity.cycle == 0 =>
         Body
           .game()
           .child(returnToLobbyFab())
@@ -23,8 +23,8 @@ object GameUi {
             RenderGame(
               context.local.game,
               Some { (p, _) =>
-                context.local.game.scenario.initialRobots
-                  .find(r => r.position == p && !context.local.game.robots.contains(r))
+                context.local.game.entity.scenario.initialRobots
+                  .find(r => r.position == p && !context.local.game.entity.players.contains(r))
                   .foreach(r => Actions.sendCommand(RegisterForGame(r.index)))
               }
             )
@@ -85,11 +85,11 @@ object GameUi {
         "click",
         Snabbdom.event { _ =>
           Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(
-            if (context.local.game.cycle == 0)
+            if (context.local.game.entity.cycle == 0)
               0
             else
-              Animation.eventSequenceDuration(context.local.game.events.takeWhile {
-                case s: StartCycleEvaluation => s.cycle != context.local.game.cycle - 1
+              Animation.eventSequenceDuration(context.local.game.entity.events.takeWhile {
+                case s: StartCycleEvaluation => s.cycle != context.local.game.entity.cycle - 1
                 case _                       => true
               })
           )

@@ -1,7 +1,7 @@
 package roborace.frontend.service
 
-import api.{GameResponse, WithId}
-import entities.{Constants, Instruction, RunningPlayer, Scenario}
+import api.WithId
+import entities._
 import logic.command.{Command, ResetInstruction, SetInstructions}
 import roborace.frontend.Context
 import roborace.frontend.pages.multiplayer.game.GameState
@@ -12,12 +12,12 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 object Actions {
-  def createGame(scenario: Scenario, index: Int): Future[GameResponse] =
+  def createGame(scenario: Scenario, index: Int): Future[WithId[Game]] =
     withSuccessToast("Starting Game", "Game started") {
       Service.postGame(scenario, index)
     }
 
-  def deleteGame(gameResponse: GameResponse)(implicit context: Context[LobbyState]): Future[Unit] =
+  def deleteGame(gameResponse: WithId[Game])(implicit context: Context[LobbyState]): Future[Unit] =
     withWarningToast("Deleting Game", "Game deleted") {
       Service.deleteGame(gameResponse.id)
     }.map { _ =>
@@ -49,7 +49,7 @@ object Actions {
 
   def unsetInstruction(slot: Int)(implicit context: Context[GameState]): Unit = {
     val newState = GameState.slots.modify(_ - slot)(context.local)
-    newState.game.you match {
+    newState.game.entity.players.find(_.id == context.global.sessionId) match {
       case Some(you: RunningPlayer) if you.instructionSlots.nonEmpty =>
         sendCommand(ResetInstruction)
       case _ =>

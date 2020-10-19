@@ -1,6 +1,7 @@
 package roborace.frontend
 
-import api.GameResponse
+import api.WithId
+import entities.Game
 import io.circe.generic.auto._
 import io.circe.parser
 import io.circe.parser.decode
@@ -57,7 +58,7 @@ class RoboRaceApp(container: HTMLElement) {
   var gameEventSource: Option[EventSource] = None
   def gameUpdates(globalState: GlobalState, state: PageState): Unit = {
     def eventListener(gameState: GameState): js.Function1[MessageEvent, Unit] = message => {
-      decode[GameResponse](message.data.asInstanceOf[String]) match {
+      decode[WithId[Game]](message.data.asInstanceOf[String]) match {
         case Right(newGame) => renderState(globalState, GameState.clearSlots(gameState, gameState.copy(game = newGame)))
         case Left(_)        => renderState(globalState, ErrorState("unexpected Message received on SSE"))
       }
@@ -83,7 +84,7 @@ class RoboRaceApp(container: HTMLElement) {
   var lobbyEventSource: Option[EventSource] = None
   def lobbyUpdates(globalState: GlobalState, state: PageState): Unit = {
     def eventListener(lobbyState: LobbyState): js.Function1[MessageEvent, Unit] = message => {
-      decode[Seq[GameResponse]](message.data.asInstanceOf[String]) match {
+      decode[Seq[WithId[Game]]](message.data.asInstanceOf[String]) match {
         case Right(newGames) => renderState(globalState, lobbyState.copy(games = newGames))
         case Left(_)         => renderState(globalState, ErrorState("unexpected Message received on SSE"))
       }

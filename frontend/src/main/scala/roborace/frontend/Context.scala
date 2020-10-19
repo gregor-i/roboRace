@@ -6,13 +6,13 @@ import roborace.frontend.util.Updatable
 
 @Lenses
 case class GlobalState(
-    user: User,
+    sessionId: String,
     navbarExpanded: Boolean = false,
     finishedSinglePlayerLevels: Set[String] = Set.empty
 )
 
 object GlobalState {
-  def initial(user: User): GlobalState = GlobalState(user = user)
+  def initial(user: User): GlobalState = GlobalState(sessionId = user.sessionId)
 }
 
 trait PageState

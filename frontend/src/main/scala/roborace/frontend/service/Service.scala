@@ -1,6 +1,6 @@
 package roborace.frontend.service
 
-import api.{GameResponse, User, WithId}
+import api.{User, WithId}
 import entities._
 import io.circe.generic.auto._
 import logic.command.Command
@@ -11,25 +11,25 @@ import scala.concurrent.Future
 
 object Service extends ServiceTrait {
 
-  def getAllGames(): Future[Seq[GameResponse]] =
+  def getAllGames(): Future[Seq[WithId[Game]]] =
     get("/api/games")
       .flatMap(check(200))
-      .flatMap(parse[Seq[GameResponse]])
+      .flatMap(parse[Seq[WithId[Game]]])
 
-  def postGame(scenario: Scenario, index: Int): Future[GameResponse] =
+  def postGame(scenario: Scenario, index: Int): Future[WithId[Game]] =
     post(s"/api/games?index=$index", scenario)
       .flatMap(check(201))
-      .flatMap(parse[GameResponse])
+      .flatMap(parse[WithId[Game]])
 
   def deleteGame(gameId: String): Future[Unit] =
     delete(s"/api/games/${gameId}")
       .flatMap(check(204))
       .map(_ => ())
 
-  def postCommand(gameId: String, command: Command): Future[GameResponse] =
+  def postCommand(gameId: String, command: Command): Future[WithId[Game]] =
     post(s"/api/games/$gameId/commands", command)
       .flatMap(check(200))
-      .flatMap(parse[GameResponse])
+      .flatMap(parse[WithId[Game]])
 
   def getScenario(scenarioId: String): Future[WithId[Scenario]] =
     get(s"/api/scenarios/${scenarioId}")
