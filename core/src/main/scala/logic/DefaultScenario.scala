@@ -42,6 +42,7 @@ object DefaultScenario {
     traps = Seq(
       TurnRightTrap(Position(1, 3)),
       TurnLeftTrap(Position(5, 3))
-    )
+    ),
+    description = "default"
   )
 }

@@ -1,6 +1,6 @@
 package roborace.frontend.service
 
-import api.{Entity, GameResponse, WithId}
+import api.{GameResponse, WithId}
 import entities.{Constants, Instruction, RunningPlayer, Scenario}
 import logic.command.{Command, ResetInstruction, SetInstructions}
 import roborace.frontend.Context
@@ -57,12 +57,12 @@ object Actions {
     }
   }
 
-  def saveScenario(scenario: Entity[Scenario]): Future[WithId[Entity[Scenario]]] =
+  def saveScenario(scenario: Scenario): Future[WithId[Scenario]] =
     withSuccessToast("Saving Scenario", "Scenario saved") {
       Service.postScenario(scenario)
     }
 
-  def deleteScenario(scenario: WithId[Entity[Scenario]])(implicit context: Context[LobbyState]): Unit =
+  def deleteScenario(scenario: WithId[Scenario])(implicit context: Context[LobbyState]): Unit =
     withWarningToast("Deleting Scenario", "Scenario deleted") {
       Service.deleteScenario(scenario)
     }.map { _ =>

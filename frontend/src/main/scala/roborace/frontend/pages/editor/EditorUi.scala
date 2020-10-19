@@ -1,7 +1,6 @@
 package roborace.frontend.pages
 package editor
 
-import api.Entity
 import entities._
 import logic.Direction
 import roborace.frontend.pages.components.gameBoard.RenderScenario
@@ -67,8 +66,16 @@ object EditorUi {
               Node("input.input")
                 .attr("type", "text")
                 .attr("placeholder", "description")
-                .attr("value", context.local.description)
-                .event("change", Snabbdom.event(e => context.update(context.local.copy(description = Untyped(e).target.value.asInstanceOf[String]))))
+                .attr("value", context.local.scenario.description)
+                .event(
+                  "change",
+                  Snabbdom.event(
+                    e =>
+                      context.update(
+                        EditorState.scenario.composeLens(Scenario.description).set(Untyped(e).target.value.asInstanceOf[String])(context.local)
+                      )
+                  )
+                )
             )
           )
           .child(
@@ -78,7 +85,7 @@ object EditorUi {
                   .event(
                     "click",
                     SnabbdomEventListener
-                      .sideeffect(() => Actions.saveScenario(Entity(description = context.local.description, value = context.local.scenario)))
+                      .sideeffect(() => Actions.saveScenario(context.local.scenario))
                   )
                   .text("Save Scenario")
               )

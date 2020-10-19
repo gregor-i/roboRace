@@ -1,15 +1,13 @@
 package repo
 
-import java.time.{Instant, ZoneOffset, ZonedDateTime}
-
 import anorm.{RowParser, SqlParser, _}
-import api.{Entity, WithId}
+import api.WithId
 import io.circe.parser._
 import io.circe.syntax._
 import io.circe.{Decoder, Encoder}
 import play.api.db.Database
 
-abstract class EntityRepo[E <: Entity[_]: Decoder: Encoder](tableName: String, rowEntity: String, db: Database) {
+abstract class EntityRepo[E: Decoder: Encoder](tableName: String, rowEntity: String, db: Database) {
   private val rowParser: RowParser[WithId[Option[E]]] = for {
     id     <- SqlParser.str("id")
     owner  <- SqlParser.str("owner")

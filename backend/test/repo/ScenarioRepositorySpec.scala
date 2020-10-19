@@ -1,6 +1,6 @@
 package repo
 
-import api.{Entity, WithId}
+import api.WithId
 import logic.DefaultScenario
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.funsuite.AnyFunSuite
@@ -10,8 +10,8 @@ import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 class ScenarioRepositorySpec extends AnyFunSuite with Matchers with GuiceOneAppPerSuite with BeforeAndAfterEach {
   def repo = app.injector.instanceOf[ScenarioRepository]
 
-  val s1 = WithId(id = "s1", owner = "player", entity = Entity(description = "description1", value = DefaultScenario.default))
-  val s2 = WithId(id = "s2", owner = "player", entity = Entity(description = "description2", value = DefaultScenario.default))
+  val s1 = WithId(id = "s1", owner = "player", entity = DefaultScenario.default.copy(description = "d1"))
+  val s2 = WithId(id = "s2", owner = "player", entity = DefaultScenario.default.copy(description = "d2"))
 
   override def beforeEach(): Unit = {
     repo.list().foreach(row => repo.delete(row.id))

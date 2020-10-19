@@ -1,7 +1,7 @@
 package roborace.frontend.pages
 package multiplayer.preview
 
-import api.{Entity, WithId}
+import api.WithId
 import entities.Scenario
 import roborace.frontend.service.Service
 import roborace.frontend.{GlobalState, PageState}
@@ -9,7 +9,7 @@ import snabbdom.Node
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-case class PreviewState(scenario: WithId[Entity[Scenario]]) extends PageState
+case class PreviewState(scenario: WithId[Scenario]) extends PageState
 
 object PreviewPage extends Page[PreviewState] {
   override def stateFromUrl: PartialFunction[(GlobalState, Path, QueryParameter), PageState] = {

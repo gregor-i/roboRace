@@ -1,7 +1,7 @@
 package roborace.frontend.pages
 package editor
 
-import api.{Entity, WithId}
+import api.WithId
 import entities.Scenario
 import logic.DefaultScenario
 import monocle.macros.Lenses
@@ -15,23 +15,21 @@ import scala.util.{Failure, Success}
 
 @Lenses
 case class EditorState(
-    remoteScenario: Option[WithId[Entity[Scenario]]],
+    remoteScenario: Option[WithId[Scenario]],
     scenario: Scenario,
-    description: String = "",
     clickAction: Option[ClickAction] = None
 ) extends PageState {
   def dirty: Boolean = remoteScenario match {
-    case Some(remoteScenario) => remoteScenario.entity.value != scenario || remoteScenario.entity.description != description
+    case Some(remoteScenario) => remoteScenario.entity != scenario
     case None                 => true
   }
 }
 
 object EditorState {
-  def apply(remoteScenario: WithId[Entity[Scenario]]): EditorState =
+  def apply(remoteScenario: WithId[Scenario]): EditorState =
     new EditorState(
       remoteScenario = Some(remoteScenario),
-      scenario = remoteScenario.entity.value,
-      description = remoteScenario.entity.description,
+      scenario = remoteScenario.entity,
       clickAction = None
     )
 }
@@ -49,7 +47,7 @@ object EditorPage extends Page[EditorState] {
       }
 
     case (_, "/editor", _) =>
-      EditorState(None, DefaultScenario.default, "default")
+      EditorState(None, DefaultScenario.default)
   }
 
   override def stateToUrl(state: EditorState): Option[(Path, QueryParameter)] =

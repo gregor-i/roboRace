@@ -1,6 +1,5 @@
 package controller
 
-import api.Entity
 import entities.Scenario
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -17,8 +16,7 @@ class ScenarioController @Inject() (sessionAction: SessionAction, repo: Scenario
     val list = repo.list().collect(repo.rowToEntity)
 
     if (list.isEmpty) {
-      val defaultRow = Entity(title = "default", value = DefaultScenario.default)
-      repo.save(id = Utils.newId(), owner = "system", entity = defaultRow)
+      repo.save(id = Utils.newId(), owner = "system", entity = DefaultScenario.default)
       val list = repo.list().collect(repo.rowToEntity)
       Ok(list.asJson)
     } else {
@@ -33,8 +31,8 @@ class ScenarioController @Inject() (sessionAction: SessionAction, repo: Scenario
     }
   }
 
-  def post() = sessionAction(circe.tolerantJson[Entity[Scenario]]) { (session, request) =>
-    if (ValidateScenario(request.body.value)) {
+  def post() = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>
+    if (ValidateScenario(request.body)) {
       val withId = repo.save(id = Utils.newId(), owner = session.id, entity = request.body)
       Created(withId.asJson)
     } else {
@@ -42,9 +40,9 @@ class ScenarioController @Inject() (sessionAction: SessionAction, repo: Scenario
     }
   }
 
-  def put(id: String) = sessionAction(circe.tolerantJson[Entity[Scenario]]) { (session, request) =>
+  def put(id: String) = sessionAction(circe.tolerantJson[Scenario]) { (session, request) =>
     repo.get(id) match {
-      case _ if !ValidateScenario(request.body.value)           => BadRequest
+      case _ if !ValidateScenario(request.body)                 => BadRequest
       case Some(scenarioRow) if scenarioRow.owner != session.id => Forbidden
       case _ =>
         val withId = repo.save(id = id, owner = session.id, entity = request.body)

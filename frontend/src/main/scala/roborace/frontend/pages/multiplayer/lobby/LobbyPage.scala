@@ -1,7 +1,7 @@
 package roborace.frontend.pages
 package multiplayer.lobby
 
-import api.{Entity, GameResponse, WithId}
+import api.{GameResponse, WithId}
 import entities.Scenario
 import monocle.macros.Lenses
 import roborace.frontend.Router.{Path, QueryParameter}
@@ -12,7 +12,7 @@ import snabbdom.Node
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Lenses
-case class LobbyState(games: Seq[GameResponse], scenarios: Seq[WithId[Entity[Scenario]]]) extends PageState
+case class LobbyState(games: Seq[GameResponse], scenarios: Seq[WithId[Scenario]]) extends PageState
 
 object LobbyPage extends Page[LobbyState] {
   def load(): PageState = LoadingState(

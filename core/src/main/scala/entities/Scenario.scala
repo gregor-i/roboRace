@@ -10,5 +10,6 @@ case class Scenario(
     initialRobots: Seq[Robot],
     walls: Seq[Wall],
     pits: Seq[Position],
-    traps: Seq[Trap] = Seq.empty
+    traps: Seq[Trap] = Seq.empty,
+    description: String = ""
 )

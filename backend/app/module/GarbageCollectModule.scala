@@ -4,7 +4,7 @@ import java.time.ZonedDateTime
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-import api.{Entity, WithId}
+import api.WithId
 import com.google.inject.AbstractModule
 import entities.Scenario
 import javax.inject.{Inject, Singleton}
@@ -34,7 +34,7 @@ class GarbageCollectorThread @Inject() (gameRepository: GameRepository, scenario
     gameRow.game.isEmpty ||
       !gameRow.game.get.players.map(_.id).exists(activePlayers.contains)
 
-  def scenarioDeletePredicate(scenarioRow: WithId[Option[Entity[Scenario]]]): Boolean =
+  def scenarioDeletePredicate(scenarioRow: WithId[Option[Scenario]]): Boolean =
     scenarioRow.entity.isEmpty
 
   def sessionDeletePredicate(session: Session): Boolean =
