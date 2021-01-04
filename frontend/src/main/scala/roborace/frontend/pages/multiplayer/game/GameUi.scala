@@ -10,7 +10,7 @@ import roborace.frontend.pages.multiplayer.game.GamePage.Context
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.service.Actions
 import roborace.frontend.util.{SnabbdomEventListener, Untyped}
-import snabbdom.{Node, Snabbdom}
+import snabbdom.{Event, Node, Snabbdom}
 object GameUi {
   def apply(implicit context: Context): Node = {
     context.local.game.entity.players.find(_.id == context.global.sessionId) match {
@@ -83,7 +83,7 @@ object GameUi {
       .classes("fab-left-1")
       .event(
         "click",
-        Snabbdom.event { _ =>
+        (_: Event) => {
           Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(
             if (context.local.game.entity.cycle == 0)
               0

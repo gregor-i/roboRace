@@ -10,7 +10,7 @@ import roborace.frontend.pages.components.gameBoard.RenderGame
 import roborace.frontend.pages.components.{Body, Images, RobotColor}
 import roborace.frontend.util.SnabbdomEventListener
 import roborace.frontend.{GlobalState, PageState}
-import snabbdom.{Node, Snabbdom}
+import snabbdom.{Event, Node, Snabbdom}
 
 @Lenses
 case class GameState(game: Game, focusedSlot: Int, instructionSlots: Seq[Option[Instruction]]) extends PageState {
@@ -150,19 +150,17 @@ object GamePage extends Page[GameState] {
             )
             .event(
               "click",
-              Snabbdom.event(
-                _ => {
-                  val newLocal = context.local.setInstruction(context.local.focusedSlot, instruction)
-                  val newGlobal =
-                    if (newLocal.game.players.exists(p => p.id == "singleplayer" && p.isInstanceOf[FinishedPlayer])) {
-                      context.global.copy(
-                        finishedSinglePlayerLevels = context.global.finishedSinglePlayerLevels + context.local.game.scenario.hashCode.toHexString
-                      )
-                    } else context.global
+              (_: Event) => {
+                val newLocal = context.local.setInstruction(context.local.focusedSlot, instruction)
+                val newGlobal =
+                  if (newLocal.game.players.exists(p => p.id == "singleplayer" && p.isInstanceOf[FinishedPlayer])) {
+                    context.global.copy(
+                      finishedSinglePlayerLevels = context.global.finishedSinglePlayerLevels + context.local.game.scenario.hashCode.toHexString
+                    )
+                  } else context.global
 
-                  context.update(newGlobal, newLocal)
-                }
-              )
+                context.update(newGlobal, newLocal)
+              }
             )
         )
       } else {

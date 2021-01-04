@@ -11,6 +11,7 @@ import roborace.frontend.pages.multiplayer.preview.PreviewState
 import roborace.frontend.service.Actions
 import roborace.frontend.util.SnabbdomEventListener
 import snabbdom.Node
+import snabbdom.components.{Button, ButtonList}
 
 object LobbyUi {
   def render(implicit context: Context): Node =
@@ -44,7 +45,8 @@ object LobbyUi {
             .child(sizeTag)
             .childOptional(youTag)
             .childOptional(joinTag),
-          ButtonList()
+          ButtonList
+            .left()
             .childOptional(
               if (gameResponse.owner == context.global.sessionId)
                 Some(Button("Delete Game", SnabbdomEventListener.sideeffect(() => Actions.deleteGame(gameResponse))))
@@ -71,7 +73,8 @@ object LobbyUi {
             .childOptional(
               if (context.global.sessionId == scenarioResponse.owner) Some(Tag(s"Created by you", "is-info")) else None
             ),
-          ButtonList()
+          ButtonList
+            .left()
             .childOptional(
               if (context.global.sessionId == scenarioResponse.owner)
                 Some(Button("Delete Scenario", SnabbdomEventListener.sideeffect(() => Actions.deleteScenario(scenarioResponse))))

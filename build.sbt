@@ -1,8 +1,11 @@
+import org.scalajs.sbtplugin.Stage
+import sbtcrossproject.CrossPlugin.autoImport.{CrossType, crossProject}
+
 import scala.sys.process._
 
 name := "roboRace"
 
-scalaVersion in ThisBuild := "2.13.3"
+scalaVersion in ThisBuild := "2.13.4"
 scalacOptions in ThisBuild ++= Seq("-feature", "-deprecation", "-Ymacro-annotations")
 scalafmtOnCompile in ThisBuild := true
 
@@ -20,7 +23,7 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
   .in(file("core"))
   .dependsOn(macros)
-  .settings(circe, monocle, scalaTest)
+  .settings(circe, monocle, scalatest)
 
 lazy val backend = project.in(file("backend"))
   .dependsOn(core.jvm)
@@ -43,10 +46,9 @@ val frontend = project
   .enablePlugins(ScalaJSPlugin)
   .settings(
     scalaJSUseMainModuleInitializer := true,
-    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.CommonJSModule) }
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) }
   )
-  .settings(snabbdom, monocle)
-  .settings(    libraryDependencies +=        "org.scala-js" %%% "scalajs-dom" % "1.0.0")
+  .settings(snabbdom, monocle, scalaJsDom, scalatest)
 
 val `service-worker` = project
   .in(file("service-worker"))
@@ -59,7 +61,7 @@ val `service-worker` = project
       BuildInfoKey.action("assetFiles") { "ls backend/public".!! }
     )
   )
-  .settings(libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0")
+  .settings(scalaJsDom)
 
 // tasks
 compile in frontend := {
@@ -67,7 +69,7 @@ compile in frontend := {
   val buildFrontend = (frontend / Compile / fastOptJS).value.data
   val outputFile    = (backend / baseDirectory).value / "public" / "robo-race.js"
   streams.value.log.info("integrating frontend (fastOptJS)")
-  val npmLog = Seq("./node_modules/.bin/browserify", buildFrontend.toString, "-o", outputFile.toString).!!
+  val npmLog = Seq("./node_modules/.bin/webpack", "--mode", "development").!!
   streams.value.log.info(npmLog)
   ret
 }
@@ -76,7 +78,7 @@ stage in frontend := {
   val buildFrontend = (frontend / Compile / fullOptJS).value.data
   val outputFile    = (backend / baseDirectory).value / "public" / "robo-race.js"
   streams.value.log.info("integrating frontend (fullOptJS)")
-  val npmLog = Seq("./node_modules/.bin/browserify", buildFrontend.toString, "-o", outputFile.toString).!!
+  val npmLog = Seq("./node_modules/.bin/webpack", "--mode", "production").!!
   streams.value.log.info(npmLog)
   outputFile
 }
@@ -127,10 +129,19 @@ test in root := Def
 
 def snabbdom = Seq(
   resolvers += Resolver.bintrayRepo("gregor-i", "maven"),
-  libraryDependencies += "com.github.gregor-i" %%% "scalajs-snabbdom" % "1.0.1"
+libraryDependencies += "com.github.gregor-i" %%% "scalajs-snabbdom" % "1.2.3",
+libraryDependencies += "com.github.gregor-i" %%% "snabbdom-toasts" % "1.2.3",
+libraryDependencies += "com.github.gregor-i" %%% "snabbdom-components" % "1.2.3",
 )
 
-def scalaTest = libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.0" % Test
+def scalatest =
+  Seq(
+    libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.3" % Test,
+    testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-oD")
+  )
+
+def scalaJsDom =
+  libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.1.0"
 
 def circe = {
   val version = "0.13.0"

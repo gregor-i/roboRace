@@ -80,7 +80,7 @@ object Svg {
           case Some(f) =>
             node.event(
               "click",
-              Snabbdom.specificEvent[MouseEvent] { clickEvent =>
+              (clickEvent: MouseEvent) => {
                 // todo: this is not correct. it needs a check, if the event is actually inside of the hex.
                 f(p, event2direction(clickEvent))
               }

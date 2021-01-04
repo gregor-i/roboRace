@@ -1,8 +1,8 @@
 package roborace.frontend.pages.components
 
-import snabbdom.Node
-import snabbdom.SnabbdomFacade.Eventlistener
+import snabbdom.{Eventlistener, Node}
 
+// todo move background to components and use that one
 object Modal {
   def apply(closeAction: Eventlistener, background: Option[Node] = None)(content: Node*): Node =
     Node("div.modal.is-active")

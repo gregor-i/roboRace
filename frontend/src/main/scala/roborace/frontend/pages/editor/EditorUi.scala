@@ -9,7 +9,7 @@ import roborace.frontend.pages.editor.EditorPage.Context
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.service.Actions
 import roborace.frontend.util.{SnabbdomEventListener, Untyped}
-import snabbdom.{Node, Snabbdom}
+import snabbdom.{Event, Node, Snabbdom}
 
 object EditorUi {
   def apply(implicit context: Context): Node = {
@@ -69,12 +69,10 @@ object EditorUi {
                 .attr("value", context.local.scenario.description)
                 .event(
                   "change",
-                  Snabbdom.event(
-                    e =>
-                      context.update(
-                        EditorState.scenario.composeLens(Scenario.description).set(Untyped(e).target.value.asInstanceOf[String])(context.local)
-                      )
-                  )
+                  (e: Event) =>
+                    context.update(
+                      EditorState.scenario.composeLens(Scenario.description).set(Untyped(e).target.value.asInstanceOf[String])(context.local)
+                    )
                 )
             )
           )

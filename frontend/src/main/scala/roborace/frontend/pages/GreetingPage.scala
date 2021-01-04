@@ -3,12 +3,13 @@ package roborace.frontend.pages
 import logic.DefaultScenario
 import roborace.frontend.PageState
 import roborace.frontend.pages.components.gameBoard.RenderScenario
-import roborace.frontend.pages.components.{Body, Button, ButtonList, Modal}
+import roborace.frontend.pages.components.{Body, Modal}
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.pages.singleplayer.SelectLevelState
 import roborace.frontend.util.SnabbdomEventListener
 import roborace.macros.StaticContent
 import snabbdom.Node
+import snabbdom.components.{Button, ButtonList}
 
 case class GreetingState() extends PageState
 
@@ -44,10 +45,12 @@ object GreetingPage extends Page[GreetingState] {
     Node("div.content").prop("innerHTML", StaticContent("frontend/src/main/html/greeting.html"))
 
   private def buttons(implicit context: Context) =
-    ButtonList.fullWidth(
-      Button("Singleplayer", SnabbdomEventListener.set(SelectLevelState()))
-        .classes("button", "is-link", "is-outlined"),
-      Button("Multiplayer", SnabbdomEventListener.set(LobbyPage.load()))
-        .classes("button", "is-link", "is-outlined")
-    )
+    ButtonList
+      .left(
+        Button("Singleplayer", SnabbdomEventListener.set(SelectLevelState()))
+          .classes("button", "is-link", "is-outlined", "flex-grow-1"),
+        Button("Multiplayer", SnabbdomEventListener.set(LobbyPage.load()))
+          .classes("button", "is-link", "is-outlined", "flex-grow-1")
+      )
+      .style("display", "flex")
 }

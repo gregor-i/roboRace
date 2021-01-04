@@ -30,16 +30,13 @@ object LoadingPage extends Page[LoadingState] {
           )
       )
       .key(context.local.loading.hashCode())
-      .hook(
-        "insert",
-        Snabbdom.hook { _ =>
-          context.local.loading.onComplete {
-            case Success(newState) => context.update(newState)
-            case Failure(exception) =>
-              context.update(
-                ErrorState(s"unexpected problem while initializing app: ${exception.getMessage}")
-              )
-          }
+      .hookInsert { _ =>
+        context.local.loading.onComplete {
+          case Success(newState) => context.update(newState)
+          case Failure(exception) =>
+            context.update(
+              ErrorState(s"unexpected problem while initializing app: ${exception.getMessage}")
+            )
         }
-      )
+      }
 }

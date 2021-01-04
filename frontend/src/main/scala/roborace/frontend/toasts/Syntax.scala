@@ -1,19 +1,20 @@
 package roborace.frontend
 package toasts
 
+import snabbdom.toasts.{ToastType, Toasts}
+
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object Syntax {
 
   def withSuccessToast[A](progressText: String, onComplete: A => String)(progress: Future[A]): Future[A] = {
-    Toasts.futureToast[A](
-      progressText,
-      progress, {
-        case Success(value) => toasts.Success -> onComplete(value)
-        case Failure(ex)    => toasts.Danger  -> "The last action was not successful. Please retry the action or reload the page."
-      }
-    )
+    Toasts.asyncToast[A](progressText, progress) {
+      case Success(value) => ToastType.Success -> onComplete(value)
+      case Failure(ex)    => ToastType.Danger  -> "The last action was not successful. Please retry the action or reload the page."
+    }
     progress
   }
 
@@ -21,13 +22,10 @@ object Syntax {
     withSuccessToast(progressText, (_: A) => text)(progress)
 
   def withWarningToast[A](progressText: String, onComplete: A => String)(progress: Future[A]): Future[A] = {
-    Toasts.futureToast[A](
-      progressText,
-      progress, {
-        case Success(value) => toasts.Warning -> onComplete(value)
-        case Failure(ex)    => toasts.Danger  -> "The last action was not successful. Please retry the action or reload the page."
-      }
-    )
+    Toasts.asyncToast[A](progressText, progress) {
+      case Success(value) => ToastType.Warning -> onComplete(value)
+      case Failure(ex)    => ToastType.Danger  -> "The last action was not successful. Please retry the action or reload the page."
+    }
     progress
   }
 
@@ -36,7 +34,7 @@ object Syntax {
 
   implicit class EnrichFuture[A](val progress: Future[A]) extends AnyVal {
     def withToast(progressText: String, onComplete: Try[A] => (ToastType, String)): Future[A] = {
-      Toasts.futureToast(progressText, progress, onComplete)
+      Toasts.asyncToast(progressText, progress)(onComplete)
       progress
     }
 

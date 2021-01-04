@@ -24,32 +24,23 @@ object RenderGame {
     var oldDuration, oldTime = 0d
 
     Node("div.game-board")
-      .hook(
-        "insert",
-        Snabbdom.hook { node =>
-          val svg = node.elm.get.getElementsByTagName("svg").item(0).asInstanceOf[HTMLElement]
-          svg.dataset.update("duration", Animation.eventSequenceDuration(events).toString)
+      .hookInsert { node =>
+        val svg = node.elm.get.getElementsByTagName("svg").item(0).asInstanceOf[HTMLElement]
+        svg.dataset.update("duration", Animation.eventSequenceDuration(events).toString)
+      }
+      .hookPrepatch { (oldNode, newNode) =>
+        val oldSvg = oldNode.elm.get.firstChild.asInstanceOf[HTMLElement]
+        oldDuration = oldSvg.dataset.get("duration").fold(0.0)(_.toDouble)
+        oldTime = Untyped(oldSvg).getCurrentTime().asInstanceOf[Double]
+      }
+      .hookPostpatch { (oldNode, newNode) =>
+        val newSvg      = newNode.elm.get.firstChild.asInstanceOf[HTMLElement]
+        val newDuration = Animation.eventSequenceDuration(events)
+        if (oldDuration != newDuration) {
+          newSvg.dataset.update("duration", newDuration.toString)
+          Untyped(newSvg).setCurrentTime(Math.min(oldTime, oldDuration))
         }
-      )
-      .hook(
-        "prepatch",
-        Snabbdom.hook { (oldNode, newNode) =>
-          val oldSvg = oldNode.elm.get.firstChild.asInstanceOf[HTMLElement]
-          oldDuration = oldSvg.dataset.get("duration").fold(0.0)(_.toDouble)
-          oldTime = Untyped(oldSvg).getCurrentTime().asInstanceOf[Double]
-        }
-      )
-      .hook(
-        "postpatch",
-        Snabbdom.hook { (oldNode, newNode) =>
-          val newSvg      = newNode.elm.get.firstChild.asInstanceOf[HTMLElement]
-          val newDuration = Animation.eventSequenceDuration(events)
-          if (oldDuration != newDuration) {
-            newSvg.dataset.update("duration", newDuration.toString)
-            Untyped(newSvg).setCurrentTime(Math.min(oldTime, oldDuration))
-          }
-        }
-      )
+      }
       .child(
         Node("svg")
           .attr("viewBox", s"0 0 ${Svg.width(scenario)} ${Svg.height(scenario)}")

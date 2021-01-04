@@ -1,18 +1,18 @@
 package roborace.frontend.util
 
 import roborace.frontend.{Context, PageState}
-import snabbdom.{Snabbdom, SnabbdomFacade}
+import snabbdom.Event
 
 object SnabbdomEventListener {
-  def modify[S <: PageState](modify: S => S)(implicit context: Context[S]): SnabbdomFacade.Eventlistener =
-    Snabbdom.event(_ => context.update(modify(context.local)))
+  def modify[S <: PageState](modify: S => S)(implicit context: Context[S]): Event => Unit =
+    _ => context.update(modify(context.local))
 
-  def set(newState: => PageState)(implicit context: Context[_]): SnabbdomFacade.Eventlistener =
-    Snabbdom.event(_ => context.update(newState))
+  def set(newState: => PageState)(implicit context: Context[_]): Event => Unit =
+    _ => context.update(newState)
 
-  def sideeffect(operation: () => Unit): SnabbdomFacade.Eventlistener =
-    Snabbdom.event(_ => operation())
+  def sideeffect(operation: () => Unit): Event => Unit =
+    _ => operation()
 
-  val noop: SnabbdomFacade.Eventlistener =
-    Snabbdom.event(_ => ())
+  val noop: Event => Unit =
+    _ => ()
 }

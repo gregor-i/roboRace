@@ -13,7 +13,7 @@ import roborace.frontend.pages.ErrorState
 import roborace.frontend.pages.multiplayer.game.GameState
 import roborace.frontend.pages.multiplayer.lobby.LobbyState
 import roborace.frontend.service.Service
-import snabbdom.{Snabbdom, SnabbdomFacade, VNode}
+import snabbdom.{PatchFunction, Snabbdom, VNode}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js
@@ -22,7 +22,7 @@ import scala.scalajs.js.{UndefOr, |}
 class RoboRaceApp(container: HTMLElement) {
   var node: HTMLElement | VNode = container
 
-  val patch: SnabbdomFacade.PatchFunction = Snabbdom.init(
+  val patch: PatchFunction = Snabbdom.init(
     classModule = true,
     propsModule = true,
     attributesModule = true,
