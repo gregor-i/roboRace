@@ -48,9 +48,9 @@ object GreetingPage extends Page[GreetingState] {
     ButtonList
       .left(
         Button("Singleplayer", SnabbdomEventListener.set(SelectLevelState()))
-          .classes("button", "is-link", "is-outlined", "flex-grow-1"),
+          .classes("button", "is-link", "is-outlined", "is-flex-grow-1"),
         Button("Multiplayer", SnabbdomEventListener.set(LobbyPage.load()))
-          .classes("button", "is-link", "is-outlined", "flex-grow-1")
+          .classes("button", "is-link", "is-outlined", "is-flex-grow-1")
       )
       .style("display", "flex")
 }
