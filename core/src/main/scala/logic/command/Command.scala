@@ -50,7 +50,7 @@ object Command {
     Lenses.player(playerId).headOption(game) match {
       case None =>
         Left(PlayerNotFound)
-      case Some(_: QuittedPlayer) =>
+      case Some(_: QuitedPlayer) =>
         Left(PlayerAlreadyQuitted)
       case Some(_: FinishedPlayer) =>
         Left(PlayerAlreadyFinished)
@@ -66,7 +66,7 @@ object Command {
       case Some(player: RunningPlayer) =>
         Right(
           State.sequence(
-            Lenses.player(playerId).modify(p => QuittedPlayer(p.index, p.id)),
+            Lenses.player(playerId).modify(p => QuitedPlayer(p.index, p.id)),
             _.log(PlayerQuitted(player.index, player.robot))
           )(game)
         )
@@ -93,7 +93,7 @@ object Command {
     Lenses.player(playerId).headOption(game) match {
       case None =>
         Left(PlayerNotFound)
-      case Some(_: QuittedPlayer) =>
+      case Some(_: QuitedPlayer) =>
         Left(PlayerAlreadyFinished)
       case Some(_: FinishedPlayer) =>
         Left(PlayerAlreadyFinished)

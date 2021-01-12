@@ -99,7 +99,7 @@ object GamePage extends Page[GameState] {
             cardsBar(you)
           )
 
-      case None | Some(_: QuittedPlayer) =>
+      case None | Some(_: QuitedPlayer) =>
         context.update(ErrorState("This should not have happened"))
         Node("div")
     }

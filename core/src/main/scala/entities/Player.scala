@@ -17,6 +17,6 @@ case class RunningPlayer(
     instructionOptions: Seq[InstructionOption]
 ) extends Player
 
-case class QuittedPlayer(index: Int, id: String) extends Player
+case class QuitedPlayer(index: Int, id: String) extends Player
 
 case class FinishedPlayer(index: Int, id: String, rank: Int, cycle: Int) extends Player

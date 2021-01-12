@@ -25,7 +25,7 @@ object LobbyUi {
 
   def gameCard(gameResponse: WithId[Game])(implicit context: Context): Node = {
     val youTag: Option[Node] = gameResponse.entity.players.find(_.id == context.global.sessionId) match {
-      case Some(_: QuittedPlayer)                                   => Some(Tag("Quitted", "is-danger"))
+      case Some(_: QuitedPlayer)                                    => Some(Tag("Quitted", "is-danger"))
       case Some(you: FinishedPlayer)                                => Some(Tag(s"Finished as ${you.rank}", "is-primary"))
       case Some(you: RunningPlayer) if you.instructionSlots.isEmpty => Some(Tag("Awaits your instructions", "is-warning"))
       case Some(_: RunningPlayer)                                   => Some(Tag("Awaiting other players instructions"))

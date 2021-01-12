@@ -41,7 +41,7 @@ object GameUi {
           .child(RenderGame(context.local.game, None))
           .child(Node("div.text-panel").text("observer mode"))
 
-      case Some(you: QuittedPlayer) =>
+      case Some(you: QuitedPlayer) =>
         Body
           .game()
           .children(

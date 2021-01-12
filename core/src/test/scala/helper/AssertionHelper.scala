@@ -24,8 +24,8 @@ trait AssertionHelper {
   def assertFinishedPlayer(id: String)(f: FinishedPlayer => Assertion): CE =
     assert(game => f(game.players.find(_.id == id).get.asInstanceOf[FinishedPlayer]))
 
-  def assertQuittedPlayer(id: String)(f: QuittedPlayer => Assertion): CE =
-    assert(game => f(game.players.find(_.id == id).get.asInstanceOf[QuittedPlayer]))
+  def assertQuittedPlayer(id: String)(f: QuitedPlayer => Assertion): CE =
+    assert(game => f(game.players.find(_.id == id).get.asInstanceOf[QuitedPlayer]))
 
   def assertLog(f: Seq[EventLog] => Assertion): CE =
     assert(game => f(game.events))
