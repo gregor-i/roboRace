@@ -2,7 +2,6 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15",
     "bulma": "^0.9.1",
-    "http-server": "^0.12.3",
     "npm-run-all": "^4.1",
     "sass": "^1.27",
     "snabbdom": "^2.1.0",
