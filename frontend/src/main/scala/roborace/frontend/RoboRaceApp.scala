@@ -55,7 +55,7 @@ class RoboRaceApp(container: HTMLElement) {
       .toOption
       .flatMap(parser.decode[Set[String]](_).toOption)
 
-  var gameEventSource: Option[EventSource] = None
+  var gameEventSource: Option[(String, EventSource)] = None
   def gameUpdates(globalState: GlobalState, state: PageState): Unit = {
     def eventListener(gameState: GameState): js.Function1[MessageEvent, Unit] = message => {
       decode[WithId[Game]](message.data.asInstanceOf[String]) match {
@@ -65,15 +65,21 @@ class RoboRaceApp(container: HTMLElement) {
     }
 
     (state, gameEventSource) match {
-      case (state: GameState, Some(eventSource)) =>
+      case (state: GameState, Some((gameId, eventSource))) if state.game.id == gameId =>
         eventSource.onmessage = eventListener(state)
+
+      case (state: GameState, Some((_, otherEventSource))) =>
+        otherEventSource.close()
+        val eventSource = Service.gameUpdates(state.game.id)
+        eventSource.onmessage = eventListener(state)
+        gameEventSource = Some((state.game.id, eventSource))
 
       case (state: GameState, None) =>
         val eventSource = Service.gameUpdates(state.game.id)
         eventSource.onmessage = eventListener(state)
-        gameEventSource = Some(eventSource)
+        gameEventSource = Some((state.game.id, eventSource))
 
-      case (_, Some(eventSource)) =>
+      case (_, Some((_, eventSource))) =>
         eventSource.close()
         gameEventSource = None
 

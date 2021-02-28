@@ -10,8 +10,8 @@ class SinkSourceCache[A] {
 
   def createPair()(implicit mat: Materializer): Pair =
     MergeHub
-      .source[A](perProducerBufferSize = 16)
-      .toMat(BroadcastHub.sink(bufferSize = 256))(Keep.both)
+      .source[A](perProducerBufferSize = 1)
+      .toMat(BroadcastHub.sink(bufferSize = 1))(Keep.both)
       .run()
 
   def pair(id: String)(implicit mat: Materializer): Pair = {
