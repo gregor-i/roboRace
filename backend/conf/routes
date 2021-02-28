@@ -1,4 +1,5 @@
 #API
+GET           /api/session                   controller.SessionController.get()
 POST          /api/games                     controller.LobbyController.create(index: Int)
 GET           /api/games                     controller.LobbyController.list()
 DELETE        /api/games/:id                 controller.LobbyController.delete(id: String)
@@ -13,8 +14,6 @@ GET           /api/scenarios/:id             controller.ScenarioController.getSi
 POST          /api/scenarios                 controller.ScenarioController.post()
 PUT           /api/scenarios/:id             controller.ScenarioController.put(id: String)
 DELETE        /api/scenarios/:id             controller.ScenarioController.delete(id: String)
-
-GET           /api/users/me                  controller.UserController.me()
 
 #Frontend
 GET           /                              controller.UiController.lobby(path = "")

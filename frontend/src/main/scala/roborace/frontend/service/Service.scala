@@ -11,6 +11,11 @@ import scala.concurrent.Future
 
 object Service extends ServiceTrait {
 
+  def getSessionId(): Future[String] =
+    get("/api/session")
+      .flatMap(check(200))
+      .flatMap(parse[String])
+
   def getAllGames(): Future[Seq[WithId[Game]]] =
     get("/api/games")
       .flatMap(check(200))
@@ -50,11 +55,6 @@ object Service extends ServiceTrait {
     delete(s"/api/scenarios/${scenario.id}")
       .flatMap(check(204))
       .map(_ => ())
-
-  def whoAmI(): Future[User] =
-    get("/api/users/me")
-      .flatMap(check(200))
-      .flatMap(parse[User])
 
   def lobbyUpdates(): EventSource = new EventSource("/api/games/events")
 

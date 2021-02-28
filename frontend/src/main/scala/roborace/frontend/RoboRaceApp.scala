@@ -45,15 +45,15 @@ class RoboRaceApp(container: HTMLElement) {
     }
   }
 
-  private def saveGlobalState(globalState: GlobalState): Unit =
-    dom.window.localStorage.setItem("globalState", globalState.asJson.noSpaces)
+  private def saveFinishedLevels(globalState: GlobalState): Unit =
+    dom.window.localStorage.setItem("finishedSinglePlayerLevels", globalState.finishedSinglePlayerLevels.asJson.noSpaces)
 
-  private def loadGlobalState(): Option[GlobalState] =
+  private def loadFinishedLevels(): Option[Set[String]] =
     dom.window.localStorage
-      .getItem("globalState")
+      .getItem("finishedSinglePlayerLevels")
       .asInstanceOf[UndefOr[String]]
       .toOption
-      .flatMap(parser.decode[GlobalState](_).toOption)
+      .flatMap(parser.decode[Set[String]](_).toOption)
 
   var gameEventSource: Option[EventSource] = None
   def gameUpdates(globalState: GlobalState, state: PageState): Unit = {
@@ -109,7 +109,7 @@ class RoboRaceApp(container: HTMLElement) {
 
   def renderState(globalState: GlobalState, state: PageState): Unit = {
     saveLocalStateToHistory(state)
-    saveGlobalState(globalState)
+    saveFinishedLevels(globalState)
     gameUpdates(globalState, state)
     lobbyUpdates(globalState, state)
 
@@ -119,16 +119,14 @@ class RoboRaceApp(container: HTMLElement) {
   }
 
   private def loadUserAndRenderFromLocation(): Unit =
-    loadGlobalState() match {
-      case Some(globalState) =>
-        renderState(globalState, Router.stateFromUrl(globalState, dom.window.location))
-      case None =>
-        Service
-          .whoAmI()
-          .map(user => GlobalState.initial(user))
-          .foreach { globalState =>
-            renderState(globalState, Router.stateFromUrl(globalState, dom.window.location))
-          }
+    for (sessionId <- Service.getSessionId()) {
+      val finishedlevels = loadFinishedLevels()
+      val globalState = GlobalState(
+        sessionId = sessionId,
+        finishedSinglePlayerLevels = finishedlevels.getOrElse(Set.empty)
+      )
+      val localState = Router.stateFromUrl(globalState, dom.window.location)
+      renderState(globalState, localState)
     }
 
   dom.window.onpopstate = _ => loadUserAndRenderFromLocation()
