@@ -12,7 +12,8 @@ import snabbdom.Node
 import scala.concurrent.ExecutionContext.Implicits.global
 
 @Lenses
-case class GameState(game: WithId[Game], focusedSlot: Int = 0, slots: Map[Int, Instruction] = Map.empty) extends PageState
+case class GameState(game: WithId[Game], focusedSlot: Int = 0, slots: Map[Int, Instruction] = Map.empty, playerModalOpened: Boolean = false)
+    extends PageState
 
 object GameState {
   def clearSlots(oldState: GameState, newState: GameState): GameState =

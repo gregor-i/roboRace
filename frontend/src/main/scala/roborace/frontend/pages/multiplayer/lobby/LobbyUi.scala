@@ -13,14 +13,23 @@ import roborace.frontend.util.SnabbdomEventListener
 import snabbdom.Node
 import snabbdom.components.{Button, ButtonList}
 
-object LobbyUi {
+object LobbyUi extends snabbdom.Syntax {
   def render(implicit context: Context): Node =
     Body()
       .child(Header())
       .child(
-        Column(
-          context.local.games.map(gameCard(_)) ++ context.local.scenarios.map(scenarioCard(_))
-        )
+        Column()
+          .child("h1.title".text("Games:"))
+          .child(
+            if (context.local.games.isEmpty)
+              Seq("div".text("There are no games running. Select a scenario from below and start an game!"))
+            else
+              context.local.games.map(gameCard(_))
+          )
+          .child("h1.title".text("Scenarios:"))
+          .child(
+            context.local.scenarios.map(scenarioCard(_))
+          )
       )
 
   def gameCard(gameResponse: WithId[Game])(implicit context: Context): Node = {

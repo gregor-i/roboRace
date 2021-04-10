@@ -21,7 +21,7 @@ object SelectLevelPage extends Page[SelectLevelState] {
     Body()
       .child(Header())
       .child(
-        Column(
+        Column().child(
           Levels.all.map(levelCard(_))
         )
       )

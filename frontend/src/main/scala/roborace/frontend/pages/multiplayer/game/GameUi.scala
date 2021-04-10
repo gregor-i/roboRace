@@ -11,7 +11,7 @@ import roborace.frontend.pages.multiplayer.lobby.LobbyPage
 import roborace.frontend.service.Actions
 import roborace.frontend.util.{SnabbdomEventListener, Untyped}
 import snabbdom.{Event, Node, Snabbdom}
-object GameUi {
+object GameUi extends snabbdom.Syntax {
   def apply(implicit context: Context): Node = {
     context.local.game.entity.players.find(_.id == context.global.sessionId) match {
       case None if context.local.game.entity.cycle == 0 =>
@@ -19,6 +19,7 @@ object GameUi {
           .game()
           .child(returnToLobbyFab())
           .child(replayFab())
+          .child(openPlayerListFab())
           .child(
             RenderGame(
               context.local.game,
@@ -32,14 +33,17 @@ object GameUi {
           .child(
             Node("div").classes("text-panel").text("tap a start position to join the game")
           )
+          .childOptional(playerListModal())
 
       case None =>
         Body
           .game()
           .child(returnToLobbyFab())
           .child(replayFab())
+          .child(openPlayerListFab())
           .child(RenderGame(context.local.game, None))
           .child(Node("div.text-panel").text("observer mode"))
+          .childOptional(playerListModal())
 
       case Some(you: QuitedPlayer) =>
         Body
@@ -47,9 +51,11 @@ object GameUi {
           .children(
             returnToLobbyFab(),
             replayFab(),
+            openPlayerListFab(),
             RenderGame(context.local.game, None),
             Node("div.text-panel").text("game quitted")
           )
+          .childOptional(playerListModal())
 
       case Some(you: FinishedPlayer) =>
         Body
@@ -57,9 +63,11 @@ object GameUi {
           .children(
             returnToLobbyFab(),
             replayFab(),
+            openPlayerListFab(),
             RenderGame(context.local.game, None),
             Node("div.text-panel").text("target reached as " + you.rank)
           )
+          .childOptional(playerListModal())
 
       case Some(you: RunningPlayer) =>
         val color = RobotColor.dark(you.index)
@@ -70,11 +78,13 @@ object GameUi {
             Fab(Icons.close)
               .classes("fab-right-1")
               .event("click", SnabbdomEventListener.sideeffect(() => Actions.sendCommand(DeregisterForGame))),
+            openPlayerListFab(),
             replayFab(),
             RenderGame(context.local.game, None),
             instructionSlots(you),
             cardsBar(you)
           )
+          .childOptional(playerListModal())
     }
   }
 
@@ -97,8 +107,47 @@ object GameUi {
       )
       .event("dblclick", SnabbdomEventListener.sideeffect(() => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
 
+  private def openPlayerListFab()(implicit context: Context) =
+    Fab(Icons.list)
+      .classes("fab-left-2")
+      .event("click", SnabbdomEventListener.modify(GameState.playerModalOpened.set(true)))
+
   private def returnToLobbyFab()(implicit context: Context) =
     Fab(Icons.close).classes("fab-right-1").event("click", SnabbdomEventListener.set(LobbyPage.load()))
+
+  def playerListModal()(implicit context: Context): Option[Node] =
+    if (context.local.playerModalOpened) {
+      Some(
+        Modal(closeAction = SnabbdomEventListener.modify(GameState.playerModalOpened.set(false)))(
+          Node("h1.title").text("Player List"),
+          Node("table.table.is-fullwidth")
+            .child(
+              "tr"
+                .child("th".text("Player"))
+                .child("th".text("State"))
+            )
+            .child(
+              context.local.game.entity.players.map(
+                player =>
+                  "tr"
+                    .child("td".child("img.image.is-64x64".attr("src", Images.player(player.index))))
+                    .child(
+                      "td".text(
+                        player match {
+                          case player: RunningPlayer if player.instructionSlots.isEmpty => "waiting for"
+                          case _: RunningPlayer                                         => "ready"
+                          case _: QuitedPlayer                                          => "left the game"
+                          case player: FinishedPlayer                                   => s"finished as ${player.rank}"
+                        }
+                      )
+                    )
+              )
+            )
+        )
+      )
+    } else {
+      None
+    }
 
   def instructionSlots(player: RunningPlayer)(implicit context: Context) = {
     def instructionSlot(index: Int): Node = {

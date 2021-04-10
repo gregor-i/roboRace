@@ -5,6 +5,7 @@ import snabbdom.Node
 object Icons {
   val close  = "fa-times"
   val replay = "fa-undo"
+  val list   = "fa-list"
 
   def icon(icon: String): Node =
     Node("span.icon")
