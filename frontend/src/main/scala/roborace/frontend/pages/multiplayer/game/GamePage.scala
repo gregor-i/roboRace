@@ -28,14 +28,7 @@ object GamePage extends Page[GameState] {
   override def stateFromUrl: PartialFunction[(GlobalState, Path, QueryParameter), PageState] = {
     case (_, s"/games/${gameId}", _) =>
       LoadingState {
-        for {
-          games <- Service.getAllGames()
-          game = games.find(_.id == gameId)
-          state = game match {
-            case Some(game) => GameState(game)
-            case None       => ErrorState("Game not found")
-          }
-        } yield state
+        for (game <- Service.getGame(gameId)) yield GameState(game)
       }
   }
 
