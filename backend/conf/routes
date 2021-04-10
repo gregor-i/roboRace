@@ -5,7 +5,7 @@ GET           /api/games                     controller.LobbyController.list()
 DELETE        /api/games/:id                 controller.LobbyController.delete(id: String)
 GET           /api/games/events              controller.LobbyController.sse()
 
-GET           /api/games/:id                 controller.GameController.state(id:String)
+GET           /api/games/:id                 controller.GameController.state(id: String)
 POST          /api/games/:id/commands        controller.GameController.sendCommand(id: String)
 GET           /api/games/:id/events          controller.GameController.sse(id: String)
 

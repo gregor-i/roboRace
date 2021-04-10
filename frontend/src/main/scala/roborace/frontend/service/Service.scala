@@ -21,6 +21,11 @@ object Service extends ServiceTrait {
       .flatMap(check(200))
       .flatMap(parse[Seq[WithId[Game]]])
 
+  def getGame(gameId: String): Future[WithId[Game]] =
+    get(s"/api/games/${gameId}")
+      .flatMap(check(200))
+      .flatMap(parse[WithId[Game]])
+
   def postGame(scenario: Scenario, index: Int): Future[WithId[Game]] =
     post(s"/api/games?index=$index", scenario)
       .flatMap(check(201))

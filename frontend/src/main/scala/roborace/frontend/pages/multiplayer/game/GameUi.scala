@@ -1,6 +1,8 @@
 package roborace.frontend.pages
 package multiplayer.game
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import entities._
 import logic.command.{DeregisterForGame, RegisterForGame}
 import org.scalajs.dom
@@ -8,7 +10,7 @@ import roborace.frontend.pages.components._
 import roborace.frontend.pages.components.gameBoard.{Animation, RenderGame}
 import roborace.frontend.pages.multiplayer.game.GamePage.Context
 import roborace.frontend.pages.multiplayer.lobby.LobbyPage
-import roborace.frontend.service.Actions
+import roborace.frontend.service.{Actions, Service, ServiceTrait}
 import roborace.frontend.util.{SnabbdomEventListener, Untyped}
 import snabbdom.{Event, Node, Snabbdom}
 object GameUi extends snabbdom.Syntax {
@@ -20,6 +22,7 @@ object GameUi extends snabbdom.Syntax {
           .child(returnToLobbyFab())
           .child(replayFab())
           .child(openPlayerListFab())
+          .child(syncFab())
           .child(
             RenderGame(
               context.local.game,
@@ -41,6 +44,7 @@ object GameUi extends snabbdom.Syntax {
           .child(returnToLobbyFab())
           .child(replayFab())
           .child(openPlayerListFab())
+          .child(syncFab())
           .child(RenderGame(context.local.game, None))
           .child(Node("div.text-panel").text("observer mode"))
           .childOptional(playerListModal())
@@ -52,6 +56,7 @@ object GameUi extends snabbdom.Syntax {
             returnToLobbyFab(),
             replayFab(),
             openPlayerListFab(),
+            syncFab(),
             RenderGame(context.local.game, None),
             Node("div.text-panel").text("game quitted")
           )
@@ -64,6 +69,7 @@ object GameUi extends snabbdom.Syntax {
             returnToLobbyFab(),
             replayFab(),
             openPlayerListFab(),
+            syncFab(),
             RenderGame(context.local.game, None),
             Node("div.text-panel").text("target reached as " + you.rank)
           )
@@ -79,6 +85,7 @@ object GameUi extends snabbdom.Syntax {
               .classes("fab-right-1")
               .event("click", SnabbdomEventListener.sideeffect(() => Actions.sendCommand(DeregisterForGame))),
             openPlayerListFab(),
+            syncFab(),
             replayFab(),
             RenderGame(context.local.game, None),
             instructionSlots(you),
@@ -106,6 +113,18 @@ object GameUi extends snabbdom.Syntax {
         }
       )
       .event("dblclick", SnabbdomEventListener.sideeffect(() => Untyped(dom.document.querySelector(".game-board svg")).setCurrentTime(0)))
+
+  private def syncFab()(implicit context: Context): Node =
+    Fab(Icons.sync)
+      .classes("fab-right-2")
+      .event[Event](
+        "click",
+        _ =>
+          Service
+            .getGame(context.local.game.id)
+            .map(GameState.game.set)
+            .foreach(f => context.update(f(context.local)))
+      )
 
   private def openPlayerListFab()(implicit context: Context) =
     Fab(Icons.list)
