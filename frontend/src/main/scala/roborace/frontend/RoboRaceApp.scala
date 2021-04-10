@@ -59,8 +59,18 @@ class RoboRaceApp(container: HTMLElement) {
   def gameUpdates(globalState: GlobalState, state: PageState): Unit = {
     def eventListener(gameState: GameState): js.Function1[MessageEvent, Unit] = message => {
       decode[WithId[Game]](message.data.asInstanceOf[String]) match {
-        case Right(newGame) => renderState(globalState, GameState.clearSlots(gameState, gameState.copy(game = newGame)))
-        case Left(_)        => renderState(globalState, ErrorState("unexpected Message received on SSE"))
+        case Right(newGame) =>
+          dom.console.debug(
+            "received game event",
+            js.Dynamic.literal(
+              sessionId = globalState.sessionId,
+              gameId = newGame.id,
+              gameCycle = newGame.entity.cycle,
+              gameEventsSize = newGame.entity.events.size
+            )
+          )
+          renderState(globalState, GameState.clearSlots(gameState, gameState.copy(game = newGame)))
+        case Left(_) => renderState(globalState, ErrorState("unexpected Message received on SSE"))
       }
     }
 

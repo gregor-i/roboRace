@@ -14,7 +14,8 @@ class AccessFilter @Inject() (implicit val mat: Materializer, ex: ExecutionConte
     val startTime = System.currentTimeMillis()
     f(rh).map { resp =>
       val endTime = System.currentTimeMillis()
-      Logger.info(s"${rh.method} to ${rh.path} returned ${resp.header.status}. ${endTime - startTime}ms.")
+      if (!rh.path.startsWith("/assets"))
+        Logger.info(s"${rh.method} to ${rh.path} returned ${resp.header.status}. ${endTime - startTime}ms.")
       resp
     }
   }

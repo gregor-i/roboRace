@@ -10,6 +10,7 @@
 
   <logger name="play" level="INFO" />
   <logger name="application" level="DEBUG" />
+  <logger name="controller.GameController" level="DEBUG" />
 
   <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
   <!-- https://hibernate.atlassian.net/browse/HV-1323 -->
