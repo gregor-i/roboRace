@@ -1,5 +1,3 @@
-package nutria.serviceWorker
-
 import org.scalajs.dom.experimental.Fetch._
 import org.scalajs.dom.experimental._
 import org.scalajs.dom.experimental.serviceworkers.ServiceWorkerGlobalScope.self
@@ -38,15 +36,15 @@ object Main {
 
     self.addEventListener("activate", (_: ExtendableEvent) => self.clients.claim())
 
-    self.addEventListener(
-      "fetch",
-      (event: FetchEvent) => {
-        fromCache(assetCacheName, event.request)
-          .recoverWith(_ => fetch(event.request).toFuture)
-          .toJSPromise
-          .tap(event.respondWith(_))
-      }
-    )
+//    self.addEventListener(
+//      "fetch",
+//      (event: FetchEvent) => {
+//        fromCache(assetCacheName, event.request)
+//          .recoverWith(_ => fetch(event.request).toFuture)
+//          .toJSPromise
+//          .tap(event.respondWith(_))
+//      }
+//    )
   }
 
   def populateCache(cacheName: String, files: js.Array[RequestInfo]): Future[Unit] =
