@@ -3,6 +3,8 @@ package controller
 import akka.stream.Materializer
 import akka.stream.scaladsl.{BroadcastHub, Keep, MergeHub, Sink, Source}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class SinkSourceCache[A] {
   type Pair = (Sink[A, _], Source[A, _])
 
@@ -11,6 +13,10 @@ class SinkSourceCache[A] {
   def createPair()(implicit mat: Materializer): Pair =
     MergeHub
       .source[A](perProducerBufferSize = 1)
+      .watchTermination() { (mat, fut) =>
+        fut.foreach(_ => println("source terminated!"))
+        mat
+      }
       .toMat(BroadcastHub.sink(bufferSize = 1))(Keep.both)
       .run()
 
